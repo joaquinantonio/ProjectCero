@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Django
+db.sqlite3
+media/
+staticfiles/
+static-collected/
+
+# Logs
+*.log
+
+# Test / coverage
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# PyCharm / JetBrains
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# Build / packaging
+build/
+dist/
+*.egg-info/
+
+# Local overrides
+local_settings.py

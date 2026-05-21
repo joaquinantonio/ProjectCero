@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ event.title }} · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+{% block meta_description %}{{ event.short_description|default:event.title }}{% endblock %}
+{% block og_title %}{{ event.title }}{% endblock %}
+{% block og_description %}{{ event.short_description|default:event.title }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_image %}
+  {% if event.poster %}
+    {{ event.poster.url }}
+  {% else %}
+    {% static 'images/og-default.jpg' %}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container narrow">
+    <p class="eyebrow">Event</p>
+    <h1>{{ event.title }}</h1>
+    {% if event.short_description %}
+      <p class="lead">{{ event.short_description }}</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="detail-layout">
+      <div class="detail-main">
+        {% if event.poster %}
+          <div class="detail-image-wrap">
+            <img class="detail-image" src="{{ event.poster.url }}" alt="{{ event.title }}">
+          </div>
+        {% endif %}
+
+        <div class="card detail-block">
+          <h2>About This Event</h2>
+          <div class="detail-richtext">
+            {{ event.description|linebreaks }}
+          </div>
+        </div>
+
+        {% if ordered_event_artists %}
+          <div class="card detail-block">
+            <h2>Featured Artists</h2>
+            <ul class="detail-list">
+              {% for item in ordered_event_artists %}
+                <li>
+                  <a class="text-link" href="{% url 'artists:artist_detail' item.artist.slug %}">
+                    {{ item.artist.name }}
+                  </a>
+                  {% if item.role_name %}
+                    <span class="muted">· {{ item.role_name }}</span>
+                  {% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="detail-side">
+        <div class="card detail-summary">
+          <h2>Event Details</h2>
+
+          <ul class="detail-meta-list">
+            <li>
+              <span class="detail-label">Date</span>
+              <span class="detail-value">{{ event.start_at|date:"d M Y" }}</span>
+            </li>
+
+            <li>
+              <span class="detail-label">Time</span>
+              <span class="detail-value">
+                {{ event.start_at|time:"g:i A" }}
+                {% if event.end_at %}– {{ event.end_at|time:"g:i A" }}{% endif %}
+              </span>
+            </li>
+
+            {% if event.location_text %}
+              <li>
+                <span class="detail-label">Location</span>
+                <span class="detail-value">{{ event.location_text }}</span>
+              </li>
+            {% endif %}
+
+            {% if event.price_text %}
+              <li>
+                <span class="detail-label">Price</span>
+                <span class="detail-value">{{ event.price_text }}</span>
+              </li>
+            {% endif %}
+          </ul>
+
+          <div class="detail-actions">
+            {% if event.ticket_url %}
+              <a class="btn btn-primary" href="{{ event.ticket_url }}">Tickets / RSVP</a>
+            {% endif %}
+            <a class="btn btn-secondary" href="{% url 'events:single_event_ics' event.slug %}">Add to Calendar</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-heading">
+      <p class="eyebrow">More Events</p>
+      <h2>Related Upcoming Events</h2>
+    </div>
+
+    <div class="related-grid">
+      {% for related in related_events %}
+        <article class="card fact-card">
+          <p class="event-date">{{ related.start_at|date:"d M Y" }} · {{ related.start_at|time:"g:i A" }}</p>
+          <h3><a href="{% url 'events:event_detail' related.slug %}">{{ related.title }}</a></h3>
+          {% if related.short_description %}
+            <p class="muted clamp-3">{{ related.short_description }}</p>
+          {% endif %}
+          <div class="card-footer">
+            <a class="btn btn-secondary" href="{% url 'events:event_detail' related.slug %}">View Event</a>
+          </div>
+        </article>
+      {% empty %}
+        <article class="card">
+          <h3>No related upcoming events</h3>
+          <p>Check back soon for more listings.</p>
+        </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

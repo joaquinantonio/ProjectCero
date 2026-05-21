@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ artist.name }} · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+{% block meta_description %}{{ artist.short_bio|default:artist.name }}{% endblock %}
+{% block og_title %}{{ artist.name }}{% endblock %}
+{% block og_description %}{{ artist.short_bio|default:artist.name }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_image %}
+  {% if artist.image %}
+    {{ artist.image.url }}
+  {% else %}
+    {% static 'images/og-default.jpg' %}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container narrow">
+    <p class="eyebrow">Artist</p>
+    <h1>{{ artist.name }}</h1>
+    {% if artist.short_bio %}
+      <p class="lead">{{ artist.short_bio }}</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="detail-layout">
+      <div class="detail-main">
+        {% if artist.image %}
+          <div class="detail-image-wrap">
+            <img class="detail-image" src="{{ artist.image.url }}" alt="{{ artist.name }}">
+          </div>
+        {% endif %}
+
+        <div class="card detail-block">
+          <h2>About the Artist</h2>
+          <div class="detail-richtext">
+            {% if artist.bio %}
+              {{ artist.bio|linebreaks }}
+            {% else %}
+              <p class="muted">No bio added yet.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-side">
+        <div class="card detail-summary">
+          <h2>Artist Profile</h2>
+
+          <ul class="detail-meta-list">
+            <li>
+              <span class="detail-label">Type</span>
+              <span class="detail-value">{{ artist.get_artist_type_display }}</span>
+            </li>
+
+            {% if artist.short_bio %}
+              <li>
+                <span class="detail-label">Summary</span>
+                <span class="detail-value">{{ artist.short_bio }}</span>
+              </li>
+            {% endif %}
+          </ul>
+
+          <div class="social-links">
+            {% if artist.instagram_url %}
+              <a class="btn btn-secondary" href="{{ artist.instagram_url }}">Instagram</a>
+            {% endif %}
+            {% if artist.spotify_url %}
+              <a class="btn btn-secondary" href="{{ artist.spotify_url }}">Spotify</a>
+            {% endif %}
+            {% if artist.youtube_url %}
+              <a class="btn btn-secondary" href="{{ artist.youtube_url }}">YouTube</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-heading">
+      <p class="eyebrow">Upcoming</p>
+      <h2>Upcoming Appearances</h2>
+    </div>
+
+    <div class="related-grid">
+      {% for event in upcoming_events %}
+        <article class="card fact-card">
+          <p class="event-date">{{ event.start_at|date:"d M Y" }} · {{ event.start_at|time:"g:i A" }}</p>
+          <h3><a href="{% url 'events:event_detail' event.slug %}">{{ event.title }}</a></h3>
+          {% if event.short_description %}
+            <p class="muted clamp-3">{{ event.short_description }}</p>
+          {% endif %}
+          <div class="card-footer">
+            <a class="btn btn-secondary" href="{% url 'events:event_detail' event.slug %}">View Event</a>
+          </div>
+        </article>
+      {% empty %}
+        <article class="card">
+          <h3>No upcoming appearances</h3>
+          <p>Nothing scheduled yet.</p>
+        </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-heading">
+      <p class="eyebrow">Archive</p>
+      <h2>Past Appearances</h2>
+    </div>
+
+    <div class="related-grid">
+      {% for event in past_events %}
+        <article class="card fact-card">
+          <p class="event-date">{{ event.start_at|date:"d M Y" }}</p>
+          <h3><a href="{% url 'events:event_detail' event.slug %}">{{ event.title }}</a></h3>
+          {% if event.short_description %}
+            <p class="muted clamp-3">{{ event.short_description }}</p>
+          {% endif %}
+          <div class="card-footer">
+            <a class="btn btn-secondary" href="{% url 'events:event_detail' event.slug %}">View Event</a>
+          </div>
+        </article>
+      {% empty %}
+        <article class="card">
+          <h3>No past appearances yet</h3>
+          <p>Past events will show here once available.</p>
+        </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

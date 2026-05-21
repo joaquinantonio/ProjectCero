@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Artists · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container narrow">
+    <p class="eyebrow">Artists</p>
+    <h1>Featured Artists</h1>
+    <p class="lead">Meet the featured musicians.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <form method="get" class="card search-bar">
+      <div class="search-grid single-search">
+        <div>
+          <label for="artist-search">Search artists</label>
+          <input
+            id="artist-search"
+            type="text"
+            name="q"
+            value="{{ search_query }}"
+            placeholder="Search by artist name or bio"
+          >
+        </div>
+
+        <div class="search-actions">
+          <button class="btn btn-primary" type="submit">Search</button>
+          <a class="btn btn-secondary" href="{% url 'artists:artist_list' %}">Reset</a>
+        </div>
+      </div>
+    </form>
+
+    <div class="card-grid">
+      {% for artist in featured_artists %}
+        <article class="card">
+          {% if artist.image %}
+            <a class="card-image-link" href="{% url 'artists:artist_detail' artist.slug %}">
+              <img class="service-image" src="{{ artist.image.url }}" alt="{{ artist.name }}">
+            </a>
+          {% endif %}
+
+          <h3>
+            <a class="card-title-link" href="{% url 'artists:artist_detail' artist.slug %}">
+              {{ artist.name }}
+            </a>
+          </h3>
+
+          {% if artist.short_bio %}
+            <p class="muted clamp-2">{{ artist.short_bio }}</p>
+          {% endif %}
+
+          {% if artist.bio %}
+            <div class="card-copy muted clamp-4">
+              {{ artist.bio }}
+            </div>
+          {% endif %}
+
+          <div class="card-footer">
+            <a class="btn btn-secondary" href="{% url 'artists:artist_detail' artist.slug %}">
+              View Artist
+            </a>
+          </div>
+        </article>
+      {% empty %}
+        <article class="card">
+          <h3>No featured artists found</h3>
+          <p>Try another search term.</p>
+        </article>
+      {% endfor %}
+    </div>
+
+    {% include "includes/pagination.html" with page_obj=featured_artists %}
+  </div>
+</section>
+{% endblock %}

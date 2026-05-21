@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Bookings · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container narrow">
+    <p class="eyebrow">Bookings</p>
+    <h1>Make an Enquiry</h1>
+    <p class="lead">
+      Choose the type of request that best matches what you need.
+      We’ll review it and get back to you.
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="card-grid">
+      <article class="card">
+        <h2>Studio Booking</h2>
+        <p class="muted">For recording sessions, rehearsals, production work, or studio use.</p>
+        <p>Tell us your preferred date and what kind of session you need.</p>
+        <a class="btn btn-primary" href="{% url 'bookings:studio_request' %}">Request Studio Session</a>
+      </article>
+
+      <article class="card">
+        <h2>Venue Enquiry</h2>
+        <p class="muted">For private events, collaborations, gigs, or venue hire discussions.</p>
+        <p>Tell us about your event idea, preferred date, and expected crowd size.</p>
+        <a class="btn btn-primary" href="{% url 'bookings:venue_request' %}">Enquire About Venue Hire</a>
+      </article>
+
+      <article class="card">
+        <h2>General Enquiry</h2>
+        <p class="muted">For anything else, including partnerships, media, and general questions.</p>
+        <p>Use this if you’re not sure which request type fits best.</p>
+        <a class="btn btn-secondary" href="{% url 'bookings:general_request' %}">Send General Enquiry</a>
+      </article>
+    </div>
+  </div>
+</section>
+{% endblock %}

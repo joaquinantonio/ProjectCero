@@ -1,0 +1,19 @@
+{% if page_obj and page_obj.paginator.num_pages > 1 %}
+  <nav class="pagination">
+    {% if page_obj.has_previous %}
+      <a class="btn btn-secondary" href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}page={{ page_obj.previous_page_number }}">
+        Previous
+      </a>
+    {% endif %}
+
+    <span class="pagination-info">
+      Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+    </span>
+
+    {% if page_obj.has_next %}
+      <a class="btn btn-secondary" href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}page={{ page_obj.next_page_number }}">
+        Next
+      </a>
+    {% endif %}
+  </nav>
+{% endif %}

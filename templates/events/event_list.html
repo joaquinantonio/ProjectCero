@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Events · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container narrow">
+    <p class="eyebrow">Events</p>
+    <h1>Upcoming Events</h1>
+    <p class="lead">See what’s coming up at the venue.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <form method="get" class="card search-bar">
+      <div class="search-grid">
+        <div>
+          <label for="event-search">Search events</label>
+          <input
+            id="event-search"
+            type="text"
+            name="q"
+            value="{{ search_query }}"
+            placeholder="Search by title, description, or location"
+          >
+        </div>
+
+        <div>
+          <label for="event-category">Category</label>
+          <select id="event-category" name="category">
+            <option value="">All categories</option>
+            {% for category in categories %}
+              <option value="{{ category.slug }}"
+                {% if selected_category and selected_category.slug == category.slug %}selected{% endif %}>
+                {{ category.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="search-actions">
+          <button class="btn btn-primary" type="submit">Search</button>
+          <a class="btn btn-secondary" href="{% url 'events:event_list' %}">Reset</a>
+        </div>
+      </div>
+    </form>
+
+    <div class="filter-pills">
+      <a class="btn {% if not selected_category %}btn-primary{% else %}btn-secondary{% endif %}"
+         href="{% url 'events:event_list' %}">
+        All
+      </a>
+
+      {% for category in categories %}
+        <a class="btn {% if selected_category and selected_category.slug == category.slug %}btn-primary{% else %}btn-secondary{% endif %}"
+           href="{% url 'events:event_list' %}?category={{ category.slug }}">
+          {{ category.name }}
+        </a>
+      {% endfor %}
+    </div>
+
+    <div class="card-grid card-grid-wide">
+      {% for event in upcoming_events %}
+        <article class="event-card">
+          {% if event.poster %}
+            <a class="card-image-link" href="{% url 'events:event_detail' event.slug %}">
+              <img class="event-poster" src="{{ event.poster.url }}" alt="{{ event.title }}">
+            </a>
+          {% endif %}
+
+          <div class="event-card-body">
+            <p class="event-date">
+              {{ event.start_at|date:"d M Y" }}
+              {% if event.time_note %}
+                · {{ event.time_note }}
+              {% else %}
+                · {{ event.start_at|time:"g:i A" }}
+                {% if event.end_at %} – {{ event.end_at|time:"g:i A" }}{% endif %}
+              {% endif %}
+            </p>
+
+            <h2>
+              <a class="card-title-link" href="{% url 'events:event_detail' event.slug %}">
+                {{ event.title }}
+              </a>
+            </h2>
+
+            {% if event.short_description %}
+              <p class="card-copy clamp-3">{{ event.short_description }}</p>
+            {% endif %}
+
+            {% if event.location_text %}
+              <p class="muted clamp-2">{{ event.location_text }}</p>
+            {% endif %}
+
+            <div class="button-row card-footer">
+              <a class="btn btn-secondary" href="{% url 'events:event_detail' event.slug %}">View Details</a>
+              {% if event.ticket_url %}
+                <a class="btn btn-primary" href="{{ event.ticket_url }}">Tickets / RSVP</a>
+              {% endif %}
+            </div>
+          </div>
+        </article>
+      {% empty %}
+        <div class="card">
+          <h3>No upcoming events found</h3>
+          <p>Try a different search or category.</p>
+        </div>
+      {% endfor %}
+    </div>
+
+    {% include "includes/pagination.html" with page_obj=upcoming_events %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-heading">
+      <p class="eyebrow">Archive</p>
+      <h2>Recent Past Events</h2>
+    </div>
+
+    <div class="card-grid">
+      {% for event in past_events %}
+        <article class="card">
+          <p class="event-date">
+            {{ event.start_at|date:"d M Y" }}
+            {% if event.time_note %}
+              · {{ event.time_note }}
+            {% else %}
+              · {{ event.start_at|time:"g:i A" }}
+              {% if event.end_at %} – {{ event.end_at|time:"g:i A" }}{% endif %}
+            {% endif %}
+          </p>
+
+          <h3>
+            <a class="card-title-link" href="{% url 'events:event_detail' event.slug %}">
+              {{ event.title }}
+            </a>
+          </h3>
+
+          {% if event.short_description %}
+            <p class="card-copy clamp-3">{{ event.short_description }}</p>
+          {% endif %}
+
+          <div class="card-footer">
+            <a class="btn btn-secondary" href="{% url 'events:event_detail' event.slug %}">
+              View Event
+            </a>
+          </div>
+        </article>
+      {% empty %}
+        <article class="card">
+          <h3>No past events yet</h3>
+          <p>Past published events will appear here automatically.</p>
+        </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

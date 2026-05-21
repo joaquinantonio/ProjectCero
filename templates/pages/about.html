@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}About · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container narrow">
+    <p class="eyebrow">About</p>
+    <h1>About CeroPJ</h1>
+    <p class="lead">Learn more about Cero, the space, and the kind of events hosted here.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container narrow">
+    {% for section in sections %}
+      <article class="content-block">
+        {% if section.title %}
+          <h2>{{ section.title }}</h2>
+        {% endif %}
+        {% if section.subtitle %}
+          <p class="muted">{{ section.subtitle }}</p>
+        {% endif %}
+        <div>{{ section.body|linebreaks }}</div>
+      </article>
+    {% empty %}
+      <article class="content-block">
+        <h2>About</h2>
+        <p>CeroPJ is a community. Test about page.</p>
+      </article>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

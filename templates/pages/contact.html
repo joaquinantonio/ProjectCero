@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Contact · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container narrow">
+    <p class="eyebrow">Contact</p>
+    <h1>Get in Touch</h1>
+    <p class="lead">Reach out for studio work, collaborations, or venue-related enquiries.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="detail-layout">
+      <div class="detail-main">
+        <div class="card detail-block">
+          <h2>Contact Information</h2>
+
+          <ul class="detail-meta-list">
+            {% if site_settings.contact_email %}
+              <li>
+                <span class="detail-label">Email</span>
+                <span class="detail-value">{{ site_settings.contact_email }}</span>
+              </li>
+            {% endif %}
+
+            {% if site_settings.contact_phone %}
+              <li>
+                <span class="detail-label">Phone</span>
+                <span class="detail-value">{{ site_settings.contact_phone }}</span>
+              </li>
+            {% endif %}
+
+            {% if site_settings.address_text %}
+              <li>
+                <span class="detail-label">Address</span>
+                <span class="detail-value">{{ site_settings.address_text|linebreaksbr }}</span>
+              </li>
+            {% endif %}
+          </ul>
+
+          {% if site_settings.google_maps_url %}
+            <div class="detail-actions">
+              <a class="btn btn-secondary" href="{{ site_settings.google_maps_url }}" target="_blank">Open in Maps</a>
+            </div>
+          {% endif %}
+        </div>
+
+        {% for section in sections %}
+          <div class="card detail-block">
+            {% if section.title %}
+              <h2>{{ section.title }}</h2>
+            {% endif %}
+            <div class="detail-richtext">
+              {{ section.body|linebreaks }}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="detail-side">
+        <div class="card detail-summary">
+          <h2>Make an Enquiry</h2>
+          <p class="muted">Choose the request type that best matches what you need.</p>
+
+          <div class="button-stack">
+            <a class="btn btn-primary" href="{% url 'bookings:landing' %}">All Booking Options</a>
+            <a class="btn btn-secondary" href="{% url 'bookings:studio_request' %}">Studio Request</a>
+            <a class="btn btn-secondary" href="{% url 'bookings:venue_request' %}">Venue Request</a>
+            <a class="btn btn-secondary" href="{% url 'bookings:general_request' %}">General Enquiry</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Studio · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+{% block meta_description %}Recording, production, rehearsals, and creative studio sessions.{% endblock %}
+{% block og_title %}Studio Services{% endblock %}
+{% block og_description %}Recording, production, rehearsals, and creative studio sessions.{% endblock %}
+{% block og_type %}website{% endblock %}
+{% block og_image %}{% static 'images/og-default.jpg' %}{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container narrow">
+    <p class="eyebrow">Studio</p>
+    <h1>Studio Services</h1>
+    <p class="lead">Recording, production, rehearsals, and creative sessions.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="card">
+      <h2>Need studio time?</h2>
+      <p class="muted">
+        Send a request for recording, rehearsal, or other studio-related sessions.
+      </p>
+      <div class="button-row">
+        <a class="btn btn-primary" href="{% url 'bookings:studio_request' %}">Request Studio Session</a>
+        <a class="btn btn-secondary" href="{% url 'bookings:landing' %}">View All Booking Options</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="card-grid">
+      {% for service in services %}
+        <article class="card">
+          {% if service.image %}
+            <div class="card-image-link">
+              <img class="service-image" src="{{ service.image.url }}" alt="{{ service.name }}">
+            </div>
+          {% endif %}
+
+          <h2>{{ service.name }}</h2>
+
+          {% if service.short_description %}
+            <p class="muted clamp-2">{{ service.short_description }}</p>
+          {% endif %}
+
+          {% if service.description %}
+            <div class="card-copy clamp-4">
+              {{ service.description }}
+            </div>
+          {% endif %}
+
+          <div class="meta-row card-footer">
+            {% if service.price_text %}
+              <span class="pill">{{ service.price_text }}</span>
+            {% endif %}
+            {% if service.duration_text %}
+              <span class="pill">{{ service.duration_text }}</span>
+            {% endif %}
+          </div>
+        </article>
+      {% empty %}
+        <article class="card">
+          <h2>No studio services yet</h2>
+          <p>Add services in admin to populate this page.</p>
+        </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

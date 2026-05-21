@@ -1,0 +1,32 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}{{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="description" content="{% block meta_description %}Recording studio, featured artists, and live events venue.{% endblock %}">
+
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  <meta property="og:title" content="{% block og_title %}{{ site_settings.site_name|default:'CeroPJ' }}{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Recording studio, featured artists, and live events venue.{% endblock %}">
+  <meta property="og:image" content="{% block og_image %}{% static 'images/og-default.jpg' %}{% endblock %}">
+
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  {% include "includes/navbar.html" %}
+
+  <main class="site-main">
+    {% include "includes/messages.html" %}
+    {% block content %}{% endblock %}
+  </main>
+
+  {% include "includes/footer.html" %}
+
+  {% block extra_js %}{% endblock %}
+
+</body>
+</html>
