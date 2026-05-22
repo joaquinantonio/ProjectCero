@@ -84,6 +84,11 @@ class CeroAdminSite(AdminSite):
                         "url": reverse("admin:bookings_bookingrequest_changelist"),
                         "hint": "Review and update enquiries",
                     },
+                    {
+                        "label": "Enquiries",
+                        "url": reverse("admin:enquiries_enquirysubmission_changelist"),
+                        "hint": "Review general, merch, and payment enquiries",
+                    },
                 ],
             },
             {
