@@ -30,6 +30,8 @@ urlpatterns = [
     path("events/", include("apps.events.urls")),
     path("studio/", include("apps.studio.urls")),
     path("bookings/", include("apps.bookings.urls")),
+    path("news/", include("apps.news.urls")),
+    path("merch/", include("apps.merch.urls")),
 ]
 
 if settings.DEBUG:

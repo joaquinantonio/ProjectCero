@@ -63,7 +63,18 @@
       >
         Calendar
       </a>
-
+    <a
+      href="{% url 'news:news_list' %}"
+      class="{% if request.resolver_match.namespace == 'news' %}is-active{% endif %}"
+    >
+      News
+    </a>
+    <a
+      href="{% url 'merch:merch_list' %}"
+      class="{% if request.resolver_match.namespace == 'merch' %}is-active{% endif %}"
+    >
+      Merchandise
+    </a>
       <a
         href="{% url 'bookings:landing' %}"
         class="{% if request.resolver_match.namespace == 'bookings' %}is-active{% endif %}"

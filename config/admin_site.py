@@ -87,6 +87,16 @@ class CeroAdminSite(AdminSite):
                 ],
             },
             {
+                "title": "News",
+                "items": [
+                    {
+                        "label": "Articles",
+                        "url": reverse("admin:news_newspost_changelist"),
+                        "hint": "Manage public updates and announcements",
+                    },
+                ],
+            },
+            {
                 "title": "Events & Artists",
                 "items": [
                     {
@@ -121,6 +131,16 @@ class CeroAdminSite(AdminSite):
                     },
                 ],
             },
+            {
+                "title": "Merchandise",
+                "items": [
+                    {
+                        "label": "Merchandise",
+                        "url": reverse("admin:merch_merchitem_changelist"),
+                        "hint": "Manage the merchandise catalog",
+                    },
+                ],
+            }
         ]
 
         if request.user.is_superuser:
