@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}News · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+{% block meta_description %}Latest updates and announcements from {{ site_settings.site_name|default:"CeroPJ" }}.{% endblock %}
+{% block og_title %}News{% endblock %}
+{% block og_description %}Latest updates and announcements from {{ site_settings.site_name|default:"CeroPJ" }}.{% endblock %}
+{% block og_type %}website{% endblock %}
+{% block og_image %}{% static 'images/og-default.jpg' %}{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container narrow">
+    <p class="eyebrow">News</p>
+    <h1>Latest Updates</h1>
+    <p class="lead">Announcements, updates, and random news from the venue.</p>
+  </div>
+</section>
+
+{% if featured_post %}
+<section class="section">
+  <div class="container">
+    <div class="section-heading">
+      <p class="eyebrow">Featured</p>
+      <h2>Highlighted Post</h2>
+    </div>
+
+    <article class="event-card">
+      {% if featured_post.cover_image %}
+        <a class="card-image-link" href="{% url 'news:news_detail' featured_post.slug %}">
+          <img class="event-poster" src="{{ featured_post.cover_image.url }}" alt="{{ featured_post.title }}">
+        </a>
+      {% endif %}
+
+      <div class="event-card-body">
+        <p class="event-date">
+          {% if featured_post.published_at %}
+            {{ featured_post.published_at|date:"d M Y" }}
+          {% else %}
+            {{ featured_post.created_at|date:"d M Y" }}
+          {% endif %}
+        </p>
+
+        <h2>
+          <a class="card-title-link" href="{% url 'news:news_detail' featured_post.slug %}">
+            {{ featured_post.title }}
+          </a>
+        </h2>
+
+        {% if featured_post.summary %}
+          <p class="card-copy clamp-3">{{ featured_post.summary }}</p>
+        {% endif %}
+
+        <div class="button-row card-footer">
+          <a class="btn btn-secondary" href="{% url 'news:news_detail' featured_post.slug %}">Read More</a>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+{% endif %}
+
+<section class="section">
+  <div class="container">
+    <div class="section-heading">
+      <p class="eyebrow">Archive</p>
+      <h2>More News</h2>
+    </div>
+
+    <div class="card-grid">
+      {% for post in posts %}
+        <article class="card">
+          {% if post.cover_image %}
+            <a class="card-image-link" href="{% url 'news:news_detail' post.slug %}">
+              <img class="service-image" src="{{ post.cover_image.url }}" alt="{{ post.title }}">
+            </a>
+          {% endif %}
+
+          <p class="event-date">
+            {% if post.published_at %}
+              {{ post.published_at|date:"d M Y" }}
+            {% else %}
+              {{ post.created_at|date:"d M Y" }}
+            {% endif %}
+          </p>
+
+          <h3>
+            <a class="card-title-link" href="{% url 'news:news_detail' post.slug %}">
+              {{ post.title }}
+            </a>
+          </h3>
+
+          {% if post.summary %}
+            <p class="card-copy clamp-3">{{ post.summary }}</p>
+          {% endif %}
+
+          <div class="card-footer">
+            <a class="btn btn-secondary" href="{% url 'news:news_detail' post.slug %}">
+              Read More
+            </a>
+          </div>
+        </article>
+      {% empty %}
+        <article class="card">
+          <h3>No news yet</h3>
+          <p>Add published posts in admin to populate this page.</p>
+        </article>
+      {% endfor %}
+    </div>
+
+    {% include "includes/pagination.html" with page_obj=page_obj %}
+  </div>
+</section>
+{% endblock %}

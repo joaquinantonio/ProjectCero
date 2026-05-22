@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Merch · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+{% block meta_description %}Merchandise and items from {{ site_settings.site_name|default:"CeroPJ" }}.{% endblock %}
+{% block og_title %}Merch{% endblock %}
+{% block og_description %}Merchandise and items from {{ site_settings.site_name|default:"CeroPJ" }}.{% endblock %}
+{% block og_type %}website{% endblock %}
+{% block og_image %}{% static 'images/og-default.jpg' %}{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container narrow">
+    <p class="eyebrow">Merch</p>
+    <h1>Merchandise</h1>
+    <p class="lead">Browse items, drops, and merch available from the venue.</p>
+  </div>
+</section>
+
+{% if featured_items %}
+<section class="section">
+  <div class="container">
+    <div class="section-heading">
+      <p class="eyebrow">Featured</p>
+      <h2>Highlighted Items</h2>
+    </div>
+
+    <div class="card-grid">
+      {% for item in featured_items %}
+        <article class="card">
+          {% if item.image %}
+            <a class="card-image-link" href="{% url 'merch:merch_detail' item.slug %}">
+              <img class="service-image" src="{{ item.image.url }}" alt="{{ item.name }}">
+            </a>
+          {% endif %}
+
+          <h3>
+            <a class="card-title-link" href="{% url 'merch:merch_detail' item.slug %}">
+              {{ item.name }}
+            </a>
+          </h3>
+
+          {% if item.short_description %}
+            <p class="muted clamp-2">{{ item.short_description }}</p>
+          {% endif %}
+
+          <div class="meta-row">
+            {% if item.price_text %}
+              <span class="pill">{{ item.price_text }}</span>
+            {% endif %}
+            {% if item.availability_text %}
+              <span class="pill">{{ item.availability_text }}</span>
+            {% endif %}
+          </div>
+
+          <div class="card-footer">
+            <a class="btn btn-secondary" href="{% url 'merch:merch_detail' item.slug %}">
+              View Item
+            </a>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section">
+  <div class="container">
+    <div class="section-heading">
+      <p class="eyebrow">Catalog</p>
+      <h2>All Merch</h2>
+    </div>
+
+    <div class="card-grid">
+      {% for item in items %}
+        <article class="card">
+          {% if item.image %}
+            <a class="card-image-link" href="{% url 'merch:merch_detail' item.slug %}">
+              <img class="service-image" src="{{ item.image.url }}" alt="{{ item.name }}">
+            </a>
+          {% endif %}
+
+          <h3>
+            <a class="card-title-link" href="{% url 'merch:merch_detail' item.slug %}">
+              {{ item.name }}
+            </a>
+          </h3>
+
+          {% if item.short_description %}
+            <p class="card-copy clamp-3">{{ item.short_description }}</p>
+          {% endif %}
+
+          <div class="meta-row">
+            {% if item.price_text %}
+              <span class="pill">{{ item.price_text }}</span>
+            {% endif %}
+            {% if item.availability_text %}
+              <span class="pill">{{ item.availability_text }}</span>
+            {% endif %}
+          </div>
+
+          <div class="card-footer">
+            <a class="btn btn-secondary" href="{% url 'merch:merch_detail' item.slug %}">
+              View Item
+            </a>
+          </div>
+        </article>
+      {% empty %}
+        <article class="card">
+          <h3>No merch yet</h3>
+          <p>Add merch items in admin to populate this page.</p>
+        </article>
+      {% endfor %}
+    </div>
+
+    {% include "includes/pagination.html" with page_obj=page_obj %}
+  </div>
+</section>
+{% endblock %}

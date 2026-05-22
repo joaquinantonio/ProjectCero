@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ post.title }} · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+{% block meta_description %}{{ post.summary|default:post.title }}{% endblock %}
+{% block og_title %}{{ post.title }}{% endblock %}
+{% block og_description %}{{ post.summary|default:post.title }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_image %}
+  {% if post.cover_image %}
+    {{ post.cover_image.url }}
+  {% else %}
+    {% static 'images/og-default.jpg' %}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container narrow">
+    <p class="eyebrow">News</p>
+    <h1>{{ post.title }}</h1>
+    <p class="lead">
+      {% if post.published_at %}
+        {{ post.published_at|date:"d M Y" }}
+      {% else %}
+        {{ post.created_at|date:"d M Y" }}
+      {% endif %}
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="detail-layout">
+      <div class="detail-main">
+        {% if post.cover_image %}
+          <div class="detail-image-wrap">
+            <img class="detail-image" src="{{ post.cover_image.url }}" alt="{{ post.title }}">
+          </div>
+        {% endif %}
+
+        <div class="card detail-block">
+          {% if post.summary %}
+            <p class="muted">{{ post.summary }}</p>
+          {% endif %}
+
+          <div class="detail-richtext">
+            {{ post.body|linebreaks }}
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-side">
+        <div class="card detail-summary">
+          <h2>Post Details</h2>
+
+          <ul class="detail-meta-list">
+            <li>
+              <span class="detail-label">Published</span>
+              <span class="detail-value">
+                {% if post.published_at %}
+                  {{ post.published_at|date:"d M Y" }}
+                {% else %}
+                  {{ post.created_at|date:"d M Y" }}
+                {% endif %}
+              </span>
+            </li>
+          </ul>
+
+          <div class="detail-actions">
+            <a class="btn btn-secondary" href="{% url 'news:news_list' %}">Back to News</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if recent_posts %}
+<section class="section">
+  <div class="container">
+    <div class="section-heading">
+      <p class="eyebrow">More News</p>
+      <h2>Recent Posts</h2>
+    </div>
+
+    <div class="related-grid">
+      {% for item in recent_posts %}
+        <article class="card fact-card">
+          <p class="event-date">
+            {% if item.published_at %}
+              {{ item.published_at|date:"d M Y" }}
+            {% else %}
+              {{ item.created_at|date:"d M Y" }}
+            {% endif %}
+          </p>
+
+          <h3>
+            <a href="{% url 'news:news_detail' item.slug %}">
+              {{ item.title }}
+            </a>
+          </h3>
+
+          {% if item.summary %}
+            <p class="muted clamp-3">{{ item.summary }}</p>
+          {% endif %}
+
+          <div class="card-footer">
+            <a class="btn btn-secondary" href="{% url 'news:news_detail' item.slug %}">
+              Read More
+            </a>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

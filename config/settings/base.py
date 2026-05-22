@@ -28,6 +28,8 @@ INSTALLED_APPS = [
     "apps.events",
     "apps.studio",
     "apps.bookings",
+    "apps.news",
+    "apps.merch",
 ]
 
 # The sites framework stores the domain/name for the current site, and SITE_ID selects which Site row is active for that settings file.
