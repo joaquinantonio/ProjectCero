@@ -1,0 +1,353 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.css">
+
+  <style>
+  .schedule-page-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .schedule-page-header h1 {
+    margin-bottom: 0.35rem;
+    font-size: 1.6rem;
+    font-weight: 700;
+  }
+
+  .schedule-page-header p {
+    margin: 0;
+    color: var(--body-quiet-color);
+    font-size: 0.95rem;
+  }
+
+  .schedule-card {
+    background: var(--body-bg);
+    border: 1px solid var(--hairline-color);
+    border-radius: 18px;
+    padding: 1.25rem;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+    overflow-x: auto;
+  }
+
+  #admin-calendar {
+    min-height: 720px;
+    min-width: 760px;
+  }
+
+  /* Legend */
+  .schedule-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem 0.85rem;
+    background: rgba(148, 163, 184, 0.08);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 14px;
+    color: var(--body-quiet-color);
+  }
+
+  .schedule-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .schedule-dot {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 999px;
+    display: inline-block;
+  }
+
+  .schedule-dot-event {
+    background: #7c3aed;
+  }
+
+  .schedule-dot-studio {
+    background: #2563eb;
+  }
+
+  /* FullCalendar base */
+  .fc {
+    font-size: 0.92rem;
+  }
+
+  .fc a {
+    text-decoration: none;
+  }
+
+  /* Toolbar */
+  .fc .fc-toolbar {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.15rem;
+  }
+
+  .fc .fc-toolbar-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--body-fg);
+  }
+
+  .fc .fc-button {
+    border-radius: 999px;
+    padding: 0.42rem 0.8rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    box-shadow: none;
+    text-transform: none;
+  }
+
+  .fc .fc-button-primary {
+    background: #2563eb;
+    border-color: #2563eb;
+  }
+
+  .fc .fc-button-primary:hover,
+  .fc .fc-button-primary:focus {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+  }
+
+  .fc .fc-button-primary:not(:disabled).fc-button-active,
+  .fc .fc-button-primary:not(:disabled):active {
+    background: #111827;
+    border-color: #111827;
+  }
+
+  .fc .fc-button:disabled {
+    opacity: 0.55;
+  }
+
+  /* Grid */
+  .fc-theme-standard td,
+  .fc-theme-standard th {
+    border-color: rgba(148, 163, 184, 0.22);
+  }
+
+  .fc-theme-standard .fc-scrollgrid {
+    border-color: rgba(148, 163, 184, 0.22);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .fc .fc-col-header-cell {
+    background: rgba(148, 163, 184, 0.12);
+    padding: 0.35rem 0;
+  }
+
+  .fc .fc-col-header-cell-cushion {
+    color: var(--body-fg);
+    font-weight: 700;
+  }
+
+  .fc .fc-daygrid-day-number {
+    color: var(--body-quiet-color);
+    font-weight: 700;
+    padding: 0.45rem;
+  }
+
+  .fc .fc-timegrid-slot {
+    height: 2.65rem;
+  }
+
+  .fc .fc-timegrid-slot-label {
+    color: var(--body-quiet-color);
+    font-size: 0.78rem;
+  }
+
+  .fc .fc-timegrid-slot-minor {
+    border-top-style: dotted;
+  }
+
+  .fc .fc-day-today {
+    background: rgba(37, 99, 235, 0.07) !important;
+  }
+
+  .fc .fc-timegrid-now-indicator-line {
+    border-color: #dc2626;
+  }
+
+  .fc .fc-timegrid-now-indicator-arrow {
+    border-color: #dc2626;
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+  }
+
+  /* Events */
+  .fc .fc-event {
+    border: 0;
+    border-radius: 10px;
+    padding: 0.16rem 0.38rem;
+    font-size: 0.82rem;
+    line-height: 1.25;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.16);
+  }
+
+  .fc .fc-event-title {
+    font-weight: 700;
+  }
+
+  .fc .fc-event-time {
+    font-weight: 700;
+    opacity: 0.95;
+  }
+
+  .fc .schedule-event-main {
+    background: #7c3aed;
+    border-color: #7c3aed;
+  }
+
+  .fc .schedule-event-studio {
+    background: #2563eb;
+    border-color: #2563eb;
+  }
+
+  .fc .fc-daygrid-event {
+    margin: 0.18rem 0.25rem 0;
+    padding: 0.22rem 0.4rem;
+  }
+
+  .fc .fc-daygrid-more-link {
+    color: #2563eb;
+    font-weight: 700;
+  }
+
+  /* List view */
+  .fc .fc-list {
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .fc .fc-list-day-cushion {
+    background: rgba(148, 163, 184, 0.12);
+  }
+
+  .fc .fc-list-event-title a {
+    color: var(--body-fg);
+    font-weight: 700;
+  }
+
+  .fc .fc-list-event-time {
+    color: var(--body-quiet-color);
+    font-weight: 600;
+  }
+
+  /* Mobile */
+  @media (max-width: 900px) {
+    .schedule-card {
+      padding: 0.9rem;
+    }
+
+    .fc .fc-toolbar {
+      align-items: flex-start;
+    }
+
+    .fc .fc-toolbar-chunk {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .fc .fc-toolbar-title {
+      font-size: 1.05rem;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+  <div class="schedule-page-header">
+    <h1>{{ title }}</h1>
+    <p>
+      Internal view for events and confirmed studio bookings.
+      Business hours: {{ business_hours_text }}.
+    </p>
+  </div>
+
+  <div class="schedule-card">
+    <div class="schedule-legend">
+      <span class="schedule-legend-item">
+        <span class="schedule-dot schedule-dot-event"></span>
+        Events
+      </span>
+      <span class="schedule-legend-item">
+        <span class="schedule-dot schedule-dot-studio"></span>
+        Confirmed studio bookings
+      </span>
+    </div>
+
+    <div id="admin-calendar"></div>
+  </div>
+{% endblock %}
+
+{% block footer %}
+  {{ block.super }}
+
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const calendarEl = document.getElementById("admin-calendar");
+
+      if (!calendarEl) {
+        console.error("Admin calendar element not found.");
+        return;
+      }
+
+      if (typeof FullCalendar === "undefined") {
+        console.error("FullCalendar did not load.");
+        return;
+      }
+
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: "timeGridWeek",
+        height: "auto",
+        nowIndicator: true,
+        allDaySlot: false,
+
+        slotMinTime: "11:00:00",
+        slotMaxTime: "24:00:00",
+        slotDuration: "00:30:00",
+
+        businessHours: {
+          daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+          startTime: "11:00",
+          endTime: "24:00"
+        },
+
+        headerToolbar: {
+          left: "prev,next today",
+          center: "title",
+          right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek"
+        },
+
+        buttonText: {
+          today: "Today",
+          month: "Month",
+          week: "Week",
+          day: "Day",
+          list: "List"
+        },
+
+        dayMaxEventRows: 4,
+        eventDisplay: "block",
+        displayEventEnd: true,
+
+        eventTimeFormat: {
+          hour: "numeric",
+          minute: "2-digit",
+          meridiem: "short"
+        },
+
+        events: "{% url 'admin:schedule_calendar_feed' %}"
+      });
+
+      calendar.render();
+    });
+  </script>
+{% endblock %}

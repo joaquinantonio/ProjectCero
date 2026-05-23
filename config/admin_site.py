@@ -1,6 +1,5 @@
 from django.contrib.admin import AdminSite
-from django.urls import reverse
-
+from django.core.exceptions import PermissionDenied
 from apps.artists.models import Artist
 from apps.bookings.models import BookingRequest
 from apps.enquiries.models import EnquirySubmission
@@ -8,7 +7,11 @@ from apps.events.models import Event
 from apps.merch.models import MerchItem
 from apps.news.models import NewsPost
 from apps.pages.selectors import get_site_settings
-from apps.studio.models import StudioService
+from django.db.models import Q
+from django.http import JsonResponse
+from django.template.response import TemplateResponse
+from django.urls import path, reverse
+from django.utils.dateparse import parse_datetime
 
 
 class CeroAdminSite(AdminSite):
@@ -18,6 +21,97 @@ class CeroAdminSite(AdminSite):
     empty_value_display = "-"
     index_template = "admin/custom_index.html"
     # enable_nav_sidebar = False
+    def has_schedule_permission(self, request):
+        return (
+                request.user.is_superuser
+                or request.user.has_perm("bookings.view_bookingrequest")
+                or request.user.has_perm("events.view_event")
+        )
+
+    def get_urls(self):
+        custom_urls = [
+            path(
+                "schedule/",
+                self.admin_view(self.schedule_calendar_view),
+                name="schedule_calendar",
+            ),
+            path(
+                "schedule/feed/",
+                self.admin_view(self.schedule_calendar_feed_view),
+                name="schedule_calendar_feed",
+            ),
+        ]
+        return custom_urls + super().get_urls()
+
+    def schedule_calendar_view(self, request):
+        if not self.has_schedule_permission(request):
+            raise PermissionDenied
+
+        context = dict(self.each_context(request))
+        context.update(
+            {
+                "title": "Admin Calendar",
+                "business_hours_text": "11:00 AM – 12:00 midnight",
+            }
+        )
+        return TemplateResponse(request, "admin/admin_calendar.html", context)
+
+    def schedule_calendar_feed_view(self, request):
+        if not self.has_schedule_permission(request):
+            raise PermissionDenied
+
+        start_raw = request.GET.get("start")
+        end_raw = request.GET.get("end")
+
+        start_dt = parse_datetime(start_raw) if start_raw else None
+        end_dt = parse_datetime(end_raw) if end_raw else None
+
+        calendar_items = []
+
+        event_qs = Event.objects.exclude(status=Event.Status.CANCELLED)
+
+        if start_dt and end_dt:
+            event_qs = event_qs.filter(start_at__lt=end_dt).filter(
+                Q(end_at__gt=start_dt)
+                | Q(end_at__isnull=True, start_at__gte=start_dt)
+            )
+
+        for event in event_qs:
+            calendar_items.append(
+                {
+                    "title": f"Event: {event.title}",
+                    "start": event.start_at.isoformat(),
+                    "end": event.end_at.isoformat() if event.end_at else None,
+                    "url": reverse("admin:events_event_change", args=[event.pk]),
+                    "classNames": ["schedule-event", "schedule-event-main"],
+                }
+            )
+
+        booking_qs = BookingRequest.objects.filter(
+            request_type=BookingRequest.RequestType.STUDIO,
+            status=BookingRequest.Status.CONFIRMED,
+            scheduled_start_at__isnull=False,
+            scheduled_end_at__isnull=False,
+        )
+
+        if start_dt and end_dt:
+            booking_qs = booking_qs.filter(
+                scheduled_start_at__lt=end_dt,
+                scheduled_end_at__gt=start_dt,
+            )
+
+        for booking in booking_qs:
+            calendar_items.append(
+                {
+                    "title": f"Studio: {booking.name}",
+                    "start": booking.scheduled_start_at.isoformat(),
+                    "end": booking.scheduled_end_at.isoformat(),
+                    "url": reverse("admin:bookings_bookingrequest_change", args=[booking.pk]),
+                    "classNames": ["schedule-event", "schedule-event-studio"],
+                }
+            )
+
+        return JsonResponse(calendar_items, safe=False)
 
     def index(self, request, extra_context=None):
         extra_context = extra_context or {}
@@ -69,6 +163,7 @@ class CeroAdminSite(AdminSite):
 
         quick_links = [
             {"label": "Edit Website Settings", "url": site_settings_url},
+            {"label": "Admin Calendar", "url": reverse("admin:schedule_calendar")},
             {"label": "Review Booking Requests", "url": reverse("admin:bookings_bookingrequest_changelist")},
             {"label": "Review Enquiries", "url": reverse("admin:enquiries_enquirysubmission_changelist")},
             {"label": "Add New Event", "url": reverse("admin:events_event_add")},
@@ -98,8 +193,13 @@ class CeroAdminSite(AdminSite):
                     {
                         "label": "Booking Requests",
                         "url": reverse("admin:bookings_bookingrequest_changelist"),
-                        "hint": "Review and update enquiries",
-                    }
+                        "hint": "Review and update booking requests",
+                    },
+                    {
+                        "label": "Calendar",
+                        "url": reverse("admin:schedule_calendar"),
+                        "hint": "View confirmed studio bookings and events by time",
+                    },
                 ],
             },
             {
@@ -191,5 +291,7 @@ class CeroAdminSite(AdminSite):
         extra_context["dashboard_cards"] = dashboard_cards
         extra_context["quick_links"] = quick_links
         extra_context["dashboard_sections"] = dashboard_sections
+        extra_context["can_view_schedule"] = True
+        extra_context["schedule_calendar_url"] = reverse("admin:schedule_calendar")
 
         return super().index(request, extra_context=extra_context)
