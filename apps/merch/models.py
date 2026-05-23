@@ -31,8 +31,8 @@ class MerchItem(TimeStampedModel):
             models.Index(fields=["is_active", "display_order"]),
             models.Index(fields=["is_featured", "display_order"]),
         ]
-        verbose_name = "Merch item"
-        verbose_name_plural = "Merch"
+        verbose_name = "Merchandise"
+        verbose_name_plural = "Merchandise"
 
     def __str__(self):
         return self.name

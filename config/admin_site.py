@@ -48,7 +48,7 @@ class CeroAdminSite(AdminSite):
                 "hint": "News posts not yet published",
             },
             {
-                "title": "Active Merch",
+                "title": "Active Merchandise",
                 "value": MerchItem.objects.filter(is_active=True).count(),
                 "url": reverse("admin:merch_merchitem_changelist") + "?is_active__exact=1",
                 "hint": "Catalog items currently visible",

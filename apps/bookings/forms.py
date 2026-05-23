@@ -29,7 +29,6 @@ class BaseBookingRequestForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Safely set labels, requirements and placeholders only for fields that exist
         if "name" in self.fields:
             self.fields["name"].label = "Your name"
             self.fields["name"].widget.attrs.update({"placeholder": "Your full name"})
@@ -42,6 +41,7 @@ class BaseBookingRequestForm(forms.ModelForm):
             self.fields["phone"].label = "Phone / WhatsApp"
             self.fields["phone"].required = False
             self.fields["phone"].widget.attrs.update({"placeholder": "+60..."})
+            self.fields["phone"].help_text = "Optional."
 
         if "preferred_date" in self.fields:
             self.fields["preferred_date"].label = "Preferred date"
@@ -50,10 +50,12 @@ class BaseBookingRequestForm(forms.ModelForm):
         if "preferred_time" in self.fields:
             self.fields["preferred_time"].label = "Preferred time"
             self.fields["preferred_time"].required = False
+            self.fields["preferred_time"].help_text = "Optional."
 
         if "guest_count" in self.fields:
             self.fields["guest_count"].label = "Estimated guest count"
             self.fields["guest_count"].required = False
+            self.fields["guest_count"].help_text = "Optional."
 
         if "message" in self.fields:
             self.fields["message"].label = "Tell us more"
@@ -96,9 +98,13 @@ class StudioBookingRequestForm(BaseBookingRequestForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["preferred_date"].required = True
+        self.fields["preferred_date"].help_text = "Required."
         self.fields["message"].help_text = (
             "Tell us what kind of session you want, how many people are involved, "
             "and any important requirements."
+        )
+        self.fields["message"].widget.attrs.update(
+            {"placeholder": "Example: vocal recording for 2 people, 3-hour session, need basic mixing support"}
         )
 
     def clean(self):
@@ -126,9 +132,14 @@ class VenueBookingRequestForm(BaseBookingRequestForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["preferred_date"].required = True
+        self.fields["preferred_date"].help_text = "Required."
         self.fields["guest_count"].required = True
+        self.fields["guest_count"].help_text = "Required."
         self.fields["message"].help_text = (
             "Describe the type of event, expected audience, and anything else we should know."
+        )
+        self.fields["message"].widget.attrs.update(
+            {"placeholder": "Example: private showcase for 60 guests, evening event, need venue hire and basic sound setup"}
         )
 
     def clean(self):

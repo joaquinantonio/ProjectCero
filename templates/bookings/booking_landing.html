@@ -9,7 +9,7 @@
     <h1>Booking Requests</h1>
     <p class="lead">
       Choose the booking type that best matches what you need.
-      We’ll review it and get back to you.
+      For merch, payments, or general questions, use the enquiry forms instead.
     </p>
   </div>
 </section>
@@ -20,22 +20,22 @@
       <article class="card">
         <h2>Studio Booking</h2>
         <p class="muted">For recording sessions, rehearsals, production work, or studio use.</p>
-        <p>Tell us your preferred date and what kind of session you need.</p>
+        <p>Tell us your preferred date, preferred time, and what kind of session you need.</p>
         <a class="btn btn-primary" href="{% url 'bookings:studio_request' %}">Request Studio Session</a>
       </article>
 
       <article class="card">
         <h2>Venue Request</h2>
         <p class="muted">For private events, collaborations, gigs, or venue hire discussions.</p>
-        <p>Tell us about your event idea, preferred date, and expected crowd size.</p>
+        <p>Tell us about your event idea, preferred date, and estimated crowd size.</p>
         <a class="btn btn-primary" href="{% url 'bookings:venue_request' %}">Enquire About Venue Hire</a>
       </article>
 
       <article class="card">
-          <h2>Other Enquiries</h2>
-          <p class="muted">For merch, payments, general questions, collaborations, or anything not tied to a booking.</p>
-          <p>Use the enquiry pages for non-booking requests.</p>
-          <a class="btn btn-secondary" href="{% url 'enquiries:landing' %}">Go to Enquiries</a>
+        <h2>Other Enquiries</h2>
+        <p class="muted">For merch, payments, collaborations, or general questions.</p>
+        <p>Use the enquiry pages for requests that are not directly about booking the studio or venue.</p>
+        <a class="btn btn-secondary" href="{% url 'enquiries:landing' %}">Go to Enquiries</a>
       </article>
     </div>
   </div>

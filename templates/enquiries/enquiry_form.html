@@ -31,7 +31,10 @@
 
             {% for field in form.visible_fields %}
               <div class="form-field">
-                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                <label for="{{ field.id_for_label }}">
+                  {{ field.label }}
+                  {% if field.field.required %}<span aria-hidden="true">*</span>{% endif %}
+                </label>
                 {{ field }}
                 {% if field.help_text %}
                   <div class="field-help">{{ field.help_text }}</div>
@@ -53,6 +56,7 @@
         <div class="card detail-summary">
           <h2>{{ sidebar_title }}</h2>
           <p class="muted">{{ sidebar_body }}</p>
+          <p class="muted"><strong>Tip:</strong> The more specific your message is, the easier it is for the team to respond clearly.</p>
         </div>
       </div>
     </div>

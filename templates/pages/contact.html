@@ -7,7 +7,9 @@
   <div class="container narrow">
     <p class="eyebrow">Contact</p>
     <h1>Get in Touch</h1>
-    <p class="lead">Reach out for studio work, collaborations, or venue-related enquiries.</p>
+    <p class="lead">
+      Reach out for studio work, venue bookings, merch, payments, collaborations, or general enquiries.
+    </p>
   </div>
 </section>
 
@@ -22,7 +24,11 @@
             {% if site_settings.contact_email %}
               <li>
                 <span class="detail-label">Email</span>
-                <span class="detail-value">{{ site_settings.contact_email }}</span>
+                <span class="detail-value">
+                  <a href="mailto:{{ site_settings.contact_email }}">
+                    {{ site_settings.contact_email }}
+                  </a>
+                </span>
               </li>
             {% endif %}
 
@@ -30,6 +36,17 @@
               <li>
                 <span class="detail-label">Phone</span>
                 <span class="detail-value">{{ site_settings.contact_phone }}</span>
+              </li>
+            {% endif %}
+
+            {% if site_settings.whatsapp_url %}
+              <li>
+                <span class="detail-label">WhatsApp</span>
+                <span class="detail-value">
+                  <a href="{{ site_settings.whatsapp_url }}" target="_blank" rel="noopener noreferrer">
+                    Click here to message us on WhatsApp
+                  </a>
+                </span>
               </li>
             {% endif %}
 
@@ -43,10 +60,45 @@
 
           {% if site_settings.google_maps_url %}
             <div class="detail-actions">
-              <a class="btn btn-secondary" href="{{ site_settings.google_maps_url }}" target="_blank">Open in Maps</a>
+              <a class="btn btn-secondary" href="{{ site_settings.google_maps_url }}" target="_blank" rel="noopener noreferrer">
+                Open in Maps
+              </a>
             </div>
           {% endif %}
         </div>
+
+        {% if site_settings.instagram_url or site_settings.facebook_url or site_settings.tiktok_url or site_settings.youtube_url %}
+          <div class="card detail-block">
+            <h2>Socials</h2>
+            <p class="muted">Follow us for updates, events, drops, and announcements.</p>
+
+            <div class="button-row">
+              {% if site_settings.instagram_url %}
+                <a class="btn btn-secondary" href="{{ site_settings.instagram_url }}" target="_blank" rel="noopener noreferrer">
+                  Instagram
+                </a>
+              {% endif %}
+
+              {% if site_settings.facebook_url %}
+                <a class="btn btn-secondary" href="{{ site_settings.facebook_url }}" target="_blank" rel="noopener noreferrer">
+                  Facebook
+                </a>
+              {% endif %}
+
+              {% if site_settings.tiktok_url %}
+                <a class="btn btn-secondary" href="{{ site_settings.tiktok_url }}" target="_blank" rel="noopener noreferrer">
+                  TikTok
+                </a>
+              {% endif %}
+
+              {% if site_settings.youtube_url %}
+                <a class="btn btn-secondary" href="{{ site_settings.youtube_url }}" target="_blank" rel="noopener noreferrer">
+                  YouTube
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
 
         {% for section in sections %}
           <div class="card detail-block">
@@ -62,14 +114,27 @@
 
       <div class="detail-side">
         <div class="card detail-summary">
-          <h2>Make an Enquiry</h2>
-          <p class="muted">Choose the request type that best matches what you need.</p>
+          <h2>What do you need?</h2>
+          <p class="muted">
+            Choose the request type that best matches your purpose.
+          </p>
 
           <div class="button-stack">
-            <a class="btn btn-primary" href="{% url 'bookings:landing' %}">All Booking Options</a>
-            <a class="btn btn-secondary" href="{% url 'bookings:studio_request' %}">Studio Request</a>
-            <a class="btn btn-secondary" href="{% url 'bookings:venue_request' %}">Venue Request</a>
-            <a class="btn btn-secondary" href="{% url 'bookings:general_request' %}">General Enquiry</a>
+            <a class="btn btn-primary" href="{% url 'bookings:studio_request' %}">
+              Book the Studio
+            </a>
+            <a class="btn btn-secondary" href="{% url 'bookings:venue_request' %}">
+              Venue Request
+            </a>
+            <a class="btn btn-secondary" href="{% url 'enquiries:general' %}">
+              General Enquiry
+            </a>
+            <a class="btn btn-secondary" href="{% url 'enquiries:merch' %}">
+              Merch Enquiry
+            </a>
+            <a class="btn btn-secondary" href="{% url 'enquiries:payment' %}">
+              Payment Enquiry
+            </a>
           </div>
         </div>
       </div>

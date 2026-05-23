@@ -68,13 +68,20 @@
           </ul>
 
           <div class="detail-actions">
-            {% if item.cta_url and item.cta_text %}
-              <a class="btn btn-primary" href="{{ item.cta_url }}">{{ item.cta_text }}</a>
-            {% else %}
-              <a class="btn btn-secondary" href="{% url 'pages:contact' %}">Enquire</a>
-            {% endif %}
-            <a class="btn btn-secondary" href="{% url 'merch:merch_list' %}">Back to Merch</a>
-          </div>
+              <a class="btn btn-primary" href="{% url 'enquiries:merch' %}?item={{ item.slug }}">
+                Enquire About This Item
+              </a>
+
+              <!-- {% if item.cta_url and item.cta_text %}
+                <a class="btn btn-secondary" href="{{ item.cta_url }}" target="_blank" rel="noopener noreferrer">
+                  {{ item.cta_text }}
+                </a>
+              {% endif %} -->
+
+              <a class="btn btn-secondary" href="{% url 'merch:merch_list' %}">
+                Back to Merch
+              </a>
+            </div>
         </div>
       </div>
     </div>

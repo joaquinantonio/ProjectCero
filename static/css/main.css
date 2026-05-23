@@ -712,12 +712,6 @@ card-footer {
   background: rgba(8, 10, 13, 0.9);
 }
 
-.footer-links {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
 .pagination {
   margin-top: 1.5rem;
   display: flex;
@@ -794,6 +788,15 @@ card-footer {
   .calendar-topbar {
     justify-content: flex-start;
   }
+}
+
+.social-links {
+  gap: 0.5rem;
+}
+
+.social-links a {
+  display: inline-flex;
+  width: fit-content;
 }
 
 @media (max-width: 768px) {

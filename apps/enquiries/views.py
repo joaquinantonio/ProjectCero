@@ -69,12 +69,12 @@ class GeneralEnquiryCreateView(BaseEnquiryCreateView):
 class MerchEnquiryCreateView(BaseEnquiryCreateView):
     form_class = MerchEnquiryForm
     enquiry_type = EnquirySubmission.EnquiryType.MERCH
-    eyebrow = "Merch Enquiry"
-    page_title = "Merch Enquiry"
-    page_lead = "Use this form to ask about merch items, availability, or pre-order interest."
-    sidebar_title = "Merch enquiries"
+    eyebrow = "Merchandise Enquiry"
+    page_title = "Merchandise Enquiry"
+    page_lead = "Use this form to ask about merchandise, availability, or pre-order interest."
+    sidebar_title = "Merchandise enquiries"
     sidebar_body = "If you are asking about a specific item, select it below or tell us clearly in your message."
-    button_label = "Send Merch Enquiry"
+    button_label = "Send merchandise Enquiry"
 
     def get_initial(self):
         initial = super().get_initial()

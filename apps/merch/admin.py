@@ -9,28 +9,28 @@ from apps.core.admin import (
 from .models import MerchItem
 
 
-@admin.action(description="Mark selected merch as active")
+@admin.action(description="Mark selected merchandise as active")
 def make_active(modeladmin, request, queryset):
     updated = queryset.update(is_active=True)
-    modeladmin.message_user(request, f"{updated} merch item(s) marked as active.")
+    modeladmin.message_user(request, f"{updated} item(s) marked as active.")
 
 
-@admin.action(description="Mark selected merch as inactive")
+@admin.action(description="Mark selected merchandise as inactive")
 def make_inactive(modeladmin, request, queryset):
     updated = queryset.update(is_active=False)
-    modeladmin.message_user(request, f"{updated} merch item(s) marked as inactive.")
+    modeladmin.message_user(request, f"{updated} item(s) marked as inactive.")
 
 
-@admin.action(description="Mark selected merch as featured")
+@admin.action(description="Mark selected merchandise as featured")
 def make_featured(modeladmin, request, queryset):
     updated = queryset.update(is_featured=True)
-    modeladmin.message_user(request, f"{updated} merch item(s) marked as featured.")
+    modeladmin.message_user(request, f"{updated} item(s) marked as featured.")
 
 
-@admin.action(description="Remove featured status from selected merch")
+@admin.action(description="Remove featured status from selected merchandise")
 def make_unfeatured(modeladmin, request, queryset):
     updated = queryset.update(is_featured=False)
-    modeladmin.message_user(request, f"{updated} merch item(s) unfeatured.")
+    modeladmin.message_user(request, f"{updated} item(s) unfeatured.")
 
 
 @admin.register(MerchItem)
@@ -64,7 +64,7 @@ class MerchItemAdmin(AdminImagePreviewMixin, SuperuserDeleteOnlyAdminMixin, Time
             return (
                 ("Basic", {
                     "fields": ("name", "slug", "is_active", "is_featured"),
-                    "description": "The slug was generated automatically when this merch item was created. It is now locked to keep merch links stable.",
+                    "description": "The slug was generated automatically when this item was created. It is now locked to keep links stable.",
                 }),
                 ("Content", {
                     "fields": ("short_description", "description", "image"),
@@ -83,7 +83,7 @@ class MerchItemAdmin(AdminImagePreviewMixin, SuperuserDeleteOnlyAdminMixin, Time
         return (
             ("Basic", {
                 "fields": ("name", "is_active", "is_featured"),
-                "description": "The slug will be generated automatically from the merch item name when it is first created.",
+                "description": "The slug will be generated automatically from the item name when it is first created.",
             }),
             ("Content", {
                 "fields": ("short_description", "description", "image"),
@@ -110,10 +110,10 @@ class MerchItemAdmin(AdminImagePreviewMixin, SuperuserDeleteOnlyAdminMixin, Time
 
         if "short_description" in form.base_fields:
             form.base_fields["short_description"].label = "Short summary"
-            form.base_fields["short_description"].help_text = "Short public summary shown on the merch listing."
+            form.base_fields["short_description"].help_text = "Short public summary shown on the merchandise listing."
 
         if "description" in form.base_fields:
-            form.base_fields["description"].help_text = "Full public merch description."
+            form.base_fields["description"].help_text = "Full public merchandise description."
 
         if "price_text" in form.base_fields:
             form.base_fields["price_text"].label = "Displayed price"

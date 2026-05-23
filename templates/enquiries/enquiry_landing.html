@@ -5,7 +5,7 @@
 {% block content %}
 <section class="page-hero">
   <div class="container narrow">
-    <p class="eyebrow">Enquire</p>
+    <p class="eyebrow">Enquiries</p>
     <h1>Send an Enquiry</h1>
     <p class="lead">Choose the type of enquiry that best matches what you need.</p>
   </div>
@@ -16,7 +16,7 @@
     <div class="card-grid">
       <article class="card">
         <h3>General Enquiry</h3>
-        <p class="card-copy">Questions, collaborations, updates, or general requests.</p>
+        <p class="card-copy">Questions, collaborations, updates, partnerships, or general requests.</p>
         <div class="card-footer">
           <a class="btn btn-secondary" href="{% url 'enquiries:general' %}">Open Form</a>
         </div>
@@ -24,7 +24,7 @@
 
       <article class="card">
         <h3>Merch Enquiry</h3>
-        <p class="card-copy">Ask about merch items, stock, pre-order interest, or item details.</p>
+        <p class="card-copy">Ask about items, stock, pre-order interest, or item details.</p>
         <div class="card-footer">
           <a class="btn btn-secondary" href="{% url 'enquiries:merch' %}">Open Form</a>
         </div>
@@ -35,6 +35,14 @@
         <p class="card-copy">Payment-related questions, package discussions, or manual payment follow-up.</p>
         <div class="card-footer">
           <a class="btn btn-secondary" href="{% url 'enquiries:payment' %}">Open Form</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <h3>Need to book the space?</h3>
+        <p class="card-copy">Studio sessions and venue hire requests are handled through the booking pages.</p>
+        <div class="card-footer">
+          <a class="btn btn-primary" href="{% url 'bookings:landing' %}">Go to Bookings</a>
         </div>
       </article>
     </div>
