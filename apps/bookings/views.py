@@ -1,4 +1,12 @@
+from datetime import timedelta
+
+from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.utils.dateparse import parse_datetime
+from django.views.decorators.http import require_GET
+
+from apps.events.models import Event
 
 from .forms import (
     StudioBookingRequestForm,
@@ -85,3 +93,61 @@ def booking_success_view(request):
         "bookings/booking_success.html",
         {"reference_code": reference_code},
     )
+
+@require_GET
+def studio_unavailable_feed_view(request):
+    start_raw = request.GET.get("start")
+    end_raw = request.GET.get("end")
+
+    start_dt = parse_datetime(start_raw) if start_raw else None
+    end_dt = parse_datetime(end_raw) if end_raw else None
+
+    unavailable_items = []
+
+    # Confirmed studio bookings
+    booking_qs = BookingRequest.objects.filter(
+        request_type=BookingRequest.RequestType.STUDIO,
+        status=BookingRequest.Status.CONFIRMED,
+        scheduled_start_at__isnull=False,
+        scheduled_end_at__isnull=False,
+    )
+
+    if start_dt and end_dt:
+        booking_qs = booking_qs.filter(
+            scheduled_start_at__lt=end_dt,
+            scheduled_end_at__gt=start_dt,
+        )
+
+    for booking in booking_qs:
+        unavailable_items.append(
+            {
+                "title": "Unavailable",
+                "start": booking.scheduled_start_at.isoformat(),
+                "end": booking.scheduled_end_at.isoformat(),
+                "classNames": ["public-unavailable-block"],
+            }
+        )
+
+    # Events also block the space.
+    # Public users only see "Unavailable", not event/admin details.
+    event_qs = Event.objects.exclude(status=Event.Status.CANCELLED)
+
+    if start_dt and end_dt:
+        event_qs = event_qs.filter(start_at__lt=end_dt).filter(
+            Q(end_at__gt=start_dt)
+            | Q(end_at__isnull=True, start_at__gte=start_dt)
+        )
+
+    for event in event_qs:
+        event_end = event.end_at or event.start_at + timedelta(hours=2)
+
+        unavailable_items.append(
+            {
+                "title": "Unavailable",
+                "start": event.start_at.isoformat(),
+                "end": event_end.isoformat(),
+                "classNames": ["public-unavailable-block"],
+            }
+        )
+
+    return JsonResponse(unavailable_items, safe=False)
