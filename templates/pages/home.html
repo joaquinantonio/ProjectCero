@@ -20,7 +20,7 @@
       <div class="button-row">
         <a class="btn btn-primary" href="{% url 'bookings:studio_request' %}">Book the Studio</a>
         <a class="btn btn-secondary" href="{% url 'events:event_list' %}">View Events</a>
-        <a class="btn btn-secondary" href="{% url 'bookings:landing' %}">All Enquiries</a>
+        <a class="btn btn-secondary" href="{% url 'enquiries:landing' %}">Enquire</a>
       </div>
     </div>
 
@@ -128,7 +128,15 @@
     <div class="card-grid">
       {% for event in upcoming_events %}
         <article class="card">
-          <p class="event-date">{{ event.start_at|date:"d M Y" }} · {{ event.start_at|time:"g:i A" }}</p>
+          <p class="event-date">
+            {{ event.start_at|date:"d M Y" }}
+            {% if event.time_note %}
+              · {{ event.time_note }}
+            {% else %}
+              · {{ event.start_at|time:"g:i A" }}
+              {% if event.end_at %} – {{ event.end_at|time:"g:i A" }}{% endif %}
+            {% endif %}
+          </p>
           <h3><a href="{% url 'events:event_detail' event.slug %}">{{ event.title }}</a></h3>
 
           {% if event.location_text %}
@@ -150,6 +158,105 @@
     <div class="section-actions">
       <a class="btn btn-primary" href="{% url 'events:calendar' %}">Open Calendar</a>
       <a class="btn btn-secondary" href="{% url 'events:event_list' %}">View All Events</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-heading">
+      <p class="eyebrow">News</p>
+      <h2>Latest Updates</h2>
+      <p>Announcements, updates, and recent happenings from the venue.</p>
+    </div>
+
+    <div class="card-grid">
+      {% for post in latest_news %}
+        <article class="card">
+          {% if post.cover_image %}
+            <a class="card-image-link" href="{% url 'news:news_detail' post.slug %}">
+              <img class="service-image" src="{{ post.cover_image.url }}" alt="{{ post.title }}">
+            </a>
+          {% endif %}
+
+          <p class="event-date">
+            {% if post.published_at %}
+              {{ post.published_at|date:"d M Y" }}
+            {% else %}
+              {{ post.created_at|date:"d M Y" }}
+            {% endif %}
+          </p>
+
+          <h3>
+            <a class="card-title-link" href="{% url 'news:news_detail' post.slug %}">
+              {{ post.title }}
+            </a>
+          </h3>
+
+          {% if post.summary %}
+            <p class="card-copy clamp-3">{{ post.summary }}</p>
+          {% endif %}
+        </article>
+      {% empty %}
+        <article class="card">
+          <h3>No news yet</h3>
+          <p>Add published news posts in admin to populate this section.</p>
+        </article>
+      {% endfor %}
+    </div>
+
+    <div class="section-actions">
+      <a class="btn btn-secondary" href="{% url 'news:news_list' %}">View All News</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-heading">
+      <p class="eyebrow">Merch</p>
+      <h2>Featured Merch</h2>
+      <p>Selected items, drops, and merch currently highlighted by the venue.</p>
+    </div>
+
+    <div class="card-grid">
+      {% for item in featured_merch %}
+        <article class="card">
+          {% if item.image %}
+            <a class="card-image-link" href="{% url 'merch:merch_detail' item.slug %}">
+              <img class="service-image" src="{{ item.image.url }}" alt="{{ item.name }}">
+            </a>
+          {% endif %}
+
+          <h3>
+            <a class="card-title-link" href="{% url 'merch:merch_detail' item.slug %}">
+              {{ item.name }}
+            </a>
+          </h3>
+
+          {% if item.short_description %}
+            <p class="card-copy clamp-3">{{ item.short_description }}</p>
+          {% endif %}
+
+          <div class="meta-row">
+            {% if item.price_text %}
+              <span class="pill">{{ item.price_text }}</span>
+            {% endif %}
+            {% if item.availability_text %}
+              <span class="pill">{{ item.availability_text }}</span>
+            {% endif %}
+          </div>
+        </article>
+      {% empty %}
+        <article class="card">
+          <h3>No featured merch yet</h3>
+          <p>Mark merch items as featured in admin to show them here.</p>
+        </article>
+      {% endfor %}
+    </div>
+
+    <div class="section-actions">
+      <a class="btn btn-secondary" href="{% url 'merch:merch_list' %}">View All Merch</a>
     </div>
   </div>
 </section>
@@ -191,15 +298,15 @@
 <section class="section">
   <div class="container">
     <div class="card text-center">
-      <p class="eyebrow">Bookings</p>
-      <h2>Need the space for something?</h2>
+      <p class="eyebrow">Bookings & Enquiries</p>
+      <h2>Need the space or want to ask something?</h2>
       <p class="lead">
-        Send a booking request for studio sessions, venue enquiries, or general collaborations.
+        Send a booking request for studio sessions or venue hire, or use the enquiry pages for merch, payments, and general questions.
       </p>
       <div class="button-row center">
         <a class="btn btn-primary" href="{% url 'bookings:studio_request' %}">Book the Studio</a>
         <a class="btn btn-secondary" href="{% url 'bookings:venue_request' %}">Enquire About Venue Hire</a>
-        <a class="btn btn-secondary" href="{% url 'bookings:landing' %}">All Booking Options</a>
+        <a class="btn btn-secondary" href="{% url 'enquiries:landing' %}">Other Enquiries</a>
       </div>
     </div>
   </div>

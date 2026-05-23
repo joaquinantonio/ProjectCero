@@ -2,6 +2,8 @@ from django.shortcuts import render
 
 from apps.artists.selectors import get_featured_artists
 from apps.events.selectors import get_upcoming_events
+from apps.merch.models import MerchItem
+from apps.news.models import NewsPost
 from apps.studio.models import StudioService
 
 from .models import PageSection
@@ -25,11 +27,23 @@ def home_view(request):
 
     featured_artists = get_featured_artists(limit=4)
 
+    latest_news = (
+        NewsPost.objects.filter(status=NewsPost.Status.PUBLISHED)
+        .order_by("-published_at", "-created_at")[:3]
+    )
+
+    featured_merch = (
+        MerchItem.objects.filter(is_active=True, is_featured=True)
+        .order_by("display_order", "name")[:4]
+    )
+
     context = {
         "sections": get_page_sections("home"),
         "upcoming_events": upcoming_events,
         "featured_services": featured_services,
         "featured_artists": featured_artists,
+        "latest_news": latest_news,
+        "featured_merch": featured_merch,
     }
     return render(request, "pages/home.html", context)
 
