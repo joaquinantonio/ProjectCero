@@ -21,7 +21,6 @@ def home_view(request):
 
     featured_services = (
         StudioService.objects.featured()
-        .select_related("category")
         .order_by("display_order", "name")[:4]
     )
 

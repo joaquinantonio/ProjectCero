@@ -254,12 +254,7 @@ class CeroAdminSite(AdminSite):
                     {
                         "label": "Studio Services",
                         "url": reverse("admin:studio_studioservice_changelist"),
-                        "hint": "Manage studio offerings and display order",
-                    },
-                    {
-                        "label": "Studio Categories",
-                        "url": reverse("admin:studio_studioservicecategory_changelist"),
-                        "hint": "Manage service categories",
+                        "hint": "Manage studio offerings, pricing, duration, images, and display order",
                     },
                 ],
             },
