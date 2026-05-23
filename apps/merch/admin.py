@@ -1,6 +1,11 @@
 from django.contrib import admin
 
-from apps.core.admin import AdminImagePreviewMixin, SuperuserDeleteOnlyAdminMixin, TimestampedAdmin
+from apps.core.admin import (
+    AdminImagePreviewMixin,
+    SuperuserDeleteOnlyAdminMixin,
+    TimestampedAdmin,
+    render_boolean_badge,
+)
 from .models import MerchItem
 
 
@@ -36,17 +41,22 @@ class MerchItemAdmin(AdminImagePreviewMixin, SuperuserDeleteOnlyAdminMixin, Time
         "name",
         "price_text",
         "availability_text",
-        "is_featured",
-        "is_active",
+        "featured_badge",
+        "active_badge",
         "display_order",
         "image_preview",
         "updated_at",
     )
+
+    list_editable = (
+        # "is_featured",
+        # "is_active",
+        "display_order",)
     list_filter = ("is_active", "is_featured")
     search_fields = ("name", "short_description", "description", "price_text", "availability_text")
     search_help_text = "Search by name, description, price text, or availability"
     ordering = ("display_order", "name")
-    list_editable = ("is_featured", "is_active", "display_order")
+
     actions = [make_active, make_inactive, make_featured, make_unfeatured]
 
     def get_fieldsets(self, request, obj=None):
@@ -122,3 +132,23 @@ class MerchItemAdmin(AdminImagePreviewMixin, SuperuserDeleteOnlyAdminMixin, Time
             form.base_fields["cta_url"].label = "Button link"
 
         return form
+
+    @admin.display(ordering="is_featured", description="Featured")
+    def featured_badge(self, obj):
+        return render_boolean_badge(
+            obj.is_featured,
+            true_label="Featured",
+            false_label="Standard",
+            true_tone="accent",
+            false_tone="neutral",
+        )
+
+    @admin.display(ordering="is_active", description="Active")
+    def active_badge(self, obj):
+        return render_boolean_badge(
+            obj.is_active,
+            true_label="Active",
+            false_label="Hidden",
+            true_tone="success",
+            false_tone="danger",
+        )

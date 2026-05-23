@@ -8,6 +8,8 @@ from apps.core.admin import (
     ReadonlyOnChangeAdminMixin,
     basic_fieldset,
     make_bulk_update_action,
+    render_admin_badge,
+    render_boolean_badge,
 )
 from .models import Event, EventArtist, EventCategory
 
@@ -119,8 +121,8 @@ class EventAdmin(ReadonlyOnChangeAdminMixin, AdminImagePreviewMixin, SuperuserDe
         "title",
         "category",
         "start_at",
-        "status",
-        "is_featured",
+        "status_badge",
+        "featured_badge",
         "image_preview",
         "updated_at",
     )
@@ -188,3 +190,25 @@ class EventAdmin(ReadonlyOnChangeAdminMixin, AdminImagePreviewMixin, SuperuserDe
             form.base_fields["price_text"].label = "Displayed price"
 
         return form
+
+    @admin.display(ordering="status", description="Status")
+    def status_badge(self, obj):
+        tone_map = {
+            Event.Status.DRAFT: "neutral",
+            Event.Status.PUBLISHED: "success",
+            Event.Status.CANCELLED: "danger",
+        }
+        return render_admin_badge(
+            obj.get_status_display(),
+            tone_map.get(obj.status, "neutral"),
+        )
+
+    @admin.display(ordering="is_featured", description="Featured")
+    def featured_badge(self, obj):
+        return render_boolean_badge(
+            obj.is_featured,
+            true_label="Featured",
+            false_label="Standard",
+            true_tone="accent",
+            false_tone="neutral",
+        )

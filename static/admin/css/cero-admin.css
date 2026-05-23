@@ -1,0 +1,242 @@
+:root {
+  --cero-radius: 12px;
+  --cero-gap: 12px;
+}
+
+#header {
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
+}
+
+div.breadcrumbs {
+  border-bottom: 1px solid var(--hairline-color);
+}
+
+.module,
+.inline-group,
+fieldset.module,
+.submit-row,
+#changelist-filter,
+#changelist .actions,
+.paginator,
+.object-tools a {
+  border-radius: var(--cero-radius);
+}
+
+fieldset.module {
+  margin-bottom: 18px;
+  overflow: hidden;
+}
+
+fieldset.module h2,
+.inline-group h2,
+#changelist-filter h2 {
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.form-row {
+  padding-top: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--hairline-color);
+}
+
+.form-row:last-child {
+  border-bottom: 0;
+}
+
+.help,
+.helptext,
+.field-help {
+  font-size: 12px;
+  color: var(--body-quiet-color);
+}
+
+.readonly {
+  display: inline-block;
+  padding: 8px 10px;
+  border: 1px solid var(--hairline-color);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--body-bg) 92%, var(--body-fg) 8%);
+}
+
+#result_list th,
+#result_list td {
+  vertical-align: middle;
+}
+
+#result_list tbody tr:hover {
+  background: color-mix(in srgb, var(--body-bg) 94%, var(--link-fg) 6%);
+}
+
+#changelist .actions {
+  padding: 10px 12px;
+  border: 1px solid var(--hairline-color);
+  margin-bottom: 12px;
+}
+
+#changelist-filter {
+  padding: 10px 12px;
+  border: 1px solid var(--hairline-color);
+  background: color-mix(in srgb, var(--body-bg) 96%, var(--body-fg) 4%);
+}
+
+.submit-row {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  padding: 12px;
+  border: 1px solid var(--hairline-color);
+  background: color-mix(in srgb, var(--body-bg) 94%, var(--body-fg) 6%);
+  backdrop-filter: blur(8px);
+}
+
+.submit-row .cancel-link {
+  display: inline-block;
+  padding: 10px 15px;
+  margin-left: 8px;
+  border-radius: 6px;
+  border: 1px solid var(--hairline-color);
+  background: var(--body-bg);
+  color: var(--body-fg);
+  text-decoration: none;
+  vertical-align: middle;
+}
+
+.submit-row .cancel-link:hover {
+  color: var(--link-fg);
+  border-color: var(--link-fg);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 88px;
+  padding: 0.32rem 0.65rem;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.status-badge--neutral {
+  background: color-mix(in srgb, var(--body-bg) 85%, var(--body-fg) 15%);
+  color: var(--body-fg);
+  border-color: var(--hairline-color);
+}
+
+.status-badge--info {
+  background: color-mix(in srgb, #4f8cff 22%, var(--body-bg) 78%);
+  color: #d9e7ff;
+  border-color: color-mix(in srgb, #4f8cff 40%, var(--body-bg) 60%);
+}
+
+.status-badge--success {
+  background: color-mix(in srgb, #2fbf71 22%, var(--body-bg) 78%);
+  color: #d8f7e5;
+  border-color: color-mix(in srgb, #2fbf71 40%, var(--body-bg) 60%);
+}
+
+.status-badge--warning {
+  background: color-mix(in srgb, #d69e2e 24%, var(--body-bg) 76%);
+  color: #fff1cf;
+  border-color: color-mix(in srgb, #d69e2e 44%, var(--body-bg) 56%);
+}
+
+.status-badge--danger {
+  background: color-mix(in srgb, #e25b5b 22%, var(--body-bg) 78%);
+  color: #ffe0e0;
+  border-color: color-mix(in srgb, #e25b5b 44%, var(--body-bg) 56%);
+}
+
+.status-badge--accent {
+  background: color-mix(in srgb, #8c6cff 22%, var(--body-bg) 78%);
+  color: #ece4ff;
+  border-color: color-mix(in srgb, #8c6cff 40%, var(--body-bg) 60%);
+}
+
+:is(
+  body.app-bookings.model-bookingrequest,
+  body.app-enquiries.model-enquirysubmission
+) .field-admin_notes {
+  margin-top: 10px;
+  padding: 14px;
+  border: 1px solid color-mix(in srgb, var(--link-fg) 28%, var(--hairline-color) 72%);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--body-bg) 88%, var(--link-fg) 12%);
+}
+
+:is(
+  body.app-bookings.model-bookingrequest,
+  body.app-enquiries.model-enquirysubmission
+) .field-admin_notes label {
+  font-weight: 700;
+  color: var(--link-fg);
+}
+
+:is(
+  body.app-bookings.model-bookingrequest,
+  body.app-enquiries.model-enquirysubmission
+) .field-admin_notes .help,
+:is(
+  body.app-bookings.model-bookingrequest,
+  body.app-enquiries.model-enquirysubmission
+) .field-admin_notes .helptext {
+  color: var(--body-fg);
+  opacity: 0.85;
+}
+
+:is(
+  body.app-bookings.model-bookingrequest,
+  body.app-enquiries.model-enquirysubmission
+) .field-admin_notes textarea {
+  min-height: 220px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--link-fg) 22%, var(--hairline-color) 78%);
+  background: color-mix(in srgb, var(--body-bg) 94%, var(--body-fg) 6%);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+:is(
+  body.app-bookings.model-bookingrequest,
+  body.app-enquiries.model-enquirysubmission
+) .field-admin_notes textarea:focus {
+  outline: none;
+  border-color: var(--link-fg);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--link-fg) 18%, transparent 82%);
+}
+
+:is(
+  body.app-bookings.model-bookingrequest,
+  body.app-enquiries.model-enquirysubmission
+) fieldset.workflow-panel {
+  border: 1px solid color-mix(in srgb, var(--link-fg) 28%, var(--hairline-color) 72%);
+  background: color-mix(in srgb, var(--body-bg) 90%, var(--link-fg) 10%);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+:is(
+  body.app-bookings.model-bookingrequest,
+  body.app-enquiries.model-enquirysubmission
+) fieldset.workflow-panel h2 {
+  color: var(--link-fg);
+}
+
+:is(
+  body.app-bookings.model-bookingrequest,
+  body.app-enquiries.model-enquirysubmission
+) fieldset.workflow-panel .description {
+  color: var(--body-fg);
+  opacity: 0.9;
+}
+
+:is(
+  body.app-bookings.model-bookingrequest,
+  body.app-enquiries.model-enquirysubmission
+) fieldset.workflow-panel .form-row {
+  border-bottom-color: color-mix(in srgb, var(--link-fg) 18%, var(--hairline-color) 82%);
+}

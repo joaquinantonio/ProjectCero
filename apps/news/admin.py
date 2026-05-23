@@ -1,7 +1,13 @@
 from django.contrib import admin
 from django.utils import timezone
 
-from apps.core.admin import AdminImagePreviewMixin, SuperuserDeleteOnlyAdminMixin, TimestampedAdmin
+from apps.core.admin import (
+    AdminImagePreviewMixin,
+    SuperuserDeleteOnlyAdminMixin,
+    TimestampedAdmin,
+    render_admin_badge,
+    render_boolean_badge,
+)
 from .models import NewsPost
 
 
@@ -42,8 +48,8 @@ class NewsPostAdmin(AdminImagePreviewMixin, SuperuserDeleteOnlyAdminMixin, Times
 
     list_display = (
         "title",
-        "status",
-        "is_featured",
+        "status_badge",
+        "featured_badge",
         "image_preview",
         "published_at",
         "updated_at",
@@ -103,3 +109,24 @@ class NewsPostAdmin(AdminImagePreviewMixin, SuperuserDeleteOnlyAdminMixin, Times
             form.base_fields["body"].help_text = "Main public content for the news post."
 
         return form
+
+    @admin.display(ordering="status", description="Status")
+    def status_badge(self, obj):
+        tone_map = {
+            NewsPost.Status.DRAFT: "neutral",
+            NewsPost.Status.PUBLISHED: "success",
+        }
+        return render_admin_badge(
+            obj.get_status_display(),
+            tone_map.get(obj.status, "neutral"),
+        )
+
+    @admin.display(ordering="is_featured", description="Featured")
+    def featured_badge(self, obj):
+        return render_boolean_badge(
+            obj.is_featured,
+            true_label="Featured",
+            false_label="Standard",
+            true_tone="accent",
+            false_tone="neutral",
+        )

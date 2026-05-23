@@ -3,7 +3,10 @@ from django.urls import reverse
 
 from apps.artists.models import Artist
 from apps.bookings.models import BookingRequest
+from apps.enquiries.models import EnquirySubmission
 from apps.events.models import Event
+from apps.merch.models import MerchItem
+from apps.news.models import NewsPost
 from apps.pages.selectors import get_site_settings
 from apps.studio.models import StudioService
 
@@ -30,7 +33,25 @@ class CeroAdminSite(AdminSite):
                 "title": "New Bookings",
                 "value": BookingRequest.objects.filter(status=BookingRequest.Status.NEW).count(),
                 "url": reverse("admin:bookings_bookingrequest_changelist") + "?status__exact=new",
-                "hint": "Requests waiting for review",
+                "hint": "Booking requests waiting for review",
+            },
+            {
+                "title": "New Enquiries",
+                "value": EnquirySubmission.objects.filter(status=EnquirySubmission.Status.NEW).count(),
+                "url": reverse("admin:enquiries_enquirysubmission_changelist") + "?status__exact=new",
+                "hint": "General, merch, and payment enquiries",
+            },
+            {
+                "title": "Draft News",
+                "value": NewsPost.objects.filter(status=NewsPost.Status.DRAFT).count(),
+                "url": reverse("admin:news_newspost_changelist") + "?status__exact=draft",
+                "hint": "News posts not yet published",
+            },
+            {
+                "title": "Active Merch",
+                "value": MerchItem.objects.filter(is_active=True).count(),
+                "url": reverse("admin:merch_merchitem_changelist") + "?is_active__exact=1",
+                "hint": "Catalog items currently visible",
             },
             {
                 "title": "Published Events",
@@ -44,20 +65,15 @@ class CeroAdminSite(AdminSite):
                 "url": reverse("admin:artists_artist_changelist") + "?is_featured__exact=1",
                 "hint": "Artists shown publicly",
             },
-            {
-                "title": "Active Services",
-                "value": StudioService.objects.filter(is_active=True).count(),
-                "url": reverse("admin:studio_studioservice_changelist") + "?is_active__exact=1",
-                "hint": "Studio services currently visible",
-            },
         ]
 
         quick_links = [
             {"label": "Edit Website Settings", "url": site_settings_url},
             {"label": "Review Booking Requests", "url": reverse("admin:bookings_bookingrequest_changelist")},
+            {"label": "Review Enquiries", "url": reverse("admin:enquiries_enquirysubmission_changelist")},
             {"label": "Add New Event", "url": reverse("admin:events_event_add")},
-            {"label": "Add New Artist", "url": reverse("admin:artists_artist_add")},
-            {"label": "Add Studio Service", "url": reverse("admin:studio_studioservice_add")},
+            {"label": "Add News Post", "url": reverse("admin:news_newspost_add")},
+            {"label": "Add Merch Item", "url": reverse("admin:merch_merchitem_add")},
         ]
 
         dashboard_sections = [
@@ -83,6 +99,16 @@ class CeroAdminSite(AdminSite):
                         "label": "Booking Requests",
                         "url": reverse("admin:bookings_bookingrequest_changelist"),
                         "hint": "Review and update enquiries",
+                    }
+                ],
+            },
+            {
+                "title": "Enquiries",
+                "items": [
+                    {
+                        "label": "Enquiries",
+                        "url": reverse("admin:enquiries_enquirysubmission_changelist"),
+                        "hint": "Review general, merch, and payment enquiries",
                     },
                 ],
             },

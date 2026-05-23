@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container narrow">
+    <p class="eyebrow">{{ eyebrow }}</p>
+    <h1>{{ page_title }}</h1>
+    <p class="lead">{{ page_lead }}</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="detail-layout">
+      <div class="detail-main">
+        <div class="card detail-block">
+          <form method="post" class="styled-form" novalidate>
+            {% csrf_token %}
+
+            {% for hidden_field in form.hidden_fields %}
+              {{ hidden_field }}
+            {% endfor %}
+
+            {% if form.non_field_errors %}
+              <div class="alert">
+                {{ form.non_field_errors }}
+              </div>
+            {% endif %}
+
+            {% for field in form.visible_fields %}
+              <div class="form-field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                  <div class="field-help">{{ field.help_text }}</div>
+                {% endif %}
+                {% for error in field.errors %}
+                  <div class="field-error">{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endfor %}
+
+            <div class="button-row">
+              <button type="submit" class="btn btn-primary">{{ button_label }}</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="detail-side">
+        <div class="card detail-summary">
+          <h2>{{ sidebar_title }}</h2>
+          <p class="muted">{{ sidebar_body }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
