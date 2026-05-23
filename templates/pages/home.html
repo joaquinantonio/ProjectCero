@@ -18,7 +18,7 @@
         {{ site_settings.tagline|default:"A creative space for recording, rehearsals, and live music experiences." }}
       </p>
       <div class="button-row">
-        <a class="btn btn-primary" href="{% url 'bookings:studio_request' %}">Book the Studio</a>
+        <a class="btn btn-primary" href="{% url 'bookings:request' %}?type=studio">Book the Studio</a>
         <a class="btn btn-secondary" href="{% url 'events:event_list' %}">View Events</a>
         <a class="btn btn-secondary" href="{% url 'enquiries:landing' %}">Enquire</a>
       </div>
@@ -47,16 +47,25 @@
       {% for service in featured_services %}
         <article class="card">
           {% if service.image %}
-            <img class="service-image" src="{{ service.image.url }}" alt="{{ service.name }}">
+            <a class="card-image-link" href="{% url 'studio:service_detail' service.slug %}">
+              <img class="service-image" src="{{ service.image.url }}" alt="{{ service.name }}">
+            </a>
           {% endif %}
-          <h3>{{ service.name }}</h3>
+
+          <h3>
+            <a class="card-title-link" href="{% url 'studio:service_detail' service.slug %}">
+              {{ service.name }}
+            </a>
+          </h3>
 
           {% if service.short_description %}
-            <p class="muted">{{ service.short_description }}</p>
+            <p class="muted clamp-2">{{ service.short_description }}</p>
           {% endif %}
 
           {% if service.description %}
-            <div>{{ service.description|linebreaks }}</div>
+            <div class="card-copy muted clamp-4">
+              {{ service.description }}
+            </div>
           {% endif %}
 
           <div class="meta-row">
@@ -66,6 +75,12 @@
             {% if service.duration_text %}
               <span class="pill">{{ service.duration_text }}</span>
             {% endif %}
+          </div>
+
+          <div class="card-footer">
+            <a class="btn btn-secondary" href="{% url 'studio:service_detail' service.slug %}">
+              View Service
+            </a>
           </div>
         </article>
       {% empty %}
@@ -94,13 +109,19 @@
       {% for artist in featured_artists %}
         <article class="card">
           {% if artist.image %}
-            <a href="{% url 'artists:artist_detail' artist.slug %}">
+            <a class="card-image-link" href="{% url 'artists:artist_detail' artist.slug %}">
               <img class="service-image" src="{{ artist.image.url }}" alt="{{ artist.name }}">
             </a>
           {% endif %}
-          <h3><a href="{% url 'artists:artist_detail' artist.slug %}">{{ artist.name }}</a></h3>
+
+          <h3>
+            <a class="card-title-link" href="{% url 'artists:artist_detail' artist.slug %}">
+              {{ artist.name }}
+            </a>
+          </h3>
+
           {% if artist.short_bio %}
-            <p class="muted">{{ artist.short_bio }}</p>
+            <p class="muted clamp-2">{{ artist.short_bio }}</p>
           {% endif %}
         </article>
       {% empty %}
@@ -137,14 +158,19 @@
               {% if event.end_at %} – {{ event.end_at|time:"g:i A" }}{% endif %}
             {% endif %}
           </p>
-          <h3><a href="{% url 'events:event_detail' event.slug %}">{{ event.title }}</a></h3>
+
+          <h3>
+            <a class="card-title-link" href="{% url 'events:event_detail' event.slug %}">
+              {{ event.title }}
+            </a>
+          </h3>
 
           {% if event.location_text %}
             <p class="muted">{{ event.location_text }}</p>
           {% endif %}
 
           {% if event.short_description %}
-            <p>{{ event.short_description }}</p>
+            <p class="card-copy clamp-3">{{ event.short_description }}</p>
           {% endif %}
         </article>
       {% empty %}
@@ -282,7 +308,11 @@
             <div>{{ section.body|linebreaks }}</div>
           {% endif %}
           {% if section.cta_url and section.cta_text %}
-            <p><a class="text-link" href="{{ section.cta_url }}">{{ section.cta_text }}</a></p>
+            <p>
+              <a class="text-link" href="{{ section.cta_url }}">
+                {{ section.cta_text }}
+              </a>
+            </p>
           {% endif %}
         </article>
       {% empty %}
@@ -304,9 +334,15 @@
         Send a booking request for studio sessions or venue hire, or use the enquiry pages for merch, payments, and general questions.
       </p>
       <div class="button-row center">
-        <a class="btn btn-primary" href="{% url 'bookings:studio_request' %}">Book the Studio</a>
-        <a class="btn btn-secondary" href="{% url 'bookings:venue_request' %}">Enquire About Venue Hire</a>
-        <a class="btn btn-secondary" href="{% url 'enquiries:landing' %}">Other Enquiries</a>
+        <a class="btn btn-primary" href="{% url 'bookings:request' %}?type=studio">
+          Book the Studio
+        </a>
+        <a class="btn btn-secondary" href="{% url 'bookings:request' %}?type=venue">
+          Enquire About Venue Hire
+        </a>
+        <a class="btn btn-secondary" href="{% url 'enquiries:landing' %}">
+          Other Enquiries
+        </a>
       </div>
     </div>
   </div>
