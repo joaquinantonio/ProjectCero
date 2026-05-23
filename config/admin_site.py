@@ -1,6 +1,7 @@
 from django.contrib.admin import AdminSite
 from django.core.exceptions import PermissionDenied
 from apps.artists.models import Artist
+from apps.bookings.availability import get_confirmed_booking_blocks, get_event_blocks
 from apps.bookings.models import BookingRequest
 from apps.enquiries.models import EnquirySubmission
 from apps.events.models import Event
@@ -68,46 +69,51 @@ class CeroAdminSite(AdminSite):
 
         calendar_items = []
 
-        event_qs = Event.objects.exclude(status=Event.Status.CANCELLED)
+        for block in get_event_blocks(start_dt=start_dt, end_dt=end_dt):
+            event = block["object"]
 
-        if start_dt and end_dt:
-            event_qs = event_qs.filter(start_at__lt=end_dt).filter(
-                Q(end_at__gt=start_dt)
-                | Q(end_at__isnull=True, start_at__gte=start_dt)
-            )
-
-        for event in event_qs:
             calendar_items.append(
                 {
                     "title": f"Event: {event.title}",
-                    "start": event.start_at.isoformat(),
-                    "end": event.end_at.isoformat() if event.end_at else None,
+                    "start": block["start"].isoformat(),
+                    "end": block["end"].isoformat(),
                     "url": reverse("admin:events_event_change", args=[event.pk]),
                     "classNames": ["schedule-event", "schedule-event-main"],
                 }
             )
 
-        booking_qs = BookingRequest.objects.filter(
-            request_type=BookingRequest.RequestType.STUDIO,
-            status=BookingRequest.Status.CONFIRMED,
-            scheduled_start_at__isnull=False,
-            scheduled_end_at__isnull=False,
-        )
+        booking_label_map = {
+            BookingRequest.RequestType.STUDIO: "Studio Service",
+            BookingRequest.RequestType.VENUE: "Venue / Private Event",
+            BookingRequest.RequestType.PRIVATE_EVENT: "Venue / Private Event",
+        }
 
-        if start_dt and end_dt:
-            booking_qs = booking_qs.filter(
-                scheduled_start_at__lt=end_dt,
-                scheduled_end_at__gt=start_dt,
+        booking_class_map = {
+            BookingRequest.RequestType.STUDIO: "schedule-event-studio",
+            BookingRequest.RequestType.VENUE: "schedule-event-venue",
+            BookingRequest.RequestType.PRIVATE_EVENT: "schedule-event-venue",
+        }
+
+        for block in get_confirmed_booking_blocks(start_dt=start_dt, end_dt=end_dt):
+            booking = block["object"]
+
+            type_label = booking_label_map.get(
+                booking.request_type,
+                booking.get_request_type_display(),
             )
 
-        for booking in booking_qs:
+            css_class = booking_class_map.get(
+                booking.request_type,
+                "schedule-event-booking",
+            )
+
             calendar_items.append(
                 {
-                    "title": f"Studio: {booking.name}",
-                    "start": booking.scheduled_start_at.isoformat(),
-                    "end": booking.scheduled_end_at.isoformat(),
+                    "title": f"{type_label}: {booking.name}",
+                    "start": block["start"].isoformat(),
+                    "end": block["end"].isoformat(),
                     "url": reverse("admin:bookings_bookingrequest_change", args=[booking.pk]),
-                    "classNames": ["schedule-event", "schedule-event-studio"],
+                    "classNames": ["schedule-event", css_class],
                 }
             )
 
@@ -198,7 +204,7 @@ class CeroAdminSite(AdminSite):
                     {
                         "label": "Calendar",
                         "url": reverse("admin:schedule_calendar"),
-                        "hint": "View confirmed studio bookings and events by time",
+                        "hint": "View events, studio service bookings, and venue / private event bookings by time",
                     },
                 ],
             },

@@ -12,6 +12,7 @@ from .availability import get_unavailable_blocks
 from apps.events.models import Event
 
 from .forms import (
+    CombinedBookingRequestForm,
     StudioBookingRequestForm,
     VenueBookingRequestForm,
 )
@@ -69,44 +70,70 @@ def _handle_booking_request(
 
 def general_booking_request_view(request):
     return redirect("enquiries:general")
+def booking_request_view(request):
+    allowed_types = [
+        BookingRequest.RequestType.STUDIO,
+        BookingRequest.RequestType.VENUE,
+    ]
 
+    initial_type = request.GET.get("type")
 
-def studio_booking_request_view(request):
-    return _handle_booking_request(
-        request=request,
-        request_type=BookingRequest.RequestType.STUDIO,
-        form_class=StudioBookingRequestForm,
-        page_title="Studio Request",
-        intro_text="Send a request for recording, rehearsal, or other studio-related work.",
-        extra_context={
+    if initial_type not in allowed_types:
+        initial_type = BookingRequest.RequestType.STUDIO
+
+    if request.method == "POST":
+        form = CombinedBookingRequestForm(request.POST)
+
+        if form.is_valid():
+            booking = form.save(commit=False)
+            booking.save()
+
+            booking.reference_code = generate_booking_reference(booking.id)
+            booking.save(update_fields=["reference_code"])
+
+            send_booking_notification(booking)
+            send_booking_confirmation(booking)
+
+            request.session["last_booking_reference"] = booking.reference_code
+            return redirect("bookings:success")
+
+        elif request.POST.get("website"):
+            return redirect("bookings:success")
+
+    else:
+        form = CombinedBookingRequestForm(
+            initial={
+                "request_type": initial_type,
+            }
+        )
+
+    return render(
+        request,
+        "bookings/booking_form.html",
+        {
+            "form": form,
+            "request_type": "combined",
+            "page_title": "Booking Request",
+            "intro_text": (
+                "Request a studio session or venue booking. "
+                "Check availability first, then send us your preferred details."
+            ),
             "show_availability_calendar": True,
-            "availability_title": "Check Studio Availability",
+            "availability_title": "Check Availability",
             "availability_note": (
-                "Business hours are 11:00 AM to 12:00 midnight. "
-                "Unavailable blocks may include confirmed bookings or events."
+                "Unavailable blocks may include confirmed studio bookings, "
+                "venue bookings, private events, or scheduled events."
             ),
             "availability_feed_url": reverse("bookings:booking_unavailable_feed"),
         },
     )
+
+def studio_booking_request_view(request):
+    return redirect(f"{reverse('bookings:request')}?type=studio")
 
 
 def venue_booking_request_view(request):
-    return _handle_booking_request(
-        request=request,
-        request_type=BookingRequest.RequestType.VENUE,
-        form_class=VenueBookingRequestForm,
-        page_title="Venue Request",
-        intro_text="Use this form for event enquiries, venue hire, or private function discussions.",
-        extra_context={
-            "show_availability_calendar": True,
-            "availability_title": "Check Venue Availability",
-            "availability_note": (
-                "Unavailable blocks may include confirmed bookings or scheduled events. "
-                "Events block out the venue during their scheduled time."
-            ),
-            "availability_feed_url": reverse("bookings:booking_unavailable_feed"),
-        },
-    )
+    return redirect(f"{reverse('bookings:request')}?type=venue")
 
 
 def booking_success_view(request):
