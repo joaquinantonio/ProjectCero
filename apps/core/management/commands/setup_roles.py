@@ -4,6 +4,15 @@ from django.core.management.base import BaseCommand
 
 GROUP_DEFINITIONS = {
     "Editor": [
+        "view_newspost",
+        "add_newspost",
+        "change_newspost",
+        "view_merchitem",
+        "add_merchitem",
+        "change_merchitem",
+        "view_enquirysubmission",
+        "change_enquirysubmission",
+
         # Pages
         "view_sitesettings",
         "change_sitesettings",
@@ -38,6 +47,13 @@ GROUP_DEFINITIONS = {
     ],
 
     "Website Manager": [
+        "view_newspost",
+        "add_newspost",
+        "change_newspost",
+        "view_merchitem",
+        "add_merchitem",
+        "change_merchitem",
+
         # Pages
         "view_sitesettings",
         "change_sitesettings",
@@ -79,9 +95,10 @@ GROUP_DEFINITIONS = {
     ],
 
     "Bookings Operator": [
-        # Bookings only
         "view_bookingrequest",
         "change_bookingrequest",
+        "view_enquirysubmission",
+        "change_enquirysubmission",
 
         # Optional context visibility
         "view_event",
@@ -89,6 +106,11 @@ GROUP_DEFINITIONS = {
     ],
 
     "Read Only": [
+        "view_newspost",
+        "view_merchitem",
+        "view_enquirysubmission",
+        "view_bookingrequest",
+
         # Pages
         "view_sitesettings",
         "view_pagesection",
@@ -103,9 +125,6 @@ GROUP_DEFINITIONS = {
         # Studio
         "view_studioservice",
         "view_studioservicecategory",
-
-        # Bookings
-        "view_bookingrequest",
     ],
 }
 
@@ -124,6 +143,7 @@ class Command(BaseCommand):
         clear = options["clear"]
 
         for group_name, permission_codenames in GROUP_DEFINITIONS.items():
+            permission_codenames = list(dict.fromkeys(permission_codenames))
             group, created = Group.objects.get_or_create(name=group_name)
 
             if clear:

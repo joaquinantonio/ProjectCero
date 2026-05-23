@@ -1,6 +1,5 @@
 from django.contrib import admin
-from django.utils.html import escape, mark_safe
-
+from django.utils.html import escape, format_html, mark_safe
 
 def make_bulk_update_action(*, action_name, field_name, value, description, success_message):
     @admin.action(description=description)
@@ -31,6 +30,25 @@ def basic_fieldset(obj, base_fields, *, slug_field="slug", new_description=None,
 
     return ("Basic", {"fields": fields, "description": description})
 
+def render_admin_badge(label, tone="neutral"):
+    return format_html(
+        '<span class="status-badge status-badge--{}">{}</span>',
+        tone,
+        label,
+    )
+
+
+def render_boolean_badge(
+    value,
+    *,
+    true_label="Yes",
+    false_label="No",
+    true_tone="success",
+    false_tone="neutral",
+):
+    if value:
+        return render_admin_badge(true_label, true_tone)
+    return render_admin_badge(false_label, false_tone)
 
 class AdminImagePreviewMixin:
     image_preview_field = None

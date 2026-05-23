@@ -1,7 +1,6 @@
 from django.shortcuts import redirect, render
 
 from .forms import (
-    GeneralBookingRequestForm,
     StudioBookingRequestForm,
     VenueBookingRequestForm,
 )
@@ -56,13 +55,7 @@ def _handle_booking_request(
 
 
 def general_booking_request_view(request):
-    return _handle_booking_request(
-        request=request,
-        request_type=BookingRequest.RequestType.GENERAL,
-        form_class=GeneralBookingRequestForm,
-        page_title="General Enquiry",
-        intro_text="Use this form for general questions, collaborations, or anything that does not fit the other request types.",
-    )
+    return redirect("enquiries:general")
 
 
 def studio_booking_request_view(request):

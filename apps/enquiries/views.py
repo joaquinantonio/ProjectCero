@@ -6,6 +6,7 @@ from apps.events.models import Event
 from apps.merch.models import MerchItem
 from .forms import GeneralEnquiryForm, MerchEnquiryForm, PaymentEnquiryForm
 from .models import EnquirySubmission
+from .services import send_enquiry_notification
 
 
 class EnquiryLandingView(TemplateView):
@@ -37,6 +38,9 @@ class BaseEnquiryCreateView(CreateView):
         self.object = form.save(commit=False)
         self.object.enquiry_type = self.enquiry_type
         self.object.save()
+
+        send_enquiry_notification(self.object)
+
         self.request.session["last_enquiry_reference"] = self.object.reference_code
         return redirect(self.get_success_url())
 

@@ -6,9 +6,9 @@
 <section class="page-hero">
   <div class="container narrow">
     <p class="eyebrow">Bookings</p>
-    <h1>Make an Enquiry</h1>
+    <h1>Booking Requests</h1>
     <p class="lead">
-      Choose the type of request that best matches what you need.
+      Choose the booking type that best matches what you need.
       We’ll review it and get back to you.
     </p>
   </div>
@@ -25,17 +25,17 @@
       </article>
 
       <article class="card">
-        <h2>Venue Enquiry</h2>
+        <h2>Venue Request</h2>
         <p class="muted">For private events, collaborations, gigs, or venue hire discussions.</p>
         <p>Tell us about your event idea, preferred date, and expected crowd size.</p>
         <a class="btn btn-primary" href="{% url 'bookings:venue_request' %}">Enquire About Venue Hire</a>
       </article>
 
       <article class="card">
-        <h2>General Enquiry</h2>
-        <p class="muted">For anything else, including partnerships, media, and general questions.</p>
-        <p>Use this if you’re not sure which request type fits best.</p>
-        <a class="btn btn-secondary" href="{% url 'bookings:general_request' %}">Send General Enquiry</a>
+          <h2>Other Enquiries</h2>
+          <p class="muted">For merch, payments, general questions, collaborations, or anything not tied to a booking.</p>
+          <p>Use the enquiry pages for non-booking requests.</p>
+          <a class="btn btn-secondary" href="{% url 'enquiries:landing' %}">Go to Enquiries</a>
       </article>
     </div>
   </div>
