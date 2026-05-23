@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Studio · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
-{% block meta_description %}Recording, production, rehearsals, and creative studio sessions.{% endblock %}
+{% block title %}Studio Services · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+{% block meta_description %}Recording, production, rehearsals, and creative studio services.{% endblock %}
 {% block og_title %}Studio Services{% endblock %}
-{% block og_description %}Recording, production, rehearsals, and creative studio sessions.{% endblock %}
+{% block og_description %}Recording, production, rehearsals, and creative studio services.{% endblock %}
 {% block og_type %}website{% endblock %}
 {% block og_image %}{% static 'images/og-default.jpg' %}{% endblock %}
 
@@ -22,11 +22,16 @@
     <div class="card">
       <h2>Need studio time?</h2>
       <p class="muted">
-        Send a request for recording, rehearsal, or other studio-related sessions.
+        Browse our studio services or send a request for recording, rehearsal,
+        production, or other studio-related sessions.
       </p>
       <div class="button-row">
-        <a class="btn btn-primary" href="{% url 'bookings:studio_request' %}">Request Studio Session</a>
-        <a class="btn btn-secondary" href="{% url 'bookings:landing' %}">View All Booking Options</a>
+        <a class="btn btn-primary" href="{% url 'bookings:request' %}?type=studio">
+          Request Studio Session
+        </a>
+        <a class="btn btn-secondary" href="{% url 'bookings:landing' %}">
+          View All Booking Options
+        </a>
       </div>
     </div>
   </div>
@@ -34,28 +39,52 @@
 
 <section class="section">
   <div class="container">
+    <form method="get" class="card search-bar">
+      <div class="search-grid single-search">
+        <div>
+          <label for="studio-service-search">Search studio services</label>
+          <input
+            id="studio-service-search"
+            type="text"
+            name="q"
+            value="{{ search_query }}"
+            placeholder="Search by service name or description"
+          >
+        </div>
+
+        <div class="search-actions">
+          <button class="btn btn-primary" type="submit">Search</button>
+          <a class="btn btn-secondary" href="{% url 'studio:home' %}">Reset</a>
+        </div>
+      </div>
+    </form>
+
     <div class="card-grid">
       {% for service in services %}
         <article class="card">
           {% if service.image %}
-            <div class="card-image-link">
+            <a class="card-image-link" href="{% url 'studio:service_detail' service.slug %}">
               <img class="service-image" src="{{ service.image.url }}" alt="{{ service.name }}">
-            </div>
+            </a>
           {% endif %}
 
-          <h2>{{ service.name }}</h2>
+          <h2>
+            <a class="card-title-link" href="{% url 'studio:service_detail' service.slug %}">
+              {{ service.name }}
+            </a>
+          </h2>
 
           {% if service.short_description %}
             <p class="muted clamp-2">{{ service.short_description }}</p>
           {% endif %}
 
           {% if service.description %}
-            <div class="card-copy clamp-4">
+            <div class="card-copy muted clamp-4">
               {{ service.description }}
             </div>
           {% endif %}
 
-          <div class="meta-row card-footer">
+          <div class="meta-row">
             {% if service.price_text %}
               <span class="pill">{{ service.price_text }}</span>
             {% endif %}
@@ -63,14 +92,22 @@
               <span class="pill">{{ service.duration_text }}</span>
             {% endif %}
           </div>
+
+          <div class="card-footer">
+            <a class="btn btn-secondary" href="{% url 'studio:service_detail' service.slug %}">
+              View Service
+            </a>
+          </div>
         </article>
       {% empty %}
         <article class="card">
-          <h2>No studio services yet</h2>
-          <p>Add services in admin to populate this page.</p>
+          <h2>No studio services found</h2>
+          <p>Try another search term or add services in admin.</p>
         </article>
       {% endfor %}
     </div>
+
+    {% include "includes/pagination.html" with page_obj=services %}
   </div>
 </section>
 {% endblock %}

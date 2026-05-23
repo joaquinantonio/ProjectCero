@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ service.name }} · Studio Services · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+{% block meta_description %}{{ service.short_description|default:service.name }}{% endblock %}
+{% block og_title %}{{ service.name }}{% endblock %}
+{% block og_description %}{{ service.short_description|default:service.name }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_image %}
+  {% if service.image %}
+    {{ service.image.url }}
+  {% else %}
+    {% static 'images/og-default.jpg' %}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container narrow">
+    <p class="eyebrow">Studio Service</p>
+    <h1>{{ service.name }}</h1>
+
+    {% if service.short_description %}
+      <p class="lead">{{ service.short_description }}</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="detail-layout">
+      <div class="detail-main">
+        {% if service.image %}
+          <div class="detail-image-wrap">
+            <img class="detail-image" src="{{ service.image.url }}" alt="{{ service.name }}">
+          </div>
+        {% endif %}
+
+        <div class="card detail-block">
+          <h2>About This Service</h2>
+
+          <div class="detail-richtext">
+            {% if service.description %}
+              {{ service.description|linebreaks }}
+            {% else %}
+              <p class="muted">No detailed description added yet.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-side">
+        <div class="card detail-summary">
+          <h2>Service Details</h2>
+
+          <ul class="detail-meta-list">
+            {% if service.price_text %}
+              <li>
+                <span class="detail-label">Price</span>
+                <span class="detail-value">{{ service.price_text }}</span>
+              </li>
+            {% endif %}
+
+            {% if service.duration_text %}
+              <li>
+                <span class="detail-label">Duration</span>
+                <span class="detail-value">{{ service.duration_text }}</span>
+              </li>
+            {% endif %}
+
+            {% if service.short_description %}
+              <li>
+                <span class="detail-label">Summary</span>
+                <span class="detail-value">{{ service.short_description }}</span>
+              </li>
+            {% endif %}
+          </ul>
+
+          <div class="button-stack">
+            <a class="btn btn-primary" href="{% url 'bookings:request' %}?type=studio">
+              Request This Service
+            </a>
+
+            <a class="btn btn-secondary" href="{% url 'studio:home' %}">
+              Back to Studio Services
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
