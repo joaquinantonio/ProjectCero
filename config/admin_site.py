@@ -8,7 +8,6 @@ from apps.events.models import Event
 from apps.merch.models import MerchItem
 from apps.news.models import NewsPost
 from apps.pages.selectors import get_site_settings
-from django.db.models import Q
 from django.http import JsonResponse
 from django.template.response import TemplateResponse
 from django.urls import path, reverse
