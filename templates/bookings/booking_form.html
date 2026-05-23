@@ -17,7 +17,7 @@
         color: var(--muted, #64748b);
       }
 
-      #studio-availability-calendar {
+      #booking-availability-calendar {
         min-height: 620px;
       }
 
@@ -91,12 +91,11 @@
 <section class="section">
   <div class="container narrow">
 
-    {% if request_type == "studio" %}
+    {% if show_availability_calendar %}
       <div class="card availability-card">
-        <h2>Check Unavailable Times</h2>
+        <h2>{{ availability_title }}</h2>
         <p class="availability-note">
-          Business hours are 11:00 AM to 12:00 midnight. Red blocks show times that are already unavailable.
-          Please choose a preferred date and time outside these blocks.
+          {{ availability_note }}
         </p>
 
         <div class="availability-legend">
@@ -104,7 +103,7 @@
           <span>Unavailable</span>
         </div>
 
-        <div id="studio-availability-calendar"></div>
+        <div id="booking-availability-calendar"></div>
       </div>
     {% endif %}
 
@@ -155,7 +154,7 @@
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        const calendarEl = document.getElementById("studio-availability-calendar");
+        const calendarEl = document.getElementById("booking-availability-calendar");
 
         if (!calendarEl) return;
 
@@ -202,7 +201,7 @@
             meridiem: "short"
           },
 
-          events: "{% url 'bookings:studio_unavailable_feed' %}"
+          events: "{{ availability_feed_url }}"
         });
 
         calendar.render();
