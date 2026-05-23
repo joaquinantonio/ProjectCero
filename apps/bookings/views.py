@@ -1,14 +1,18 @@
 from datetime import timedelta
 
 from django.db.models import Q
-from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.http import JsonResponse
+from django.urls import reverse
 from django.utils.dateparse import parse_datetime
 from django.views.decorators.http import require_GET
+
+from .availability import get_unavailable_blocks
 
 from apps.events.models import Event
 
 from .forms import (
+    CombinedBookingRequestForm,
     StudioBookingRequestForm,
     VenueBookingRequestForm,
 )
@@ -28,6 +32,7 @@ def _handle_booking_request(
     page_title,
     intro_text,
     template_name="bookings/booking_form.html",
+    extra_context=None,
 ):
     if request.method == "POST":
         form = form_class(request.POST)
@@ -50,40 +55,85 @@ def _handle_booking_request(
     else:
         form = form_class()
 
-    return render(
-        request,
-        template_name,
-        {
-            "form": form,
-            "request_type": request_type,
-            "page_title": page_title,
-            "intro_text": intro_text,
-        },
-    )
+    context = {
+        "form": form,
+        "request_type": request_type,
+        "page_title": page_title,
+        "intro_text": intro_text,
+    }
+
+    if extra_context:
+        context.update(extra_context)
+
+    return render(request, template_name, context)
 
 
 def general_booking_request_view(request):
     return redirect("enquiries:general")
+def booking_request_view(request):
+    allowed_types = [
+        BookingRequest.RequestType.STUDIO,
+        BookingRequest.RequestType.VENUE,
+    ]
 
+    initial_type = request.GET.get("type")
+
+    if initial_type not in allowed_types:
+        initial_type = BookingRequest.RequestType.STUDIO
+
+    if request.method == "POST":
+        form = CombinedBookingRequestForm(request.POST)
+
+        if form.is_valid():
+            booking = form.save(commit=False)
+            booking.save()
+
+            booking.reference_code = generate_booking_reference(booking.id)
+            booking.save(update_fields=["reference_code"])
+
+            send_booking_notification(booking)
+            send_booking_confirmation(booking)
+
+            request.session["last_booking_reference"] = booking.reference_code
+            return redirect("bookings:success")
+
+        elif request.POST.get("website"):
+            return redirect("bookings:success")
+
+    else:
+        form = CombinedBookingRequestForm(
+            initial={
+                "request_type": initial_type,
+            }
+        )
+
+    return render(
+        request,
+        "bookings/booking_form.html",
+        {
+            "form": form,
+            "request_type": "combined",
+            "page_title": "Booking Request",
+            "intro_text": (
+                "Request a studio session or venue booking. "
+                "Check availability first, then send us your preferred details."
+            ),
+            "show_availability_calendar": True,
+            "availability_title": "Check Availability",
+            "availability_note": (
+                "Unavailable blocks may include confirmed studio bookings, "
+                "venue bookings, private events, or scheduled events."
+            ),
+            "availability_feed_url": reverse("bookings:booking_unavailable_feed"),
+        },
+    )
 
 def studio_booking_request_view(request):
-    return _handle_booking_request(
-        request=request,
-        request_type=BookingRequest.RequestType.STUDIO,
-        form_class=StudioBookingRequestForm,
-        page_title="Studio Request",
-        intro_text="Send a request for recording, rehearsal, or other studio-related work.",
-    )
+    return redirect(f"{reverse('bookings:request')}?type=studio")
 
 
 def venue_booking_request_view(request):
-    return _handle_booking_request(
-        request=request,
-        request_type=BookingRequest.RequestType.VENUE,
-        form_class=VenueBookingRequestForm,
-        page_title="Venue Request",
-        intro_text="Use this form for event enquiries, venue hire, or private function discussions.",
-    )
+    return redirect(f"{reverse('bookings:request')}?type=venue")
 
 
 def booking_success_view(request):
@@ -146,6 +196,28 @@ def studio_unavailable_feed_view(request):
                 "title": "Unavailable",
                 "start": event.start_at.isoformat(),
                 "end": event_end.isoformat(),
+                "classNames": ["public-unavailable-block"],
+            }
+        )
+
+    return JsonResponse(unavailable_items, safe=False)
+
+@require_GET
+def booking_unavailable_feed_view(request):
+    start_raw = request.GET.get("start")
+    end_raw = request.GET.get("end")
+
+    start_dt = parse_datetime(start_raw) if start_raw else None
+    end_dt = parse_datetime(end_raw) if end_raw else None
+
+    unavailable_items = []
+
+    for block in get_unavailable_blocks(start_dt=start_dt, end_dt=end_dt):
+        unavailable_items.append(
+            {
+                "title": "Unavailable",
+                "start": block["start"].isoformat(),
+                "end": block["end"].isoformat(),
                 "classNames": ["public-unavailable-block"],
             }
         )

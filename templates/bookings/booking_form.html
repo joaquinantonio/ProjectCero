@@ -4,22 +4,130 @@
 
 {% block extra_head %}
   {{ block.super }}
-  {% if request_type == "studio" %}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.css">
 
-    <style>
-      .availability-card {
-        margin-bottom: 1.5rem;
-      }
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
 
-      .availability-note {
-        margin-bottom: 1rem;
-        color: var(--muted, #64748b);
-      }
+  <style>
+    /* Choices.js dark theme override for ProjectCero forms */
+    .styled-form .choices {
+      width: 100%;
+      margin-bottom: 0;
+      color: var(--text);
+    }
 
-      #studio-availability-calendar {
-        min-height: 620px;
-      }
+    .styled-form .choices__inner {
+      width: 100%;
+      min-height: 50px;
+      padding: 0.65rem 1rem;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #0f1318;
+      color: var(--text);
+      font-size: 0.98rem;
+    }
+
+    .styled-form .choices.is-focused .choices__inner,
+    .styled-form .choices.is-open .choices__inner {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(142, 240, 199, 0.12);
+    }
+
+    .styled-form .choices__list--single {
+      padding: 0;
+    }
+
+    .styled-form .choices__item {
+      color: var(--text);
+    }
+
+    .styled-form .choices__placeholder {
+      color: var(--muted);
+      opacity: 1;
+    }
+
+    .styled-form .choices__list--dropdown,
+    .styled-form .choices__list[aria-expanded] {
+      background: #0f1318;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      margin-top: 0.35rem;
+      z-index: 100;
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    .styled-form .choices__list--dropdown .choices__list,
+    .styled-form .choices__list[aria-expanded] .choices__list {
+      max-height: 170px;
+      overflow-y: auto;
+    }
+
+    .styled-form .choices__list--dropdown .choices__item,
+    .styled-form .choices__list[aria-expanded] .choices__item {
+      padding: 0.75rem 1rem;
+      color: var(--text);
+      background: #0f1318;
+    }
+
+    .styled-form .choices__list--dropdown .choices__item--selectable.is-highlighted,
+    .styled-form .choices__list[aria-expanded] .choices__item--selectable.is-highlighted {
+      background: var(--panel-2);
+      color: var(--accent);
+    }
+
+    .styled-form .choices__input,
+.styled-form .choices__input--cloned,
+.styled-form .choices__list--dropdown .choices__input {
+  background: #13171c !important;
+  color: var(--text) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 10px !important;
+  padding: 0.75rem 0.9rem !important;
+  margin-bottom: 0.5rem !important;
+  font-size: 0.95rem !important;
+  box-shadow: none !important;
+}
+
+.styled-form .choices__input:focus,
+.styled-form .choices__input--cloned:focus,
+.styled-form .choices__list--dropdown .choices__input:focus {
+  background: #0f1318 !important;
+  color: var(--text) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(142, 240, 199, 0.12) !important;
+  outline: none !important;
+}
+
+.styled-form .choices__input::placeholder,
+.styled-form .choices__input--cloned::placeholder,
+.styled-form .choices__list--dropdown .choices__input::placeholder {
+  color: #a9b2bc !important;
+  opacity: 1 !important;
+}
+
+    {% if show_availability_calendar %}
+      .booking-request-layout {
+  width: min(1080px, calc(100% - 2rem));
+  margin: 0 auto;
+}
+
+.booking-form-shell {
+  width: 100%;
+  margin: 0 auto;
+}
+
+.availability-card {
+  margin-bottom: 1.5rem;
+}
+
+.availability-note {
+  margin-bottom: 1rem;
+  color: var(--muted, #64748b);
+}
+
+#booking-availability-calendar {
+  min-height: 480px;
+}
 
       .fc {
         font-size: 0.92rem;
@@ -44,8 +152,8 @@
       }
 
       .fc .fc-timegrid-slot {
-        height: 2.4rem;
-      }
+          height: 1.75rem;
+        }
 
       .fc .fc-day-today {
         background: rgba(37, 99, 235, 0.07) !important;
@@ -75,7 +183,11 @@
         background: #dc2626;
         display: inline-block;
       }
-    </style>
+    {% endif %}
+  </style>
+
+  {% if show_availability_calendar %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.css">
   {% endif %}
 {% endblock %}
 
@@ -89,14 +201,13 @@
 </section>
 
 <section class="section">
-  <div class="container narrow">
+  <div class="booking-request-layout">
 
-    {% if request_type == "studio" %}
+    {% if show_availability_calendar %}
       <div class="card availability-card">
-        <h2>Check Unavailable Times</h2>
+        <h2>{{ availability_title }}</h2>
         <p class="availability-note">
-          Business hours are 11:00 AM to 12:00 midnight. Red blocks show times that are already unavailable.
-          Please choose a preferred date and time outside these blocks.
+          {{ availability_note }}
         </p>
 
         <div class="availability-legend">
@@ -104,12 +215,13 @@
           <span>Unavailable</span>
         </div>
 
-        <div id="studio-availability-calendar"></div>
+        <div id="booking-availability-calendar"></div>
       </div>
     {% endif %}
 
-    <div class="card">
-      <form method="post" class="styled-form">
+    <div class="booking-form-shell">
+      <div class="card">
+        <form method="post" class="styled-form">
         {% csrf_token %}
 
         {% for hidden_field in form.hidden_fields %}
@@ -142,8 +254,9 @@
           </div>
         {% endfor %}
 
-        <button class="btn btn-primary" type="submit">Submit Request</button>
-      </form>
+          <button class="btn btn-primary" type="submit">Submit Request</button>
+        </form>
+      </div>
     </div>
   </div>
 </section>
@@ -151,11 +264,29 @@
 
 {% block extra_js %}
   {{ block.super }}
-  {% if request_type == "studio" %}
+
+  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const compactSelects = document.querySelectorAll(".js-compact-select");
+
+      compactSelects.forEach(function (selectEl) {
+        new Choices(selectEl, {
+          searchEnabled: selectEl.id === "id_phone_country_code",
+          shouldSort: false,
+          itemSelectText: "",
+          searchPlaceholderValue: "Search country code",
+        });
+      });
+    });
+  </script>
+
+  {% if show_availability_calendar %}
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        const calendarEl = document.getElementById("studio-availability-calendar");
+        const calendarEl = document.getElementById("booking-availability-calendar");
 
         if (!calendarEl) return;
 
@@ -166,7 +297,8 @@
 
         const calendar = new FullCalendar.Calendar(calendarEl, {
           initialView: "timeGridWeek",
-          height: "auto",
+          height: 560,
+          expandRows: true,
           nowIndicator: true,
           allDaySlot: false,
 
@@ -202,7 +334,7 @@
             meridiem: "short"
           },
 
-          events: "{% url 'bookings:studio_unavailable_feed' %}"
+          events: "{{ availability_feed_url }}"
         });
 
         calendar.render();

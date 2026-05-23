@@ -15,21 +15,25 @@ class BookingRequest(TimeStampedModel):
 
         errors = {}
 
-        is_confirmed_studio_booking = (
-                self.request_type == self.RequestType.STUDIO
-                and self.status == self.Status.CONFIRMED
+        is_confirmed_booking = self.status == self.Status.CONFIRMED
+        is_schedulable_booking = self.request_type in (
+            self.RequestType.STUDIO,
+            self.RequestType.VENUE,
+            self.RequestType.PRIVATE_EVENT,
         )
 
-        # Confirmed studio bookings must have a real schedule block.
-        if is_confirmed_studio_booking and not self.scheduled_start_at:
-            errors["scheduled_start_at"] = (
-                "A confirmed studio booking must have a scheduled start time."
-            )
+        # Confirmed studio / venue bookings need actual scheduled times.
+        # Preferred date/time is only the user's request.
+        if is_confirmed_booking and is_schedulable_booking:
+            if not self.scheduled_start_at:
+                errors["scheduled_start_at"] = (
+                    "A confirmed booking must have a scheduled start time."
+                )
 
-        if is_confirmed_studio_booking and not self.scheduled_end_at:
-            errors["scheduled_end_at"] = (
-                "A confirmed studio booking must have a scheduled end time."
-            )
+            if not self.scheduled_end_at:
+                errors["scheduled_end_at"] = (
+                    "A confirmed booking must have a scheduled end time."
+                )
 
         # If one scheduled time is provided, both must be provided.
         if bool(self.scheduled_start_at) != bool(self.scheduled_end_at):
@@ -43,11 +47,11 @@ class BookingRequest(TimeStampedModel):
         if errors:
             raise ValidationError(errors)
 
-        # If there is no schedule block yet, stop here.
+        # If no scheduled times are provided yet, stop validation here.
         if not self.scheduled_start_at or not self.scheduled_end_at:
             return
 
-        # End must be after start.
+        # End time must be after start time.
         if self.scheduled_end_at <= self.scheduled_start_at:
             raise ValidationError(
                 {
@@ -85,34 +89,28 @@ class BookingRequest(TimeStampedModel):
         if errors:
             raise ValidationError(errors)
 
-        # Overlap validation only applies to confirmed studio bookings.
-        if not is_confirmed_studio_booking:
+        # Only confirmed studio / venue bookings should block the calendar.
+        if not (is_confirmed_booking and is_schedulable_booking):
             return
 
-        overlapping_booking = (
-            BookingRequest.objects.filter(
-                request_type=self.RequestType.STUDIO,
-                status=self.Status.CONFIRMED,
-                scheduled_start_at__lt=self.scheduled_end_at,
-                scheduled_end_at__gt=self.scheduled_start_at,
-            )
-            .exclude(pk=self.pk)
-            .order_by("scheduled_start_at")
-            .first()
+        """
+        Import here to avoid circular import problems.
+        must stay inside the clean() method.
+        Do not put it at the top of the file, 
+        availability.py imports BookingRequest, so putting it at the top can cause a circular import issue.
+        """
+        from .availability import build_conflict_message, find_conflicting_block
+
+        conflict = find_conflicting_block(
+            start_at=self.scheduled_start_at,
+            end_at=self.scheduled_end_at,
+            exclude_booking_id=self.pk,
         )
 
-        if overlapping_booking:
-            overlap_start = timezone.localtime(overlapping_booking.scheduled_start_at)
-            overlap_end = timezone.localtime(overlapping_booking.scheduled_end_at)
-
+        if conflict:
             raise ValidationError(
                 {
-                    "scheduled_start_at": (
-                        f"This booking overlaps with confirmed studio booking "
-                        f"{overlapping_booking.reference_code} "
-                        f"from {overlap_start:%d %b %Y, %I:%M %p} "
-                        f"to {overlap_end:%I:%M %p}."
-                    )
+                    "scheduled_start_at": build_conflict_message(conflict),
                 }
             )
 

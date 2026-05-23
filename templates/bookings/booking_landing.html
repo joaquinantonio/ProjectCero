@@ -21,14 +21,14 @@
         <h2>Studio Booking</h2>
         <p class="muted">For recording sessions, rehearsals, production work, or studio use.</p>
         <p>Tell us your preferred date, preferred time, and what kind of session you need.</p>
-        <a class="btn btn-primary" href="{% url 'bookings:studio_request' %}">Request Studio Session</a>
+        <a class="btn btn-primary" href="{% url 'bookings:request' %}?type=studio">Request Studio Session</a>
       </article>
 
       <article class="card">
         <h2>Venue Request</h2>
         <p class="muted">For private events, collaborations, gigs, or venue hire discussions.</p>
         <p>Tell us about your event idea, preferred date, and estimated crowd size.</p>
-        <a class="btn btn-primary" href="{% url 'bookings:venue_request' %}">Enquire About Venue Hire</a>
+        <a class="btn btn-primary" href="{% url 'bookings:request' %}?type=venue">Enquire About Venue Hire</a>
       </article>
 
       <article class="card">

@@ -72,6 +72,10 @@
     background: #2563eb;
   }
 
+  .schedule-dot-venue {
+    background: #16a34a;
+  }
+
   /* FullCalendar base */
   .fc {
     font-size: 0.92rem;
@@ -208,6 +212,17 @@
     border-color: #2563eb;
   }
 
+  .fc .schedule-event-venue,
+  .fc .schedule-event-private {
+    background: #16a34a;
+    border-color: #16a34a;
+  }
+
+  .fc .schedule-event-booking {
+    background: #0f766e;
+    border-color: #0f766e;
+  }
+
   .fc .fc-daygrid-event {
     margin: 0.18rem 0.25rem 0;
     padding: 0.22rem 0.4rem;
@@ -265,7 +280,7 @@
   <div class="schedule-page-header">
     <h1>{{ title }}</h1>
     <p>
-      Internal view for events and confirmed studio bookings.
+      Internal view for events, studio service bookings, and venue / private event bookings.
       Business hours: {{ business_hours_text }}.
     </p>
   </div>
@@ -276,9 +291,15 @@
         <span class="schedule-dot schedule-dot-event"></span>
         Events
       </span>
+
       <span class="schedule-legend-item">
         <span class="schedule-dot schedule-dot-studio"></span>
-        Confirmed studio bookings
+        Studio service bookings
+      </span>
+
+      <span class="schedule-legend-item">
+        <span class="schedule-dot schedule-dot-venue"></span>
+        Venue / private event bookings
       </span>
     </div>
 
