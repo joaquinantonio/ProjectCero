@@ -1,4 +1,8 @@
 from django.contrib import admin
+from django.contrib import admin
+from django.shortcuts import redirect
+
+from .models import BookingRequest, ScheduleCalendar
 
 from apps.core.admin import (
     ReadonlyOnChangeAdminMixin,
@@ -55,6 +59,7 @@ class BookingRequestAdmin(
         "request_type_badge",
         "email",
         "preferred_date",
+        "schedule_window",
         "status_badge",
         "created_at",
     )
@@ -117,6 +122,13 @@ class BookingRequestAdmin(
             tone_map.get(obj.status, "neutral"),
         )
 
+    @admin.display(description="Scheduled")
+    def schedule_window(self, obj):
+        if not obj.scheduled_start_at or not obj.scheduled_end_at:
+            return "-"
+
+        return f"{obj.scheduled_start_at:%d %b %Y, %I:%M %p} – {obj.scheduled_end_at:%I:%M %p}"
+
     def get_fieldsets(self, request, obj=None):
         workflow_fields = ("status", "admin_notes")
         if obj:
@@ -129,6 +141,20 @@ class BookingRequestAdmin(
                     "fields": workflow_fields,
                     "classes": ("wide", "workflow-panel"),
                     "description": "Update the status and internal notes here. The original requester details are shown below.",
+                },
+            ),
+            (
+                "Confirmed Schedule",
+                {
+                    "classes": ("wide",),
+                    "fields": (
+                        "scheduled_start_at",
+                        "scheduled_end_at",
+                    ),
+                    "description": (
+                        "Use these fields only after confirming the booking. "
+                        "These times appear on the admin calendar."
+                    ),
                 },
             ),
             (
@@ -159,6 +185,16 @@ class BookingRequestAdmin(
             ),
         )
 
+    @admin.display(description="Scheduled")
+    def schedule_window(self, obj):
+        if not obj.scheduled_start_at or not obj.scheduled_end_at:
+            return "-"
+
+        return (
+            f"{obj.scheduled_start_at:%d %b %Y, %I:%M %p} – "
+            f"{obj.scheduled_end_at:%I:%M %p}"
+        )
+
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
 
@@ -179,3 +215,28 @@ class BookingRequestAdmin(
             form.base_fields["message"].widget.attrs["rows"] = 6
 
         return form
+
+@admin.register(ScheduleCalendar)
+class ScheduleCalendarAdmin(admin.ModelAdmin):
+    def changelist_view(self, request, extra_context=None):
+        return redirect("admin:schedule_calendar")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return (
+            request.user.is_superuser
+            or request.user.has_perm("bookings.view_bookingrequest")
+            or request.user.has_perm("events.view_event")
+        )
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_view_permission(self, request, obj=None):
+        return (
+            request.user.is_superuser
+            or request.user.has_perm("bookings.view_bookingrequest")
+            or request.user.has_perm("events.view_event")
+        )

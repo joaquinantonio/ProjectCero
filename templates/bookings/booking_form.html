@@ -2,6 +2,83 @@
 
 {% block title %}{{ page_title }} · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
 
+{% block extra_head %}
+  {{ block.super }}
+  {% if request_type == "studio" %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.css">
+
+    <style>
+      .availability-card {
+        margin-bottom: 1.5rem;
+      }
+
+      .availability-note {
+        margin-bottom: 1rem;
+        color: var(--muted, #64748b);
+      }
+
+      #studio-availability-calendar {
+        min-height: 620px;
+      }
+
+      .fc {
+        font-size: 0.92rem;
+      }
+
+      .fc .fc-toolbar {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+      }
+
+      .fc .fc-toolbar-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+      }
+
+      .fc .fc-button {
+        border-radius: 999px;
+        padding: 0.4rem 0.75rem;
+        font-size: 0.82rem;
+        font-weight: 700;
+      }
+
+      .fc .fc-timegrid-slot {
+        height: 2.4rem;
+      }
+
+      .fc .fc-day-today {
+        background: rgba(37, 99, 235, 0.07) !important;
+      }
+
+      .fc .public-unavailable-block {
+        background: #dc2626;
+        border-color: #dc2626;
+        border-radius: 8px;
+        padding: 0.15rem 0.35rem;
+        font-weight: 700;
+      }
+
+      .availability-legend {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+        color: var(--muted, #64748b);
+      }
+
+      .availability-dot {
+        width: 0.75rem;
+        height: 0.75rem;
+        border-radius: 999px;
+        background: #dc2626;
+        display: inline-block;
+      }
+    </style>
+  {% endif %}
+{% endblock %}
+
 {% block content %}
 <section class="page-hero">
   <div class="container narrow">
@@ -13,6 +90,24 @@
 
 <section class="section">
   <div class="container narrow">
+
+    {% if request_type == "studio" %}
+      <div class="card availability-card">
+        <h2>Check Unavailable Times</h2>
+        <p class="availability-note">
+          Business hours are 11:00 AM to 12:00 midnight. Red blocks show times that are already unavailable.
+          Please choose a preferred date and time outside these blocks.
+        </p>
+
+        <div class="availability-legend">
+          <span class="availability-dot"></span>
+          <span>Unavailable</span>
+        </div>
+
+        <div id="studio-availability-calendar"></div>
+      </div>
+    {% endif %}
+
     <div class="card">
       <form method="post" class="styled-form">
         {% csrf_token %}
@@ -52,4 +147,66 @@
     </div>
   </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+  {{ block.super }}
+  {% if request_type == "studio" %}
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const calendarEl = document.getElementById("studio-availability-calendar");
+
+        if (!calendarEl) return;
+
+        if (typeof FullCalendar === "undefined") {
+          console.error("FullCalendar did not load.");
+          return;
+        }
+
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: "timeGridWeek",
+          height: "auto",
+          nowIndicator: true,
+          allDaySlot: false,
+
+          slotMinTime: "11:00:00",
+          slotMaxTime: "24:00:00",
+          slotDuration: "00:30:00",
+
+          businessHours: {
+            daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+            startTime: "11:00",
+            endTime: "24:00"
+          },
+
+          headerToolbar: {
+            left: "prev,next today",
+            center: "title",
+            right: "timeGridWeek,timeGridDay,listWeek"
+          },
+
+          buttonText: {
+            today: "Today",
+            week: "Week",
+            day: "Day",
+            list: "List"
+          },
+
+          eventDisplay: "block",
+          displayEventEnd: true,
+
+          eventTimeFormat: {
+            hour: "numeric",
+            minute: "2-digit",
+            meridiem: "short"
+          },
+
+          events: "{% url 'bookings:studio_unavailable_feed' %}"
+        });
+
+        calendar.render();
+      });
+    </script>
+  {% endif %}
 {% endblock %}

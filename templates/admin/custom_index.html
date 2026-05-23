@@ -290,23 +290,23 @@
         </div>
 
         <div class="dashboard-section">
-          <h2>{% translate "Content management" %}</h2>
+  <h2>{% translate "Content management" %}</h2>
 
-          <div class="app-list-grid">
-            {% for app in app_list %}
-              <div class="app-module">
-                <h3>{{ app.name }}</h3>
-                <div class="model-links">
-                  {% for model in app.models %}
-                    {% if model.admin_url %}
-                      <a href="{{ model.admin_url }}">{{ model.name }}</a>
-                    {% endif %}
-                  {% endfor %}
-                </div>
-              </div>
-            {% endfor %}
-          </div>
+  <div class="app-list-grid">
+    {% for app in app_list %}
+      <div class="app-module">
+        <h3>{{ app.name }}</h3>
+        <div class="model-links">
+          {% for model in app.models %}
+            {% if model.admin_url %}
+              <a href="{{ model.admin_url }}">{{ model.name }}</a>
+            {% endif %}
+          {% endfor %}
         </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
       </div>
     </div>
   </div>
