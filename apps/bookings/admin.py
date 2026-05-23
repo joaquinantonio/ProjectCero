@@ -185,6 +185,16 @@ class BookingRequestAdmin(
             ),
         )
 
+    @admin.display(description="Scheduled")
+    def schedule_window(self, obj):
+        if not obj.scheduled_start_at or not obj.scheduled_end_at:
+            return "-"
+
+        return (
+            f"{obj.scheduled_start_at:%d %b %Y, %I:%M %p} – "
+            f"{obj.scheduled_end_at:%I:%M %p}"
+        )
+
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
 
