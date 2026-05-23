@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.contrib import admin
 from django.shortcuts import redirect
 
 from .models import BookingRequest, ScheduleCalendar
@@ -11,7 +10,6 @@ from apps.core.admin import (
     make_bulk_update_action,
     render_admin_badge,
 )
-from .models import BookingRequest
 
 
 mark_in_review = make_bulk_update_action(
@@ -28,14 +26,6 @@ mark_contacted = make_bulk_update_action(
     value=BookingRequest.Status.CONTACTED,
     description="Mark selected requests as Contacted",
     success_message="{updated} request(s) marked as Contacted.",
-)
-
-mark_confirmed = make_bulk_update_action(
-    action_name="mark_confirmed",
-    field_name="status",
-    value=BookingRequest.Status.CONFIRMED,
-    description="Mark selected requests as Confirmed",
-    success_message="{updated} request(s) marked as Confirmed.",
 )
 
 mark_closed = make_bulk_update_action(
@@ -76,7 +66,7 @@ class BookingRequestAdmin(
     autocomplete_fields = ("event",)
     ordering = ("-created_at",)
     date_hierarchy = "created_at"
-    actions = [mark_in_review, mark_contacted, mark_confirmed, mark_closed]
+    actions = [mark_in_review, mark_contacted, mark_closed]
     list_select_related = ("event",)
 
     readonly_fields = ("reference_code", "created_at", "updated_at")
@@ -121,13 +111,6 @@ class BookingRequestAdmin(
             obj.get_status_display(),
             tone_map.get(obj.status, "neutral"),
         )
-
-    @admin.display(description="Scheduled")
-    def schedule_window(self, obj):
-        if not obj.scheduled_start_at or not obj.scheduled_end_at:
-            return "-"
-
-        return f"{obj.scheduled_start_at:%d %b %Y, %I:%M %p} – {obj.scheduled_end_at:%I:%M %p}"
 
     def get_fieldsets(self, request, obj=None):
         workflow_fields = ("status", "admin_notes")

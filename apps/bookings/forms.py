@@ -1,5 +1,3 @@
-from datetime import time
-
 from django import forms
 
 from .models import BookingRequest
@@ -113,91 +111,6 @@ class BaseBookingRequestForm(forms.ModelForm):
             raise forms.ValidationError("Spam detected.")
         return value
 
-
-class GeneralBookingRequestForm(BaseBookingRequestForm):
-    class Meta(BaseBookingRequestForm.Meta):
-        fields = [
-            "name",
-            "email",
-            "phone",
-            "message",
-        ]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["message"].help_text = "Tell us what you need help with."
-
-
-class StudioBookingRequestForm(BaseBookingRequestForm):
-    class Meta(BaseBookingRequestForm.Meta):
-        fields = [
-            "name",
-            "email",
-            "phone",
-            "preferred_date",
-            "preferred_time",
-            "message",
-        ]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["preferred_date"].required = True
-        self.fields["preferred_date"].help_text = "Required."
-        self.fields["message"].help_text = (
-            "Tell us what kind of session you want, how many people are involved, "
-            "and any important requirements."
-        )
-        self.fields["message"].widget.attrs.update(
-            {"placeholder": "Example: vocal recording for 2 people, 3-hour session, need basic mixing support"}
-        )
-
-    def clean(self):
-        cleaned_data = super().clean()
-        preferred_date = cleaned_data.get("preferred_date")
-
-        if not preferred_date:
-            self.add_error("preferred_date", "Please choose a preferred date.")
-
-        return cleaned_data
-
-
-class VenueBookingRequestForm(BaseBookingRequestForm):
-    class Meta(BaseBookingRequestForm.Meta):
-        fields = [
-            "name",
-            "email",
-            "phone",
-            "preferred_date",
-            "preferred_time",
-            "guest_count",
-            "message",
-        ]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["preferred_date"].required = True
-        self.fields["preferred_date"].help_text = "Required."
-        self.fields["guest_count"].required = True
-        self.fields["guest_count"].help_text = "Required."
-        self.fields["message"].help_text = (
-            "Describe the type of event, expected audience, and anything else we should know."
-        )
-        self.fields["message"].widget.attrs.update(
-            {"placeholder": "Example: private showcase for 60 guests, evening event, need venue hire and basic sound setup"}
-        )
-
-    def clean(self):
-        cleaned_data = super().clean()
-        preferred_date = cleaned_data.get("preferred_date")
-        guest_count = cleaned_data.get("guest_count")
-
-        if not preferred_date:
-            self.add_error("preferred_date", "Please choose a preferred date.")
-
-        if not guest_count:
-            self.add_error("guest_count", "Please provide an estimated guest count.")
-
-        return cleaned_data
 
 class CombinedBookingRequestForm(BaseBookingRequestForm):
     phone_country_code = forms.ChoiceField(
