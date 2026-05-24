@@ -1,11 +1,11 @@
+from apps.core.utils import apply_limit
+
 from .models import Artist
 
 
 def get_featured_artists(limit=None):
-    qs = Artist.objects.featured().order_by("feature_order", "name")
-    from apps.core.utils import apply_limit
-
-    return apply_limit(qs, limit)
+    queryset = Artist.objects.featured().order_by("feature_order", "name")
+    return apply_limit(queryset, limit)
 
 
 def get_artist_by_slug(slug):
