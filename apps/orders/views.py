@@ -8,7 +8,10 @@ from apps.merch.models import MerchItem
 
 from .forms import PublicOrderForm
 from .models import Order, OrderItem
-
+from .services import (
+    send_order_admin_notification,
+    send_order_customer_confirmation,
+)
 
 def create_merch_order_view(request, slug):
     item = get_object_or_404(
@@ -55,6 +58,9 @@ def create_merch_order_view(request, slug):
                     )
 
                     order.recalculate_totals(save=True)
+
+                    send_order_admin_notification(order, request=request)
+                    send_order_customer_confirmation(order)
 
                 request.session["last_order_reference"] = order.reference_code
 
