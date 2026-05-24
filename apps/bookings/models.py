@@ -43,20 +43,6 @@ class BookingRequest(TimeStampedModel):
     preferred_date = models.DateField(blank=True, null=True)
     preferred_time = models.TimeField(blank=True, null=True)
 
-    # Legacy fields.
-    # Kept temporarily so old scheduled requests can be migrated into Booking.
-    # After the new Booking calendar is confirmed working, remove these in a later cleanup branch.
-    scheduled_start_at = models.DateTimeField(
-        blank=True,
-        null=True,
-        help_text="Legacy field. Use Booking scheduled start time instead.",
-    )
-    scheduled_end_at = models.DateTimeField(
-        blank=True,
-        null=True,
-        help_text="Legacy field. Use Booking scheduled end time instead.",
-    )
-
     guest_count = models.PositiveIntegerField(
         blank=True,
         null=True,
