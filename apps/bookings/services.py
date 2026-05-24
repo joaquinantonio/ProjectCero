@@ -2,6 +2,12 @@ from django.conf import settings
 from django.core.mail import send_mail
 
 
+def get_booking_service_line(booking):
+    if booking.studio_service:
+        return f"Studio service: {booking.studio_service.name}"
+    return "Studio service: -"
+
+
 def send_booking_notification(booking):
     if not settings.BOOKING_NOTIFICATION_EMAIL:
         return
@@ -13,6 +19,7 @@ A new booking request has been submitted.
 
 Reference: {booking.reference_code}
 Type: {booking.get_request_type_display()}
+{get_booking_service_line(booking)}
 Name: {booking.name}
 Email: {booking.email}
 Phone: {booking.phone or "-"}
@@ -44,6 +51,7 @@ Thanks for getting in touch. We’ve received your {booking.get_request_type_dis
 
 Reference: {booking.reference_code}
 Type: {booking.get_request_type_display()}
+{get_booking_service_line(booking)}
 Preferred date: {booking.preferred_date or "-"}
 Preferred time: {booking.preferred_time or "-"}
 Guest count: {booking.guest_count or "-"}

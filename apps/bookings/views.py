@@ -4,6 +4,8 @@ from django.urls import reverse
 from django.utils.dateparse import parse_datetime
 from django.views.decorators.http import require_GET
 
+from apps.studio.models import StudioService
+
 from .availability import get_unavailable_blocks
 from .forms import CombinedBookingRequestForm
 from .models import BookingRequest
@@ -18,6 +20,18 @@ def general_booking_request_view(request):
     return redirect("enquiries:general")
 
 
+def get_selected_studio_service(request):
+    service_slug = request.GET.get("service", "").strip()
+
+    if not service_slug:
+        return None
+
+    try:
+        return StudioService.objects.active().get(slug=service_slug)
+    except StudioService.DoesNotExist:
+        return None
+
+
 def booking_request_view(request):
     allowed_types = [
         BookingRequest.RequestType.STUDIO,
@@ -25,8 +39,12 @@ def booking_request_view(request):
     ]
 
     initial_type = request.GET.get("type")
+    selected_service = get_selected_studio_service(request)
 
     if initial_type not in allowed_types:
+        initial_type = BookingRequest.RequestType.STUDIO
+
+    if selected_service:
         initial_type = BookingRequest.RequestType.STUDIO
 
     if request.method == "POST":
@@ -34,6 +52,15 @@ def booking_request_view(request):
 
         if form.is_valid():
             booking = form.save(commit=False)
+
+            if (
+                booking.request_type == BookingRequest.RequestType.STUDIO
+                and selected_service
+            ):
+                booking.studio_service = selected_service
+            else:
+                booking.studio_service = None
+
             booking.save()
 
             send_booking_notification(booking)
@@ -63,6 +90,7 @@ def booking_request_view(request):
                 "Request a studio session or venue booking. "
                 "Check availability first, then send us your preferred details."
             ),
+            "selected_service": selected_service,
             "show_availability_calendar": True,
             "availability_title": "Check Availability",
             "availability_note": (

@@ -21,6 +21,10 @@ class BookingRequest(TimeStampedModel):
             self.RequestType.VENUE,
             self.RequestType.PRIVATE_EVENT,
         )
+        if self.studio_service_id and self.request_type != self.RequestType.STUDIO:
+            errors["studio_service"] = (
+                "Studio service can only be selected for studio bookings."
+            )
 
         # Confirmed studio / venue bookings need actual scheduled times.
         # Preferred date/time is only the user's request.
@@ -158,6 +162,14 @@ class BookingRequest(TimeStampedModel):
         blank=True,
         related_name="booking_requests",
     )
+    studio_service = models.ForeignKey(
+        "studio.StudioService",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="booking_requests",
+        help_text="Optional. The studio service selected from the public studio page.",
+    )
     request_type = models.CharField(
         max_length=20,
         choices=RequestType.choices,
@@ -196,6 +208,7 @@ class BookingRequest(TimeStampedModel):
             models.Index(fields=["status", "created_at"]),
             models.Index(fields=["request_type", "created_at"]),
             models.Index(fields=["event"]),
+            models.Index(fields=["studio_service"]),
             models.Index(fields=["reference_code"]),
         ]
 

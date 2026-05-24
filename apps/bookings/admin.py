@@ -1,8 +1,6 @@
 from django.contrib import admin
 from django.shortcuts import redirect
 
-from .models import BookingRequest, ScheduleCalendar
-
 from apps.core.admin import (
     ReadonlyOnChangeAdminMixin,
     SuperuserDeleteOnlyAdminMixin,
@@ -10,6 +8,8 @@ from apps.core.admin import (
     make_bulk_update_action,
     render_admin_badge,
 )
+
+from .models import BookingRequest, ScheduleCalendar
 
 
 mark_in_review = make_bulk_update_action(
@@ -47,13 +47,14 @@ class BookingRequestAdmin(
         "reference_code",
         "name",
         "request_type_badge",
+        "studio_service_display",
         "email",
         "preferred_date",
         "schedule_window",
         "status_badge",
         "created_at",
     )
-    list_filter = ("request_type", "status", "created_at")
+    list_filter = ("request_type", "studio_service", "status", "created_at")
     search_fields = (
         "reference_code",
         "name",
@@ -61,13 +62,17 @@ class BookingRequestAdmin(
         "phone",
         "message",
         "admin_notes",
+        "studio_service__name",
     )
-    search_help_text = "Search by reference, name, email, phone, message, or admin notes"
-    autocomplete_fields = ("event",)
+    search_help_text = (
+        "Search by reference, name, email, phone, message, admin notes, "
+        "or studio service"
+    )
+    autocomplete_fields = ("event", "studio_service")
     ordering = ("-created_at",)
     date_hierarchy = "created_at"
     actions = [mark_in_review, mark_contacted, mark_closed]
-    list_select_related = ("event",)
+    list_select_related = ("event", "studio_service")
 
     readonly_fields = ("reference_code", "created_at", "updated_at")
     readonly_on_change = (
@@ -97,6 +102,10 @@ class BookingRequestAdmin(
             tone_map.get(obj.request_type, "neutral"),
         )
 
+    @admin.display(ordering="studio_service__name", description="Studio Service")
+    def studio_service_display(self, obj):
+        return obj.studio_service.name if obj.studio_service else "-"
+
     @admin.display(ordering="status", description="Status")
     def status_badge(self, obj):
         tone_map = {
@@ -123,7 +132,10 @@ class BookingRequestAdmin(
                 {
                     "fields": workflow_fields,
                     "classes": ("wide", "workflow-panel"),
-                    "description": "Update the status and internal notes here. The original requester details are shown below.",
+                    "description": (
+                        "Update the status and internal notes here. "
+                        "The original requester details are shown below."
+                    ),
                 },
             ),
             (
@@ -149,8 +161,18 @@ class BookingRequestAdmin(
             (
                 "Booking Details",
                 {
-                    "fields": ("request_type", "event", ("preferred_date", "preferred_time"), "guest_count"),
-                    "description": "Submitted booking details. You can link a related event internally if needed.",
+                    "fields": (
+                        "request_type",
+                        "studio_service",
+                        "event",
+                        ("preferred_date", "preferred_time"),
+                        "guest_count",
+                    ),
+                    "description": (
+                        "Submitted booking details. Studio service is filled "
+                        "automatically when the request starts from a studio "
+                        "service page."
+                    ),
                 },
             ),
             (
@@ -182,22 +204,34 @@ class BookingRequestAdmin(
         form = super().get_form(request, obj, **kwargs)
 
         if "status" in form.base_fields:
-            form.base_fields["status"].help_text = "Use this to track the request as it moves through your workflow."
+            form.base_fields["status"].help_text = (
+                "Use this to track the request as it moves through your workflow."
+            )
 
         if "admin_notes" in form.base_fields:
             form.base_fields["admin_notes"].label = "Internal notes"
             form.base_fields["admin_notes"].help_text = "Visible only in admin."
             form.base_fields["admin_notes"].widget.attrs["rows"] = 8
 
+        if "studio_service" in form.base_fields:
+            form.base_fields["studio_service"].label = "Requested studio service"
+            form.base_fields["studio_service"].help_text = (
+                "Optional. Filled automatically when the request comes from a "
+                "studio service detail page."
+            )
+
         if "event" in form.base_fields:
             form.base_fields["event"].label = "Related event"
-            form.base_fields["event"].help_text = "Optional. Link this request to a specific event if relevant."
+            form.base_fields["event"].help_text = (
+                "Optional. Link this request to a specific event if relevant."
+            )
 
         if "message" in form.base_fields:
             form.base_fields["message"].label = "Submitted message"
             form.base_fields["message"].widget.attrs["rows"] = 6
 
         return form
+
 
 @admin.register(ScheduleCalendar)
 class ScheduleCalendarAdmin(admin.ModelAdmin):
