@@ -40,7 +40,10 @@ class MerchItemAdmin(AdminImagePreviewMixin, SuperuserDeleteOnlyAdminMixin, Time
     list_display = (
         "name",
         "price_text",
+        "price_amount",
+        "currency",
         "availability_text",
+        "stock_display",
         "featured_badge",
         "active_badge",
         "display_order",
@@ -52,8 +55,14 @@ class MerchItemAdmin(AdminImagePreviewMixin, SuperuserDeleteOnlyAdminMixin, Time
         # "is_featured",
         # "is_active",
         "display_order",)
-    list_filter = ("is_active", "is_featured")
-    search_fields = ("name", "short_description", "description", "price_text", "availability_text")
+    list_filter = ("is_active", "is_featured", "currency", "track_stock")
+    search_fields = (
+    "name",
+    "short_description",
+    "description",
+    "price_text",
+    "availability_text",
+)
     search_help_text = "Search by name, description, price text, or availability"
     ordering = ("display_order", "name")
 
@@ -70,7 +79,13 @@ class MerchItemAdmin(AdminImagePreviewMixin, SuperuserDeleteOnlyAdminMixin, Time
                     "fields": ("short_description", "description", "image"),
                 }),
                 ("Commercial", {
-                    "fields": ("price_text", "availability_text", "display_order"),
+                    "fields": (
+                    "price_text",
+                    ("price_amount", "currency"),
+                    "availability_text",
+                    ("track_stock", "stock_quantity"),
+                    "display_order",
+                ),
                 }),
                 ("Call To Action", {
                     "fields": ("cta_text", "cta_url"),
@@ -89,7 +104,13 @@ class MerchItemAdmin(AdminImagePreviewMixin, SuperuserDeleteOnlyAdminMixin, Time
                 "fields": ("short_description", "description", "image"),
             }),
             ("Commercial", {
-                "fields": ("price_text", "availability_text", "display_order"),
+                "fields": (
+                "price_text",
+                ("price_amount", "currency"),
+                "availability_text",
+                ("track_stock", "stock_quantity"),
+                "display_order",
+            ),
             }),
             ("Call To Action", {
                 "fields": ("cta_text", "cta_url"),
@@ -131,7 +152,32 @@ class MerchItemAdmin(AdminImagePreviewMixin, SuperuserDeleteOnlyAdminMixin, Time
         if "cta_url" in form.base_fields:
             form.base_fields["cta_url"].label = "Button link"
 
+        if "price_amount" in form.base_fields:
+            form.base_fields["price_amount"].label = "Checkout price amount"
+            form.base_fields["price_amount"].help_text = (
+                "Numeric amount used later for checkout. Keep 0 if this item is not for online sale yet."
+            )
+
+        if "currency" in form.base_fields:
+            form.base_fields["currency"].help_text = "Use MYR for Malaysian Ringgit."
+
+        if "track_stock" in form.base_fields:
+            form.base_fields["track_stock"].help_text = (
+                "Enable this if ProjectCero should track available quantity."
+            )
+
+        if "stock_quantity" in form.base_fields:
+            form.base_fields["stock_quantity"].help_text = (
+                "Used only when stock tracking is enabled."
+            )
+
         return form
+
+    @admin.display(description="Stock")
+    def stock_display(self, obj):
+        if not obj.track_stock:
+            return "Not tracked"
+        return obj.stock_quantity
 
     @admin.display(ordering="is_featured", description="Featured")
     def featured_badge(self, obj):
