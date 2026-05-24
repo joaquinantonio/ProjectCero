@@ -32,6 +32,7 @@ urlpatterns = [
     path("bookings/", include("apps.bookings.urls")),
     path("news/", include("apps.news.urls")),
     path("merch/", include("apps.merch.urls")),
+    path("orders/", include("apps.orders.urls")),
     path("enquire/", include("apps.enquiries.urls")),
 ]
 

@@ -68,6 +68,11 @@
           </ul>
 
           <div class="detail-actions">
+            {% if item.price_amount > 0 and item.is_in_stock %}
+              <a class="btn btn-primary" href="{% url 'orders:create_merch_order' item.slug %}">
+                Buy Now
+              </a>
+            {% endif %}
               <a class="btn btn-primary" href="{% url 'enquiries:merch' %}?item={{ item.slug }}">
                 Enquire About This Item
               </a>

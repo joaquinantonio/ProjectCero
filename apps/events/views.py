@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import F, Q
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.utils.dateparse import parse_datetime
@@ -71,6 +71,10 @@ def event_detail_view(request, slug):
 
     ordered_event_artists = event.event_artists.all()
     related_events = get_related_upcoming_events(event, limit=3)
+    ticket_types = event.ticket_types.filter(
+        is_active=True,
+        quantity_sold__lt=F("quantity_total"),
+    ).order_by("sort_order", "price_amount", "name")
 
     return render(
         request,
@@ -79,6 +83,7 @@ def event_detail_view(request, slug):
             "event": event,
             "ordered_event_artists": ordered_event_artists,
             "related_events": related_events,
+            "ticket_types": ticket_types,
         },
     )
 

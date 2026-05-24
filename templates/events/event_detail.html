@@ -93,6 +93,43 @@
               </li>
             {% endif %}
           </ul>
+            {% if ticket_types %}
+              <li>
+                <span class="detail-label">Tickets</span>
+                <span class="detail-value">
+                  {{ ticket_types|length }} ticket option{{ ticket_types|length|pluralize }}
+                </span>
+              </li>
+            {% endif %}
+
+        {% if ticket_types %}
+  <div class="card detail-summary">
+    <h2>Ticket Options</h2>
+
+    <ul class="detail-meta-list">
+      {% for ticket in ticket_types %}
+        <li>
+          <span class="detail-label">{{ ticket.name }}</span>
+          <span class="detail-value">
+            {{ ticket.currency }} {{ ticket.price_amount }}
+            <br>
+            <span class="muted">
+              {{ ticket.quantity_available }} available
+            </span>
+          </span>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <div class="detail-actions">
+      {% for ticket in ticket_types %}
+        <a class="btn btn-primary" href="{% url 'orders:create_ticket_order' ticket.id %}">
+          Buy {{ ticket.name }}
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
 
           <div class="detail-actions">
             {% if event.ticket_url %}
