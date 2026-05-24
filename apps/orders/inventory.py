@@ -6,6 +6,8 @@ from django.utils import timezone
 from apps.events.models import TicketType
 from apps.merch.models import MerchItem
 
+from .audit import record_inventory_committed, record_inventory_released
+
 
 def validate_order_inventory(order):
     errors = []
@@ -39,18 +41,7 @@ def validate_order_inventory(order):
 
 
 @transaction.atomic
-def commit_order_inventory(order):
-    """
-    Commit inventory after payment/admin confirmation.
-
-    Merch:
-    - if track_stock=True, reduce stock_quantity
-
-    Tickets:
-    - increase quantity_sold
-
-    This is idempotent. If inventory was already committed, it does nothing.
-    """
+def commit_order_inventory(order, created_by=None, source="system"):
     order = order.__class__.objects.select_for_update().get(pk=order.pk)
 
     if order.inventory_committed_at:
@@ -101,16 +92,17 @@ def commit_order_inventory(order):
         ]
     )
 
+    record_inventory_committed(
+        order,
+        created_by=created_by,
+        source=source,
+    )
+
     return True
 
 
 @transaction.atomic
-def release_order_inventory(order):
-    """
-    Release inventory when a committed order is cancelled, expired, or refunded.
-
-    This is idempotent. If inventory was not committed, it does nothing.
-    """
+def release_order_inventory(order, created_by=None, source="system"):
     order = order.__class__.objects.select_for_update().get(pk=order.pk)
 
     if not order.inventory_committed_at:
@@ -148,33 +140,32 @@ def release_order_inventory(order):
         ]
     )
 
+    record_inventory_released(
+        order,
+        created_by=created_by,
+        source=source,
+    )
+
     return True
 
 
-def sync_inventory_for_order_status(order):
-    """
-    Apply inventory rules based on the current order status.
-
-    Paid:
-    - commit inventory
-
-    Cancelled / Expired / Refunded:
-    - release inventory if already committed
-
-    Pending Payment / Draft:
-    - no inventory movement
-
-    Partially Refunded:
-    - no automatic inventory movement yet
-    """
+def sync_inventory_for_order_status(order, created_by=None, source="system"):
     if order.status == order.Status.PAID:
-        return commit_order_inventory(order)
+        return commit_order_inventory(
+            order,
+            created_by=created_by,
+            source=source,
+        )
 
     if order.status in {
         order.Status.CANCELLED,
         order.Status.EXPIRED,
         order.Status.REFUNDED,
     }:
-        return release_order_inventory(order)
+        return release_order_inventory(
+            order,
+            created_by=created_by,
+            source=source,
+        )
 
     return False

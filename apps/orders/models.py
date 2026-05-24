@@ -1,31 +1,14 @@
 from uuid import uuid4
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.utils import timezone
 
 from apps.core.models import TimeStampedModel
 
 
 class Order(TimeStampedModel):
-    @property
-    def is_inventory_committed(self):
-        return self.inventory_committed_at is not None
-
-    @property
-    def can_commit_inventory(self):
-        return self.status == self.Status.PAID and not self.is_inventory_committed
-
-    @property
-    def can_release_inventory(self):
-        releasable_statuses = {
-            self.Status.CANCELLED,
-            self.Status.EXPIRED,
-            self.Status.REFUNDED,
-        }
-        return self.status in releasable_statuses and self.is_inventory_committed
-    
     class Status(models.TextChoices):
         DRAFT = "draft", "Draft"
         PENDING_PAYMENT = "pending_payment", "Pending Payment"
@@ -147,6 +130,23 @@ class Order(TimeStampedModel):
 
         super().save(*args, **kwargs)
 
+    @property
+    def is_inventory_committed(self):
+        return self.inventory_committed_at is not None
+
+    @property
+    def can_commit_inventory(self):
+        return self.status == self.Status.PAID and not self.is_inventory_committed
+
+    @property
+    def can_release_inventory(self):
+        releasable_statuses = {
+            self.Status.CANCELLED,
+            self.Status.EXPIRED,
+            self.Status.REFUNDED,
+        }
+        return self.status in releasable_statuses and self.is_inventory_committed
+
     def __str__(self):
         return self.reference_code or f"Order for {self.customer_email}"
 
@@ -245,3 +245,66 @@ class OrderItem(TimeStampedModel):
 
     def __str__(self):
         return f"{self.description} x {self.quantity}"
+
+
+class OrderHistory(TimeStampedModel):
+    class EventType(models.TextChoices):
+        CREATED = "created", "Created"
+        STATUS_CHANGED = "status_changed", "Status Changed"
+        INVENTORY_COMMITTED = "inventory_committed", "Inventory Committed"
+        INVENTORY_RELEASED = "inventory_released", "Inventory Released"
+        EMAIL_SENT = "email_sent", "Email Sent"
+        EMAIL_SKIPPED = "email_skipped", "Email Skipped"
+        NOTE = "note", "Note"
+        ERROR = "error", "Error"
+
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="history_entries",
+    )
+
+    event_type = models.CharField(
+        max_length=40,
+        choices=EventType.choices,
+    )
+
+    from_status = models.CharField(
+        max_length=30,
+        choices=Order.Status.choices,
+        blank=True,
+    )
+    to_status = models.CharField(
+        max_length=30,
+        choices=Order.Status.choices,
+        blank=True,
+    )
+
+    message = models.TextField(blank=True)
+
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Structured audit metadata for future payment/webhook events.",
+    )
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="order_history_entries",
+    )
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+        verbose_name = "Order history"
+        verbose_name_plural = "Order history"
+        indexes = [
+            models.Index(fields=["order", "created_at"]),
+            models.Index(fields=["event_type", "created_at"]),
+            models.Index(fields=["from_status", "to_status"]),
+        ]
+
+    def __str__(self):
+        return f"{self.order.reference_code} - {self.get_event_type_display()}"

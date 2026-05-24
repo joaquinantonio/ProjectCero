@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib import messages
+from django.core.exceptions import ValidationError
 
 from apps.core.admin import (
     SuperuserDeleteOnlyAdminMixin,
@@ -7,10 +8,9 @@ from apps.core.admin import (
     render_admin_badge,
 )
 
-from .models import Order, OrderItem
+from .models import Order, OrderHistory, OrderItem
 from .services import send_order_status_update
-from django.core.exceptions import ValidationError
-from .inventory import sync_inventory_for_order_status
+from .workflow import change_order_status
 
 
 class OrderItemInline(admin.TabularInline):
@@ -28,25 +28,47 @@ class OrderItemInline(admin.TabularInline):
     readonly_fields = ("total_amount",)
 
 
+class OrderHistoryInline(admin.TabularInline):
+    model = OrderHistory
+    extra = 0
+    can_delete = False
+    fields = (
+        "created_at",
+        "event_type",
+        "from_status",
+        "to_status",
+        "message",
+        "created_by",
+    )
+    readonly_fields = fields
+    ordering = ("-created_at", "-id")
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
 def update_orders_status(modeladmin, request, queryset, status_value, label):
     updated = 0
     emailed = 0
     inventory_updated = 0
     failed = 0
 
-    for order in queryset:
-        if order.status == status_value:
-            continue
-
-        order.status = status_value
-
+    for selected_order in queryset:
         try:
-            order.save(update_fields=["status", "updated_at"])
+            order, status_changed, inventory_changed = change_order_status(
+                selected_order.pk,
+                status_value,
+                created_by=request.user,
+                source="admin_bulk_action",
+            )
 
-            if sync_inventory_for_order_status(order):
-                inventory_updated += 1
+            if not status_changed:
+                continue
 
             updated += 1
+
+            if inventory_changed:
+                inventory_updated += 1
 
             if send_order_status_update(order):
                 emailed += 1
@@ -55,7 +77,7 @@ def update_orders_status(modeladmin, request, queryset, status_value, label):
             failed += 1
             modeladmin.message_user(
                 request,
-                f"{order.reference_code}: {exc}",
+                f"{selected_order.reference_code}: {exc}",
                 level=messages.ERROR,
             )
 
@@ -148,7 +170,7 @@ class OrderAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
     )
     ordering = ("-created_at",)
     date_hierarchy = "created_at"
-    inlines = [OrderItemInline]
+    inlines = [OrderItemInline, OrderHistoryInline]
     actions = [
         mark_pending_payment,
         mark_paid,
@@ -238,15 +260,32 @@ class OrderAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
 
     def save_model(self, request, obj, form, change):
         old_status = None
+        requested_status = obj.status
 
         if change and obj.pk:
             old_status = Order.objects.only("status").get(pk=obj.pk).status
 
+        status_changed = (
+            change
+            and "status" in form.changed_data
+            and old_status != requested_status
+        )
+
+        if status_changed:
+            obj.status = old_status
+
         super().save_model(request, obj, form, change)
 
-        if change and "status" in form.changed_data and old_status != obj.status:
+        if status_changed:
             try:
-                inventory_updated = sync_inventory_for_order_status(obj)
+                order, _, inventory_updated = change_order_status(
+                    obj.pk,
+                    requested_status,
+                    created_by=request.user,
+                    source="admin_change_form",
+                )
+
+                obj.status = order.status
 
                 if inventory_updated:
                     self.message_user(
@@ -255,7 +294,7 @@ class OrderAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
                         level=messages.SUCCESS,
                     )
 
-                if send_order_status_update(obj):
+                if send_order_status_update(order):
                     self.message_user(
                         request,
                         "Customer status update email sent.",
@@ -315,3 +354,49 @@ class OrderItemAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
     )
     autocomplete_fields = ("order", "merch_item", "ticket_type")
     list_select_related = ("order", "merch_item", "ticket_type")
+
+
+@admin.register(OrderHistory)
+class OrderHistoryAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
+    list_display = (
+        "order",
+        "event_type",
+        "from_status",
+        "to_status",
+        "created_by",
+        "created_at",
+    )
+    list_filter = (
+        "event_type",
+        "from_status",
+        "to_status",
+        "created_at",
+    )
+    search_fields = (
+        "order__reference_code",
+        "order__customer_name",
+        "order__customer_email",
+        "message",
+    )
+    readonly_fields = (
+        "order",
+        "event_type",
+        "from_status",
+        "to_status",
+        "message",
+        "metadata",
+        "created_by",
+        "created_at",
+        "updated_at",
+    )
+    ordering = ("-created_at", "-id")
+    list_select_related = ("order", "created_by")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
