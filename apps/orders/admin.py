@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.contrib import messages
 from django.core.exceptions import ValidationError
+from django.db.models import Q
+from django.utils.html import format_html, format_html_join
 
 from apps.core.admin import (
     SuperuserDeleteOnlyAdminMixin,
@@ -13,9 +15,55 @@ from .services import send_order_status_update
 from .workflow import change_order_status
 
 
+class InventoryStatusFilter(admin.SimpleListFilter):
+    title = "inventory"
+    parameter_name = "inventory"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("committed", "Committed"),
+            ("not_committed", "Not committed"),
+            ("released", "Released"),
+            ("needs_attention", "Needs attention"),
+        )
+
+    def queryset(self, request, queryset):
+        value = self.value()
+
+        if value == "committed":
+            return queryset.filter(inventory_committed_at__isnull=False)
+
+        if value == "released":
+            return queryset.filter(
+                inventory_committed_at__isnull=True,
+                inventory_released_at__isnull=False,
+            )
+
+        if value == "not_committed":
+            return queryset.filter(
+                inventory_committed_at__isnull=True,
+                inventory_released_at__isnull=True,
+            )
+
+        if value == "needs_attention":
+            return queryset.filter(
+                Q(status=Order.Status.PAID, inventory_committed_at__isnull=True)
+                | Q(
+                    status__in=[
+                        Order.Status.CANCELLED,
+                        Order.Status.EXPIRED,
+                        Order.Status.REFUNDED,
+                    ],
+                    inventory_committed_at__isnull=False,
+                )
+            )
+
+        return queryset
+
+
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
-    extra = 1
+    extra = 0
     autocomplete_fields = ("merch_item", "ticket_type")
     fields = (
         "description",
@@ -32,16 +80,44 @@ class OrderHistoryInline(admin.TabularInline):
     model = OrderHistory
     extra = 0
     can_delete = False
+    classes = ("collapse",)
     fields = (
         "created_at",
-        "event_type",
-        "from_status",
-        "to_status",
+        "event_badge",
+        "status_transition",
         "message",
         "created_by",
     )
     readonly_fields = fields
     ordering = ("-created_at", "-id")
+    max_num = 0
+
+    @admin.display(description="Event")
+    def event_badge(self, obj):
+        tone_map = {
+            OrderHistory.EventType.CREATED: "success",
+            OrderHistory.EventType.STATUS_CHANGED: "info",
+            OrderHistory.EventType.INVENTORY_COMMITTED: "success",
+            OrderHistory.EventType.INVENTORY_RELEASED: "warning",
+            OrderHistory.EventType.EMAIL_SENT: "info",
+            OrderHistory.EventType.EMAIL_SKIPPED: "neutral",
+            OrderHistory.EventType.NOTE: "neutral",
+            OrderHistory.EventType.ERROR: "danger",
+        }
+        return render_admin_badge(
+            obj.get_event_type_display(),
+            tone_map.get(obj.event_type, "neutral"),
+        )
+
+    @admin.display(description="Status")
+    def status_transition(self, obj):
+        if obj.from_status and obj.to_status:
+            return f"{obj.get_from_status_display()} → {obj.get_to_status_display()}"
+
+        if obj.to_status:
+            return obj.get_to_status_display()
+
+        return "-"
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -152,24 +228,33 @@ def mark_refunded(modeladmin, request, queryset):
 class OrderAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
     list_display = (
         "reference_code",
-        "customer_name",
-        "customer_email",
-        "customer_phone",
+        "customer_summary",
         "status_badge",
-        "currency",
-        "total_amount",
+        "inventory_badge",
+        "item_summary",
+        "total_display",
         "created_at",
     )
-    list_filter = ("status", "currency", "created_at")
+    list_filter = (
+        "status",
+        InventoryStatusFilter,
+        "currency",
+        "created_at",
+    )
     search_fields = (
         "reference_code",
         "customer_name",
         "customer_email",
         "customer_phone",
         "admin_notes",
+        "items__description",
+        "items__merch_item__name",
+        "items__ticket_type__name",
+        "items__ticket_type__event__title",
     )
     ordering = ("-created_at",)
     date_hierarchy = "created_at"
+    list_select_related = ()
     inlines = [OrderItemInline, OrderHistoryInline]
     actions = [
         mark_pending_payment,
@@ -181,6 +266,7 @@ class OrderAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
 
     readonly_fields = (
         "reference_code",
+        "order_summary",
         "subtotal_amount",
         "total_amount",
         "inventory_committed_at",
@@ -191,10 +277,21 @@ class OrderAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
 
     fieldsets = (
         (
+            "Order Summary",
+            {
+                "fields": (
+                    "order_summary",
+                    "reference_code",
+                ),
+                "description": (
+                    "Use this section to quickly understand the order before changing status."
+                ),
+            },
+        ),
+        (
             "Customer",
             {
                 "fields": (
-                    "reference_code",
                     "customer_name",
                     "customer_email",
                     "customer_phone",
@@ -211,8 +308,9 @@ class OrderAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
                     "inventory_released_at",
                 ),
                 "description": (
-                    "Inventory is committed when the order becomes Paid. "
-                    "Committed inventory is released when the order becomes Cancelled, Expired, or Refunded."
+                    "Pending Payment = waiting for manual payment/admin confirmation. "
+                    "Paid = payment confirmed and inventory committed. "
+                    "Cancelled, Expired, or Refunded = inventory released if it was previously committed."
                 ),
             },
         ),
@@ -225,12 +323,16 @@ class OrderAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
                     "tax_amount",
                     "total_amount",
                 ),
+                "description": (
+                    "Totals are recalculated from order items when the order is saved."
+                ),
             },
         ),
         (
             "Internal Notes",
             {
                 "fields": ("admin_notes",),
+                "description": "Internal notes are only visible in admin.",
             },
         ),
         (
@@ -241,6 +343,25 @@ class OrderAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
             },
         ),
     )
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.prefetch_related(
+            "items",
+            "items__merch_item",
+            "items__ticket_type",
+            "items__ticket_type__event",
+        )
+
+    @admin.display(ordering="customer_name", description="Customer")
+    def customer_summary(self, obj):
+        phone = obj.customer_phone or "-"
+        return format_html(
+            "<strong>{}</strong><br><span>{}</span><br><small>{}</small>",
+            obj.customer_name,
+            obj.customer_email,
+            phone,
+        )
 
     @admin.display(ordering="status", description="Status")
     def status_badge(self, obj):
@@ -256,6 +377,88 @@ class OrderAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
         return render_admin_badge(
             obj.get_status_display(),
             tone_map.get(obj.status, "neutral"),
+        )
+
+    @admin.display(description="Inventory")
+    def inventory_badge(self, obj):
+        if obj.inventory_committed_at:
+            return render_admin_badge("Committed", "success")
+
+        if obj.inventory_released_at:
+            return render_admin_badge("Released", "warning")
+
+        if obj.status == Order.Status.PAID and not obj.inventory_committed_at:
+            return render_admin_badge("Needs attention", "danger")
+
+        return render_admin_badge("Not committed", "neutral")
+
+    @admin.display(description="Items")
+    def item_summary(self, obj):
+        items = list(obj.items.all())
+
+        if not items:
+            return "-"
+
+        first_item = items[0]
+        summary = f"{first_item.description} × {first_item.quantity}"
+
+        remaining_count = len(items) - 1
+        if remaining_count > 0:
+            summary = f"{summary} + {remaining_count} more"
+
+        return summary
+
+    @admin.display(ordering="total_amount", description="Total")
+    def total_display(self, obj):
+        return f"{obj.currency} {obj.total_amount:.2f}"
+
+    @admin.display(description="Order Summary")
+    def order_summary(self, obj):
+        if not obj.pk:
+            return "Save the order first to view summary."
+
+        item_rows = [
+            (
+                item.description,
+                item.quantity,
+                obj.currency,
+                f"{item.total_amount:.2f}",
+            )
+            for item in obj.items.all()
+        ]
+
+        if item_rows:
+            item_text = format_html_join(
+                "",
+                "{} × {} = {} {}<br>",
+                item_rows,
+            )
+        else:
+            item_text = "-"
+
+        if obj.inventory_committed_at:
+            inventory_text = "Committed"
+        elif obj.inventory_released_at:
+            inventory_text = "Released"
+        else:
+            inventory_text = "Not committed"
+
+        return format_html(
+            (
+                "<div style='line-height:1.7;'>"
+                "<strong>Reference:</strong> {}<br>"
+                "<strong>Status:</strong> {}<br>"
+                "<strong>Inventory:</strong> {}<br>"
+                "<strong>Total:</strong> {} {}<br>"
+                "<strong>Items:</strong><br>{}"
+                "</div>"
+            ),
+            obj.reference_code,
+            obj.get_status_display(),
+            inventory_text,
+            obj.currency,
+            f"{obj.total_amount:.2f}",
+            item_text,
         )
 
     def save_model(self, request, obj, form, change):
@@ -360,9 +563,9 @@ class OrderItemAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
 class OrderHistoryAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
     list_display = (
         "order",
-        "event_type",
-        "from_status",
-        "to_status",
+        "event_badge",
+        "status_transition",
+        "short_message",
         "created_by",
         "created_at",
     )
@@ -391,6 +594,43 @@ class OrderHistoryAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
     )
     ordering = ("-created_at", "-id")
     list_select_related = ("order", "created_by")
+
+    @admin.display(description="Event")
+    def event_badge(self, obj):
+        tone_map = {
+            OrderHistory.EventType.CREATED: "success",
+            OrderHistory.EventType.STATUS_CHANGED: "info",
+            OrderHistory.EventType.INVENTORY_COMMITTED: "success",
+            OrderHistory.EventType.INVENTORY_RELEASED: "warning",
+            OrderHistory.EventType.EMAIL_SENT: "info",
+            OrderHistory.EventType.EMAIL_SKIPPED: "neutral",
+            OrderHistory.EventType.NOTE: "neutral",
+            OrderHistory.EventType.ERROR: "danger",
+        }
+        return render_admin_badge(
+            obj.get_event_type_display(),
+            tone_map.get(obj.event_type, "neutral"),
+        )
+
+    @admin.display(description="Status")
+    def status_transition(self, obj):
+        if obj.from_status and obj.to_status:
+            return f"{obj.get_from_status_display()} → {obj.get_to_status_display()}"
+
+        if obj.to_status:
+            return obj.get_to_status_display()
+
+        return "-"
+
+    @admin.display(description="Message")
+    def short_message(self, obj):
+        if not obj.message:
+            return "-"
+
+        if len(obj.message) <= 80:
+            return obj.message
+
+        return f"{obj.message[:77]}..."
 
     def has_add_permission(self, request):
         return False
