@@ -107,6 +107,11 @@ BOOKING_NOTIFICATION_EMAIL = config(
     default="",
 )
 
+ORDER_NOTIFICATION_EMAIL = config(
+    "ORDER_NOTIFICATION_EMAIL",
+    default=BOOKING_NOTIFICATION_EMAIL,
+)
+
 EMAIL_HOST = config("EMAIL_HOST", default="localhost")
 EMAIL_PORT = config("EMAIL_PORT", default=25, cast=int)
 EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
