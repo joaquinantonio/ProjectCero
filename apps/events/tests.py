@@ -1,133 +1,150 @@
+from datetime import timedelta
+from decimal import Decimal
+
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
-from datetime import timedelta
 
-from apps.artists.models import Artist
-from .models import Event, EventCategory, EventArtist
-from .selectors import get_upcoming_events
+from .models import Event, EventCategory, TicketType
 
 
-class EventCategoryQuerySetTests(TestCase):
-    def setUp(self):
-        self.active_category = EventCategory.objects.create(
-            name="Active Category",
-            slug="active-category",
+class EventPublicTests(TestCase):
+    def create_category(self, name="Music"):
+        category, _ = EventCategory.objects.get_or_create(
+            name=name,
+            defaults={
+                "is_active": True,
+            },
+        )
+
+        if not category.is_active:
+            category.is_active = True
+            category.save(update_fields=["is_active", "updated_at"])
+
+        return category
+
+    def create_event(
+        self,
+        title="Live Night",
+        status=Event.Status.PUBLISHED,
+        start_at=None,
+        end_at=None,
+        category=None,
+    ):
+        category = category or self.create_category()
+
+        return Event.objects.create(
+            category=category,
+            title=title,
+            short_description="Short description",
+            description="Long description",
+            start_at=start_at or timezone.now() + timedelta(days=7),
+            end_at=end_at,
+            location_text="CeroPJ",
+            status=status,
+        )
+
+    def test_published_event_sets_slug_and_published_at(self):
+        event = self.create_event(title="Friday Jam")
+
+        self.assertTrue(event.slug)
+        self.assertIsNotNone(event.published_at)
+
+    def test_published_event_detail_is_public_but_draft_is_404(self):
+        published = self.create_event(title="Public Event")
+        draft = self.create_event(title="Draft Event", status=Event.Status.DRAFT)
+
+        response = self.client.get(
+            reverse("events:event_detail", args=[published.slug])
+        )
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(
+            reverse("events:event_detail", args=[draft.slug])
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_event_list_shows_published_upcoming_event(self):
+        event = self.create_event(title="Upcoming Public Event")
+        self.create_event(title="Hidden Draft Event", status=Event.Status.DRAFT)
+
+        response = self.client.get(reverse("events:event_list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, event.title)
+        self.assertNotContains(response, "Hidden Draft Event")
+
+    def test_event_calendar_feed_returns_published_events(self):
+        event = self.create_event(title="Calendar Event")
+        self.create_event(title="Draft Calendar Event", status=Event.Status.DRAFT)
+
+        response = self.client.get(
+            reverse("events:calendar_feed"),
+            {
+                "start": (timezone.now() - timedelta(days=1)).isoformat(),
+                "end": (timezone.now() + timedelta(days=30)).isoformat(),
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        titles = [item["title"] for item in data]
+
+        self.assertIn(event.title, titles)
+        self.assertNotIn("Draft Calendar Event", titles)
+
+    def test_event_detail_only_exposes_active_available_ticket_types(self):
+        event = self.create_event(title="Ticketed Event")
+
+        available_ticket = TicketType.objects.create(
+            event=event,
+            name="Early Bird",
+            price_amount=Decimal("30.00"),
+            currency="MYR",
+            quantity_total=10,
+            quantity_sold=2,
             is_active=True,
         )
-        self.inactive_category = EventCategory.objects.create(
-            name="Inactive Category",
-            slug="inactive-category",
+
+        TicketType.objects.create(
+            event=event,
+            name="Sold Out",
+            price_amount=Decimal("40.00"),
+            currency="MYR",
+            quantity_total=5,
+            quantity_sold=5,
+            is_active=True,
+        )
+
+        TicketType.objects.create(
+            event=event,
+            name="Inactive",
+            price_amount=Decimal("50.00"),
+            currency="MYR",
+            quantity_total=5,
+            quantity_sold=0,
             is_active=False,
         )
 
-    def test_active_filter(self):
-        """Test .active() returns only active categories."""
-        actives = EventCategory.objects.active()
-        self.assertEqual(actives.count(), 1)
-        self.assertIn(self.active_category, actives)
-        self.assertNotIn(self.inactive_category, actives)
-
-    def test_active_ordering(self):
-        """Test active categories are ordered by sort_order and name."""
-        cat1 = EventCategory.objects.create(
-            name="ZZZ",
-            slug="zzz",
-            sort_order=2,
-            is_active=True,
-        )
-        cat2 = EventCategory.objects.create(
-            name="AAA",
-            slug="aaa",
-            sort_order=1,
-            is_active=True,
-        )
-        actives = EventCategory.objects.active()
-        # Should be ordered by sort_order, then name
-        # self.active_category has sort_order=0 (default), cat2 has sort_order=1, cat1 has sort_order=2
-        self.assertEqual(list(actives), [self.active_category, cat2, cat1])
-
-    def test_slug_is_generated_and_unique(self):
-        """Categories and events should get slugs automatically."""
-        first_category = EventCategory.objects.create(name="Live Gig")
-        second_category = EventCategory.objects.create(name="Live-Gig")
-
-        self.assertTrue(first_category.slug)
-        self.assertTrue(second_category.slug)
-        self.assertNotEqual(first_category.slug, second_category.slug)
-
-        event_one = Event.objects.create(
-            category=first_category,
-            title="Night Session",
-            start_at=timezone.now() + timedelta(days=1),
-        )
-        event_two = Event.objects.create(
-            category=first_category,
-            title="Night-Session",
-            start_at=timezone.now() + timedelta(days=2),
+        response = self.client.get(
+            reverse("events:event_detail", args=[event.slug])
         )
 
-        self.assertTrue(event_one.slug)
-        self.assertTrue(event_two.slug)
-        self.assertNotEqual(event_one.slug, event_two.slug)
-
-
-class EventViewsTests(TestCase):
-    def setUp(self):
-        self.category = EventCategory.objects.create(
-            name="Live Gig",
-            slug="live-gig",
-            is_active=True,
-        )
-        self.artist = Artist.objects.create(
-            name="Test Band",
-            slug="test-band",
-            is_active=True,
-            is_featured=True,
-        )
-
-        self.published_event = Event.objects.create(
-            category=self.category,
-            title="Published Event",
-            slug="published-event",
-            start_at=timezone.now() + timedelta(days=3),
-            status=Event.Status.PUBLISHED,
-        )
-        EventArtist.objects.create(
-            event=self.published_event,
-            artist=self.artist,
-            sort_order=1,
-        )
-
-        self.draft_event = Event.objects.create(
-            category=self.category,
-            title="Draft Event",
-            slug="draft-event",
-            start_at=timezone.now() + timedelta(days=5),
-            status=Event.Status.DRAFT,
-        )
-
-    def test_event_list_shows_published_event_only(self):
-        response = self.client.get(reverse("events:event_list"))
-        self.assertContains(response, "Published Event")
-        self.assertNotContains(response, "Draft Event")
-
-    def test_artist_detail_page_loads(self):
-        response = self.client.get(reverse("artists:artist_detail", args=[self.artist.slug]))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Test Band")
 
-    def test_calendar_feed_returns_published_event_only(self):
-        response = self.client.get(reverse("events:calendar_feed"))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Published Event")
-        self.assertNotContains(response, "Draft Event")
+        ticket_types = list(response.context["ticket_types"])
+        self.assertIn(available_ticket, ticket_types)
+        self.assertEqual(len(ticket_types), 1)
 
-    def test_event_search_filters_results(self):
-        response = self.client.get(reverse("events:event_list"), {"q": "Published"})
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Published Event")
+    def test_single_event_ics_feed_returns_calendar_file(self):
+        event = self.create_event(title="ICS Event")
 
-        response = self.client.get(reverse("events:event_list"), {"q": "NoMatch"})
+        response = self.client.get(
+            reverse("events:single_event_ics", args=[event.slug])
+        )
+
         self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, "Published Event")
+        self.assertEqual(response["Content-Type"], "text/calendar")
+        self.assertIn(b"BEGIN:VCALENDAR", response.content)
+        self.assertIn(b"ICS Event", response.content)

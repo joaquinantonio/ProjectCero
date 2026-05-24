@@ -422,7 +422,7 @@ class OrderAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
                 item.description,
                 item.quantity,
                 obj.currency,
-                item.total_amount,
+                f"{item.total_amount:.2f}",
             )
             for item in obj.items.all()
         ]
@@ -430,7 +430,7 @@ class OrderAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
         if item_rows:
             item_text = format_html_join(
                 "",
-                "{} × {} = {} {:.2f}<br>",
+                "{} × {} = {} {}<br>",
                 item_rows,
             )
         else:
@@ -449,7 +449,7 @@ class OrderAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
                 "<strong>Reference:</strong> {}<br>"
                 "<strong>Status:</strong> {}<br>"
                 "<strong>Inventory:</strong> {}<br>"
-                "<strong>Total:</strong> {} {:.2f}<br>"
+                "<strong>Total:</strong> {} {}<br>"
                 "<strong>Items:</strong><br>{}"
                 "</div>"
             ),
@@ -457,7 +457,7 @@ class OrderAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
             obj.get_status_display(),
             inventory_text,
             obj.currency,
-            obj.total_amount,
+            f"{obj.total_amount:.2f}",
             item_text,
         )
 
