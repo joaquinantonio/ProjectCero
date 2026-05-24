@@ -4,7 +4,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from apps.events.models import Event
-from .models import BookingRequest
+from .models import Booking
 
 
 EVENT_FALLBACK_DURATION = timedelta(hours=2)
@@ -36,12 +36,21 @@ def get_event_blocks(start_dt=None, end_dt=None):
     return blocks
 
 
-def get_confirmed_booking_blocks(start_dt=None, end_dt=None, exclude_booking_id=None):
-    qs = BookingRequest.objects.filter(
-        status=BookingRequest.Status.CONFIRMED,
-        scheduled_start_at__isnull=False,
-        scheduled_end_at__isnull=False,
+def get_booking_blocks(
+    start_dt=None,
+    end_dt=None,
+    resource=None,
+    exclude_booking_id=None,
+):
+    qs = Booking.objects.filter(
+        status__in=Booking.BLOCKING_STATUSES,
+    ).select_related(
+        "resource",
+        "request",
     )
+
+    if resource:
+        qs = qs.filter(resource=resource)
 
     if exclude_booking_id:
         qs = qs.exclude(pk=exclude_booking_id)
@@ -67,30 +76,52 @@ def get_confirmed_booking_blocks(start_dt=None, end_dt=None, exclude_booking_id=
     return blocks
 
 
-def get_unavailable_blocks(start_dt=None, end_dt=None, exclude_booking_id=None):
+def get_confirmed_booking_blocks(start_dt=None, end_dt=None, exclude_booking_id=None):
     """
-    V1 rule:
-    - events block both studio and venue
-    - confirmed bookings block availability
-    - public users only see 'Unavailable'
+    Compatibility wrapper for older imports.
+
+    This now returns blocking Booking records instead of BookingRequest records.
+    Blocking means tentative or confirmed internal bookings.
+    """
+    return get_booking_blocks(
+        start_dt=start_dt,
+        end_dt=end_dt,
+        exclude_booking_id=exclude_booking_id,
+    )
+
+
+def get_unavailable_blocks(
+    start_dt=None,
+    end_dt=None,
+    resource=None,
+    exclude_booking_id=None,
+):
+    """
+    V2 rule:
+    - events block availability globally
+    - Booking records block availability
+    - BookingRequest records do not block availability directly
+    - public users still only see 'Unavailable'
     """
     return [
         *get_event_blocks(start_dt=start_dt, end_dt=end_dt),
-        *get_confirmed_booking_blocks(
+        *get_booking_blocks(
             start_dt=start_dt,
             end_dt=end_dt,
+            resource=resource,
             exclude_booking_id=exclude_booking_id,
         ),
     ]
 
 
-def find_conflicting_block(start_at, end_at, exclude_booking_id=None):
+def find_conflicting_block(start_at, end_at, resource=None, exclude_booking_id=None):
     if not start_at or not end_at:
         return None
 
     blocks = get_unavailable_blocks(
         start_dt=start_at,
         end_dt=end_at,
+        resource=resource,
         exclude_booking_id=exclude_booking_id,
     )
 
@@ -113,6 +144,6 @@ def build_conflict_message(block):
 
     booking = block["object"]
     return (
-        f"This booking overlaps with confirmed booking "
+        f"This booking overlaps with booking "
         f"{booking.reference_code} from {block_time}."
     )

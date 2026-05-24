@@ -1,122 +1,83 @@
 from datetime import timedelta
+from uuid import uuid4
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
-from uuid import uuid4
 
-from apps.core.models import TimeStampedModel
+from apps.core.models import SluggedModelMixin, TimeStampedModel
 
 
 class BookingRequest(TimeStampedModel):
-    def clean(self):
-        super().clean()
+    class RequestType(models.TextChoices):
+        GENERAL = "general", "General"
+        STUDIO = "studio", "Studio"
+        VENUE = "venue", "Venue"
 
-        errors = {}
+    class Status(models.TextChoices):
+        NEW = "new", "New"
+        IN_REVIEW = "in_review", "In Review"
+        CONTACTED = "contacted", "Contacted"
+        CONFIRMED = "confirmed", "Confirmed"
+        CLOSED = "closed", "Closed"
+        CANCELLED = "cancelled", "Cancelled"
 
-        is_confirmed_booking = self.status == self.Status.CONFIRMED
-        is_schedulable_booking = self.request_type in (
-            self.RequestType.STUDIO,
-            self.RequestType.VENUE,
-            self.RequestType.PRIVATE_EVENT,
-        )
-        if self.studio_service_id and self.request_type != self.RequestType.STUDIO:
-            errors["studio_service"] = (
-                "Studio service can only be selected for studio bookings."
-            )
+    reference_code = models.CharField(max_length=32, unique=True, blank=True)
 
-        # Confirmed studio / venue bookings need actual scheduled times.
-        # Preferred date/time is only the user's request.
-        if is_confirmed_booking and is_schedulable_booking:
-            if not self.scheduled_start_at:
-                errors["scheduled_start_at"] = (
-                    "A confirmed booking must have a scheduled start time."
-                )
+    event = models.ForeignKey(
+        "events.Event",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="booking_requests",
+    )
 
-            if not self.scheduled_end_at:
-                errors["scheduled_end_at"] = (
-                    "A confirmed booking must have a scheduled end time."
-                )
+    request_type = models.CharField(
+        max_length=20,
+        choices=RequestType.choices,
+    )
+    name = models.CharField(max_length=150)
+    email = models.EmailField()
+    phone = models.CharField(max_length=50, blank=True)
+    preferred_date = models.DateField(blank=True, null=True)
+    preferred_time = models.TimeField(blank=True, null=True)
 
-        # If one scheduled time is provided, both must be provided.
-        if bool(self.scheduled_start_at) != bool(self.scheduled_end_at):
-            errors["scheduled_start_at"] = (
-                "Both scheduled start time and scheduled end time must be provided together."
-            )
-            errors["scheduled_end_at"] = (
-                "Both scheduled start time and scheduled end time must be provided together."
-            )
+    # Legacy fields.
+    # Kept temporarily so old scheduled requests can be migrated into Booking.
+    # After the new Booking calendar is confirmed working, remove these in a later cleanup branch.
+    scheduled_start_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        help_text="Legacy field. Use Booking scheduled start time instead.",
+    )
+    scheduled_end_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        help_text="Legacy field. Use Booking scheduled end time instead.",
+    )
 
-        if errors:
-            raise ValidationError(errors)
+    guest_count = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1)],
+    )
+    message = models.TextField()
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.NEW,
+    )
+    admin_notes = models.TextField(blank=True)
 
-        # If no scheduled times are provided yet, stop validation here.
-        if not self.scheduled_start_at or not self.scheduled_end_at:
-            return
-
-        # End time must be after start time.
-        if self.scheduled_end_at <= self.scheduled_start_at:
-            raise ValidationError(
-                {
-                    "scheduled_end_at": (
-                        "Scheduled end time must be after scheduled start time."
-                    )
-                }
-            )
-
-        # Business hours validation only applies to studio bookings.
-        if self.request_type == self.RequestType.STUDIO:
-            local_start = timezone.localtime(self.scheduled_start_at)
-            local_end = timezone.localtime(self.scheduled_end_at)
-
-            business_start = local_start.replace(
-                hour=11,
-                minute=0,
-                second=0,
-                microsecond=0,
-            )
-            business_end = business_start + timedelta(hours=13)  # 11 AM to 12 midnight
-
-            if not (business_start <= local_start < business_end):
-                errors["scheduled_start_at"] = (
-                    "Studio booking must start within business hours: "
-                    "11:00 AM to 12:00 midnight."
-                )
-
-            if not (business_start < local_end <= business_end):
-                errors["scheduled_end_at"] = (
-                    "Studio booking must end within business hours: "
-                    "11:00 AM to 12:00 midnight."
-                )
-
-        if errors:
-            raise ValidationError(errors)
-
-        # Only confirmed studio / venue bookings should block the calendar.
-        if not (is_confirmed_booking and is_schedulable_booking):
-            return
-
-        """
-        Import here to avoid circular import problems.
-        must stay inside the clean() method.
-        Do not put it at the top of the file, 
-        availability.py imports BookingRequest, so putting it at the top can cause a circular import issue.
-        """
-        from .availability import build_conflict_message, find_conflicting_block
-
-        conflict = find_conflicting_block(
-            start_at=self.scheduled_start_at,
-            end_at=self.scheduled_end_at,
-            exclude_booking_id=self.pk,
-        )
-
-        if conflict:
-            raise ValidationError(
-                {
-                    "scheduled_start_at": build_conflict_message(conflict),
-                }
-            )
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["status", "created_at"]),
+            models.Index(fields=["request_type", "created_at"]),
+            models.Index(fields=["event"]),
+            models.Index(fields=["reference_code"]),
+        ]
 
     def generate_reference_code(self):
         while True:
@@ -139,81 +100,220 @@ class BookingRequest(TimeStampedModel):
 
         super().save(*args, **kwargs)
 
-    class RequestType(models.TextChoices):
-        GENERAL = "general", "General"
-        STUDIO = "studio", "Studio"
-        VENUE = "venue", "Venue"
-        PRIVATE_EVENT = "private_event", "Private Event"
+    def __str__(self):
+        return self.reference_code or f"{self.name} - {self.request_type}"
 
-    class Status(models.TextChoices):
-        NEW = "new", "New"
-        IN_REVIEW = "in_review", "In Review"
-        CONTACTED = "contacted", "Contacted"
-        CONFIRMED = "confirmed", "Confirmed"
-        CLOSED = "closed", "Closed"
-        CANCELLED = "cancelled", "Cancelled"
 
-    reference_code = models.CharField(max_length=32, unique=True, blank=True)
+class BookingResource(SluggedModelMixin, TimeStampedModel):
+    """
+    Physical bookable resource.
 
-    event = models.ForeignKey(
-        "events.Event",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="booking_requests",
-    )
-    studio_service = models.ForeignKey(
-        "studio.StudioService",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="booking_requests",
-        help_text="Optional. The studio service selected from the public studio page.",
-    )
-    request_type = models.CharField(
-        max_length=20,
-        choices=RequestType.choices,
-    )
+    For now, ProjectCero has one physical resource:
+    CeroPJ Venue.
+
+    Studio and venue are booking types/workflows, not separate physical resources.
+    """
+
+    slug_max_length = 170
+
     name = models.CharField(max_length=150)
-    email = models.EmailField()
-    phone = models.CharField(max_length=50, blank=True)
-    preferred_date = models.DateField(blank=True, null=True)
-    preferred_time = models.TimeField(blank=True, null=True)
-    scheduled_start_at = models.DateTimeField(
-        blank=True,
-        null=True,
-        help_text="Confirmed internal start time. Used for the schedule calendar.",
-    )
-    scheduled_end_at = models.DateTimeField(
-        blank=True,
-        null=True,
-        help_text="Confirmed internal end time. Used for the schedule calendar.",
-    )
-    guest_count = models.PositiveIntegerField(
-        blank=True,
-        null=True,
-        validators=[MinValueValidator(1)],
-    )
-    message = models.TextField()
-    status = models.CharField(
-        max_length=20,
-        choices=Status.choices,
-        default=Status.NEW,
-    )
-    admin_notes = models.TextField(blank=True)
+    slug = models.SlugField(max_length=170, unique=True)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    display_order = models.PositiveIntegerField(default=0)
 
     class Meta:
-        ordering = ["-created_at"]
+        ordering = ["display_order", "name"]
         indexes = [
-            models.Index(fields=["status", "created_at"]),
-            models.Index(fields=["request_type", "created_at"]),
-            models.Index(fields=["event"]),
-            models.Index(fields=["studio_service"]),
-            models.Index(fields=["reference_code"]),
+            models.Index(fields=["is_active", "display_order"]),
         ]
 
     def __str__(self):
-        return self.reference_code or f"{self.name} - {self.request_type}"
+        return self.name
+
+
+class Booking(TimeStampedModel):
+    BUSINESS_START_HOUR = 11
+    BUSINESS_DURATION_HOURS = 13
+
+    class BookingType(models.TextChoices):
+        STUDIO = "studio", "Studio"
+        VENUE = "venue", "Venue"
+
+    class Status(models.TextChoices):
+        TENTATIVE = "tentative", "Tentative"
+        CONFIRMED = "confirmed", "Confirmed"
+        CANCELLED = "cancelled", "Cancelled"
+        COMPLETED = "completed", "Completed"
+        NO_SHOW = "no_show", "No Show"
+
+    BLOCKING_STATUSES = (
+        Status.TENTATIVE,
+        Status.CONFIRMED,
+    )
+
+    reference_code = models.CharField(max_length=32, unique=True, blank=True)
+
+    request = models.ForeignKey(
+        BookingRequest,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="bookings",
+        help_text="Optional. Link this booking to the original public request.",
+    )
+
+    resource = models.ForeignKey(
+        BookingResource,
+        on_delete=models.PROTECT,
+        related_name="bookings",
+    )
+
+    booking_type = models.CharField(
+        max_length=30,
+        choices=BookingType.choices,
+    )
+
+    title = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Optional internal title. If blank, the linked request name is used.",
+    )
+
+    scheduled_start_at = models.DateTimeField()
+    scheduled_end_at = models.DateTimeField()
+
+    status = models.CharField(
+        max_length=30,
+        choices=Status.choices,
+        default=Status.TENTATIVE,
+    )
+
+    internal_notes = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["scheduled_start_at", "title", "id"]
+        indexes = [
+            models.Index(fields=["status", "scheduled_start_at"]),
+            models.Index(fields=["status", "scheduled_end_at"]),
+            models.Index(fields=["resource", "status", "scheduled_start_at"]),
+            models.Index(fields=["booking_type", "status", "scheduled_start_at"]),
+            models.Index(fields=["request"]),
+            models.Index(fields=["reference_code"]),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(
+                    scheduled_end_at__gt=models.F("scheduled_start_at")
+                ),
+                name="booking_scheduled_end_after_start",
+            ),
+        ]
+
+    def clean(self):
+        super().clean()
+
+        errors = {}
+
+        if not self.scheduled_start_at:
+            errors["scheduled_start_at"] = "Scheduled start time is required."
+
+        if not self.scheduled_end_at:
+            errors["scheduled_end_at"] = "Scheduled end time is required."
+
+        if not self.resource_id:
+            errors["resource"] = "Booking resource is required."
+
+        if errors:
+            raise ValidationError(errors)
+
+        if self.scheduled_end_at <= self.scheduled_start_at:
+            errors["scheduled_end_at"] = (
+                "Scheduled end time must be after scheduled start time."
+            )
+
+        if self.booking_type == self.BookingType.STUDIO:
+            local_start = timezone.localtime(self.scheduled_start_at)
+            local_end = timezone.localtime(self.scheduled_end_at)
+
+            business_start = local_start.replace(
+                hour=self.BUSINESS_START_HOUR,
+                minute=0,
+                second=0,
+                microsecond=0,
+            )
+            business_end = business_start + timedelta(
+                hours=self.BUSINESS_DURATION_HOURS
+            )
+
+            if not (business_start <= local_start < business_end):
+                errors["scheduled_start_at"] = (
+                    "Studio booking must start within business hours: "
+                    "11:00 AM to 12:00 midnight."
+                )
+
+            if not (business_start < local_end <= business_end):
+                errors["scheduled_end_at"] = (
+                    "Studio booking must end within business hours: "
+                    "11:00 AM to 12:00 midnight."
+                )
+
+        if errors:
+            raise ValidationError(errors)
+
+        if self.status not in self.BLOCKING_STATUSES:
+            return
+
+        from .availability import build_conflict_message, find_conflicting_block
+
+        conflict = find_conflicting_block(
+            start_at=self.scheduled_start_at,
+            end_at=self.scheduled_end_at,
+            resource=self.resource,
+            exclude_booking_id=self.pk,
+        )
+
+        if conflict:
+            raise ValidationError(
+                {
+                    "scheduled_start_at": build_conflict_message(conflict),
+                }
+            )
+
+    def generate_reference_code(self):
+        while True:
+            reference_code = f"BKG-{uuid4().hex[:8].upper()}"
+
+            exists = Booking.objects.filter(
+                reference_code=reference_code
+            ).exclude(pk=self.pk).exists()
+
+            if not exists:
+                return reference_code
+
+    def save(self, *args, **kwargs):
+        if not self.reference_code:
+            self.reference_code = self.generate_reference_code()
+
+            update_fields = kwargs.get("update_fields")
+            if update_fields is not None:
+                kwargs["update_fields"] = set(update_fields) | {"reference_code"}
+
+        super().save(*args, **kwargs)
+
+    @property
+    def display_title(self):
+        if self.title:
+            return self.title
+
+        if self.request:
+            return self.request.name
+
+        return self.reference_code
+
+    def __str__(self):
+        return f"{self.reference_code} - {self.display_title}"
+
 
 class ScheduleCalendar(BookingRequest):
     class Meta:

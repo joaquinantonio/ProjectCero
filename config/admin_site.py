@@ -2,7 +2,7 @@ from django.contrib.admin import AdminSite
 from django.core.exceptions import PermissionDenied
 from apps.artists.models import Artist
 from apps.bookings.availability import get_confirmed_booking_blocks, get_event_blocks
-from apps.bookings.models import BookingRequest
+from apps.bookings.models import Booking, BookingRequest
 from apps.enquiries.models import EnquirySubmission
 from apps.events.models import Event
 from apps.merch.models import MerchItem
@@ -25,6 +25,7 @@ class CeroAdminSite(AdminSite):
         return (
                 request.user.is_superuser
                 or request.user.has_perm("bookings.view_bookingrequest")
+                or request.user.has_perm("bookings.view_booking")
                 or request.user.has_perm("events.view_event")
         )
 
@@ -82,36 +83,34 @@ class CeroAdminSite(AdminSite):
             )
 
         booking_label_map = {
-            BookingRequest.RequestType.STUDIO: "Studio Service",
-            BookingRequest.RequestType.VENUE: "Venue / Private Event",
-            BookingRequest.RequestType.PRIVATE_EVENT: "Venue / Private Event",
+            Booking.BookingType.STUDIO: "Studio",
+            Booking.BookingType.VENUE: "Venue",
         }
 
         booking_class_map = {
-            BookingRequest.RequestType.STUDIO: "schedule-event-studio",
-            BookingRequest.RequestType.VENUE: "schedule-event-venue",
-            BookingRequest.RequestType.PRIVATE_EVENT: "schedule-event-venue",
+            Booking.BookingType.STUDIO: "schedule-event-studio",
+            Booking.BookingType.VENUE: "schedule-event-venue",
         }
 
         for block in get_confirmed_booking_blocks(start_dt=start_dt, end_dt=end_dt):
             booking = block["object"]
 
             type_label = booking_label_map.get(
-                booking.request_type,
-                booking.get_request_type_display(),
+                booking.booking_type,
+                booking.get_booking_type_display(),
             )
 
             css_class = booking_class_map.get(
-                booking.request_type,
+                booking.booking_type,
                 "schedule-event-booking",
             )
 
             calendar_items.append(
                 {
-                    "title": f"{type_label}: {booking.name}",
+                    "title": f"{type_label}: {booking.display_title}",
                     "start": block["start"].isoformat(),
                     "end": block["end"].isoformat(),
-                    "url": reverse("admin:bookings_bookingrequest_change", args=[booking.pk]),
+                    "url": reverse("admin:bookings_booking_change", args=[booking.pk]),
                     "classNames": ["schedule-event", css_class],
                 }
             )

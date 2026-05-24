@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db.models import Count
 from django.shortcuts import redirect
 
 from apps.core.admin import (
@@ -9,7 +10,7 @@ from apps.core.admin import (
     render_admin_badge,
 )
 
-from .models import BookingRequest, ScheduleCalendar
+from .models import Booking, BookingRequest, BookingResource, ScheduleCalendar
 
 
 mark_in_review = make_bulk_update_action(
@@ -37,6 +38,168 @@ mark_closed = make_bulk_update_action(
 )
 
 
+@admin.register(BookingResource)
+class BookingResourceAdmin(
+    SuperuserDeleteOnlyAdminMixin,
+    TimestampedAdmin,
+):
+    list_display = (
+        "name",
+        "is_active",
+        "display_order",
+        "updated_at",
+    )
+    list_filter = ("is_active",)
+    search_fields = ("name", "description")
+    prepopulated_fields = {"slug": ("name",)}
+    ordering = ("display_order", "name")
+
+
+@admin.register(Booking)
+class BookingAdmin(
+    SuperuserDeleteOnlyAdminMixin,
+    TimestampedAdmin,
+):
+    list_display = (
+        "reference_code",
+        "display_title",
+        "booking_type_badge",
+        "resource",
+        "schedule_window",
+        "status_badge",
+        "request",
+        "created_at",
+    )
+    list_filter = (
+        "booking_type",
+        "resource",
+        "status",
+        "scheduled_start_at",
+        "created_at",
+    )
+    search_fields = (
+        "reference_code",
+        "title",
+        "request__reference_code",
+        "request__name",
+        "request__email",
+        "request__phone",
+        "internal_notes",
+    )
+    search_help_text = (
+        "Search by booking reference, title, request reference, customer name, "
+        "email, phone, or notes"
+    )
+    autocomplete_fields = (
+        "request",
+        "resource",
+    )
+    list_select_related = (
+        "request",
+        "resource",
+    )
+    ordering = ("scheduled_start_at",)
+    date_hierarchy = "scheduled_start_at"
+
+    readonly_fields = (
+        "reference_code",
+        "created_at",
+        "updated_at",
+    )
+
+    fieldsets = (
+        (
+            "Booking",
+            {
+                "fields": (
+                    "reference_code",
+                    "title",
+                    "booking_type",
+                    "status",
+                    "resource",
+                    "request",
+                ),
+            },
+        ),
+        (
+            "Schedule",
+            {
+                "fields": (
+                    "scheduled_start_at",
+                    "scheduled_end_at",
+                ),
+                "description": (
+                    "These fields control the admin and public availability calendars."
+                ),
+            },
+        ),
+        (
+            "Internal Notes",
+            {
+                "fields": ("internal_notes",),
+            },
+        ),
+        (
+            "System",
+            {
+                "fields": ("created_at", "updated_at"),
+                "classes": ("collapse",),
+            },
+        ),
+    )
+
+    @admin.display(ordering="booking_type", description="Type")
+    def booking_type_badge(self, obj):
+        tone_map = {
+            Booking.BookingType.STUDIO: "accent",
+            Booking.BookingType.VENUE: "info",
+        }
+        return render_admin_badge(
+            obj.get_booking_type_display(),
+            tone_map.get(obj.booking_type, "neutral"),
+        )
+
+    @admin.display(ordering="status", description="Status")
+    def status_badge(self, obj):
+        tone_map = {
+            Booking.Status.TENTATIVE: "warning",
+            Booking.Status.CONFIRMED: "success",
+            Booking.Status.CANCELLED: "danger",
+            Booking.Status.COMPLETED: "neutral",
+            Booking.Status.NO_SHOW: "danger",
+        }
+        return render_admin_badge(
+            obj.get_status_display(),
+            tone_map.get(obj.status, "neutral"),
+        )
+
+    @admin.display(description="Scheduled")
+    def schedule_window(self, obj):
+        return (
+            f"{obj.scheduled_start_at:%d %b %Y, %I:%M %p} – "
+            f"{obj.scheduled_end_at:%I:%M %p}"
+        )
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+
+        if "internal_notes" in form.base_fields:
+            form.base_fields["internal_notes"].widget.attrs["rows"] = 8
+            form.base_fields["internal_notes"].help_text = "Visible only in admin."
+
+        if "request" in form.base_fields:
+            form.base_fields["request"].help_text = (
+                "Optional. Link this booking to the original public request."
+            )
+
+        if "resource" in form.base_fields:
+            form.base_fields["resource"].help_text = (
+                "For now this should usually be CeroPJ Venue."
+            )
+
+        return form
+
+
 @admin.register(BookingRequest)
 class BookingRequestAdmin(
     ReadonlyOnChangeAdminMixin,
@@ -47,14 +210,13 @@ class BookingRequestAdmin(
         "reference_code",
         "name",
         "request_type_badge",
-        "studio_service_display",
         "email",
         "preferred_date",
-        "schedule_window",
+        "booking_count",
         "status_badge",
         "created_at",
     )
-    list_filter = ("request_type", "studio_service", "status", "created_at")
+    list_filter = ("request_type", "status", "created_at")
     search_fields = (
         "reference_code",
         "name",
@@ -62,17 +224,13 @@ class BookingRequestAdmin(
         "phone",
         "message",
         "admin_notes",
-        "studio_service__name",
     )
-    search_help_text = (
-        "Search by reference, name, email, phone, message, admin notes, "
-        "or studio service"
-    )
-    autocomplete_fields = ("event", "studio_service")
+    search_help_text = "Search by reference, name, email, phone, message, or admin notes"
+    autocomplete_fields = ("event",)
     ordering = ("-created_at",)
     date_hierarchy = "created_at"
     actions = [mark_in_review, mark_contacted, mark_closed]
-    list_select_related = ("event", "studio_service")
+    list_select_related = ("event",)
 
     readonly_fields = ("reference_code", "created_at", "updated_at")
     readonly_on_change = (
@@ -86,6 +244,10 @@ class BookingRequestAdmin(
         "message",
     )
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.annotate(bookings_total=Count("bookings"))
+
     def has_add_permission(self, request):
         return request.user.is_superuser
 
@@ -95,16 +257,15 @@ class BookingRequestAdmin(
             BookingRequest.RequestType.GENERAL: "neutral",
             BookingRequest.RequestType.STUDIO: "accent",
             BookingRequest.RequestType.VENUE: "info",
-            BookingRequest.RequestType.PRIVATE_EVENT: "warning",
         }
         return render_admin_badge(
             obj.get_request_type_display(),
             tone_map.get(obj.request_type, "neutral"),
         )
 
-    @admin.display(ordering="studio_service__name", description="Studio Service")
-    def studio_service_display(self, obj):
-        return obj.studio_service.name if obj.studio_service else "-"
+    @admin.display(description="Bookings")
+    def booking_count(self, obj):
+        return obj.bookings_total
 
     @admin.display(ordering="status", description="Status")
     def status_badge(self, obj):
@@ -133,22 +294,8 @@ class BookingRequestAdmin(
                     "fields": workflow_fields,
                     "classes": ("wide", "workflow-panel"),
                     "description": (
-                        "Update the status and internal notes here. "
-                        "The original requester details are shown below."
-                    ),
-                },
-            ),
-            (
-                "Confirmed Schedule",
-                {
-                    "classes": ("wide",),
-                    "fields": (
-                        "scheduled_start_at",
-                        "scheduled_end_at",
-                    ),
-                    "description": (
-                        "Use these fields only after confirming the booking. "
-                        "These times appear on the admin calendar."
+                        "Update the request status and internal notes here. "
+                        "Confirmed calendar blocks are now managed through Booking records."
                     ),
                 },
             ),
@@ -159,19 +306,17 @@ class BookingRequestAdmin(
                 },
             ),
             (
-                "Booking Details",
+                "Request Details",
                 {
                     "fields": (
                         "request_type",
-                        "studio_service",
                         "event",
                         ("preferred_date", "preferred_time"),
                         "guest_count",
                     ),
                     "description": (
-                        "Submitted booking details. Studio service is filled "
-                        "automatically when the request starts from a studio "
-                        "service page."
+                        "Submitted customer request details. Create a Booking "
+                        "record when the date/time is confirmed internally."
                     ),
                 },
             ),
@@ -190,16 +335,6 @@ class BookingRequestAdmin(
             ),
         )
 
-    @admin.display(description="Scheduled")
-    def schedule_window(self, obj):
-        if not obj.scheduled_start_at or not obj.scheduled_end_at:
-            return "-"
-
-        return (
-            f"{obj.scheduled_start_at:%d %b %Y, %I:%M %p} – "
-            f"{obj.scheduled_end_at:%I:%M %p}"
-        )
-
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
 
@@ -212,13 +347,6 @@ class BookingRequestAdmin(
             form.base_fields["admin_notes"].label = "Internal notes"
             form.base_fields["admin_notes"].help_text = "Visible only in admin."
             form.base_fields["admin_notes"].widget.attrs["rows"] = 8
-
-        if "studio_service" in form.base_fields:
-            form.base_fields["studio_service"].label = "Requested studio service"
-            form.base_fields["studio_service"].help_text = (
-                "Optional. Filled automatically when the request comes from a "
-                "studio service detail page."
-            )
 
         if "event" in form.base_fields:
             form.base_fields["event"].label = "Related event"
@@ -245,6 +373,7 @@ class ScheduleCalendarAdmin(admin.ModelAdmin):
         return (
             request.user.is_superuser
             or request.user.has_perm("bookings.view_bookingrequest")
+            or request.user.has_perm("bookings.view_booking")
             or request.user.has_perm("events.view_event")
         )
 
@@ -255,5 +384,6 @@ class ScheduleCalendarAdmin(admin.ModelAdmin):
         return (
             request.user.is_superuser
             or request.user.has_perm("bookings.view_bookingrequest")
+            or request.user.has_perm("bookings.view_booking")
             or request.user.has_perm("events.view_event")
         )
