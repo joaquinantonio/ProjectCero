@@ -1,11 +1,14 @@
 from django.db.models import F, Q
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils.dateparse import parse_datetime
 from django.views.decorators.http import require_GET
-from apps.core.utils import paginate_queryset
 from icalendar import Calendar, Event as ICalEvent
-from .models import EventCategory
+
+from apps.core.utils import paginate_queryset
+
+from .models import Event, EventCategory
 from .selectors import (
     get_calendar_events_between,
     get_past_events,
@@ -13,6 +16,7 @@ from .selectors import (
     get_related_upcoming_events,
     get_upcoming_events,
 )
+
 
 def event_list_view(request):
     upcoming_events = get_upcoming_events()
@@ -30,10 +34,10 @@ def event_list_view(request):
 
     if search_query:
         upcoming_events = upcoming_events.filter(
-            Q(title__icontains=search_query) |
-            Q(short_description__icontains=search_query) |
-            Q(description__icontains=search_query) |
-            Q(location_text__icontains=search_query)
+            Q(title__icontains=search_query)
+            | Q(short_description__icontains=search_query)
+            | Q(description__icontains=search_query)
+            | Q(location_text__icontains=search_query)
         )
 
     upcoming_page = paginate_queryset(request, upcoming_events, per_page=6)
@@ -53,6 +57,7 @@ def event_list_view(request):
 
 def past_event_list_view(request):
     past_events = get_past_events()
+
     return render(
         request,
         "events/past_event_list.html",
@@ -62,11 +67,10 @@ def past_event_list_view(request):
     )
 
 
-
 def event_detail_view(request, slug):
     try:
         event = get_published_event_by_slug(slug)
-    except Exception:
+    except Event.DoesNotExist:
         raise Http404("Event not found")
 
     ordered_event_artists = event.event_artists.all()
@@ -102,63 +106,61 @@ def event_calendar_feed_view(request):
 
     events = get_calendar_events_between(start_dt=start_dt, end_dt=end_dt)
 
-    data = []
-    for event in events:
-        data.append({
+    data = [
+        {
             "title": event.title,
             "start": event.start_at.isoformat(),
             "end": event.end_at.isoformat() if event.end_at else None,
-            "url": f"/events/{event.slug}/",
-        })
+            "url": reverse("events:event_detail", args=[event.slug]),
+        }
+        for event in events
+    ]
 
     return JsonResponse(data, safe=False)
 
 
-@require_GET
-def event_ics_feed_view(request):
-    cal = Calendar()
-    cal.add("prodid", "-//CeroPJ//Events Calendar//EN")
-    cal.add("version", "2.0")
-
-    events = get_upcoming_events()
+def build_ical_response(events, *, filename, prodid):
+    calendar = Calendar()
+    calendar.add("prodid", prodid)
+    calendar.add("version", "2.0")
 
     for item in events:
-        e = ICalEvent()
-        e.add("summary", item.title)
-        e.add("dtstart", item.start_at)
-        if item.end_at:
-            e.add("dtend", item.end_at)
-        e.add("description", item.description or "")
-        e.add("location", item.location_text or "")
-        e.add("uid", f"event-{item.id}@CeroPJ.local")
-        cal.add_component(e)
+        calendar_event = ICalEvent()
+        calendar_event.add("summary", item.title)
+        calendar_event.add("dtstart", item.start_at)
 
-    response = HttpResponse(cal.to_ical(), content_type="text/calendar")
-    response["Content-Disposition"] = 'attachment; filename="events.ics"'
+        if item.end_at:
+            calendar_event.add("dtend", item.end_at)
+
+        calendar_event.add("description", item.description or "")
+        calendar_event.add("location", item.location_text or "")
+        calendar_event.add("uid", f"event-{item.id}@CeroPJ.local")
+
+        calendar.add_component(calendar_event)
+
+    response = HttpResponse(calendar.to_ical(), content_type="text/calendar")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
     return response
+
+
+@require_GET
+def event_ics_feed_view(request):
+    return build_ical_response(
+        get_upcoming_events(),
+        filename="events.ics",
+        prodid="-//CeroPJ//Events Calendar//EN",
+    )
 
 
 @require_GET
 def single_event_ics_feed_view(request, slug):
     try:
-        item = get_published_event_by_slug(slug)
-    except Exception:
+        event = get_published_event_by_slug(slug)
+    except Event.DoesNotExist:
         raise Http404("Event not found")
 
-    cal = Calendar()
-    cal.add("prodid", "-//CeroPJ//Single Event Calendar//EN")
-    cal.add("version", "2.0")
-
-    e = ICalEvent()
-    e.add("summary", item.title)
-    e.add("dtstart", item.start_at)
-    if item.end_at:
-        e.add("dtend", item.end_at)
-    e.add("description", item.description or "")
-    e.add("location", item.location_text or "")
-    e.add("uid", f"event-{item.id}@CeroPJ.local")
-    cal.add_component(e)
-
-    response = HttpResponse(cal.to_ical(), content_type="text/calendar")
-    response["Content-Disposition"] = f'attachment; filename="{item.slug}.ics"'
-    return response
+    return build_ical_response(
+        [event],
+        filename=f"{event.slug}.ics",
+        prodid="-//CeroPJ//Single Event Calendar//EN",
+    )
