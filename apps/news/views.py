@@ -10,20 +10,22 @@ class NewsListView(ListView):
     paginate_by = 9
 
     def get_featured_post(self):
-        return (
-            NewsPost.objects.filter(
-                status=NewsPost.Status.PUBLISHED,
-                is_featured=True,
+        if not hasattr(self, "_featured_post"):
+            self._featured_post = (
+                NewsPost.objects.filter(
+                    status=NewsPost.Status.PUBLISHED,
+                    is_featured=True,
+                )
+                .order_by("-published_at", "-created_at")
+                .first()
             )
-            .order_by("-published_at", "-created_at")
-            .first()
-        )
+
+        return self._featured_post
 
     def get_queryset(self):
-        queryset = (
-            NewsPost.objects.filter(status=NewsPost.Status.PUBLISHED)
-            .order_by("-published_at", "-created_at")
-        )
+        queryset = NewsPost.objects.filter(
+            status=NewsPost.Status.PUBLISHED,
+        ).order_by("-published_at", "-created_at")
 
         featured_post = self.get_featured_post()
         if featured_post:
