@@ -11,7 +11,7 @@ from apps.core.admin import (
     render_admin_badge,
     render_boolean_badge,
 )
-from .models import Event, EventArtist, EventCategory
+from .models import Event, EventArtist, EventCategory, TicketType
 
 
 make_categories_active = make_bulk_update_action(
@@ -112,6 +112,46 @@ class EventArtistInline(admin.TabularInline):
     ordering = ("sort_order", "id")
 
 
+class TicketTypeInline(admin.TabularInline):
+    model = TicketType
+    extra = 1
+    fields = (
+        "name",
+        "price_amount",
+        "currency",
+        "quantity_total",
+        "quantity_sold",
+        "is_active",
+        "sort_order",
+    )
+    readonly_fields = ("quantity_sold",)
+    ordering = ("sort_order", "price_amount")
+
+
+@admin.register(TicketType)
+class TicketTypeAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
+    list_display = (
+        "name",
+        "event",
+        "price_amount",
+        "currency",
+        "quantity_total",
+        "quantity_sold",
+        "quantity_available_display",
+        "is_active",
+        "sort_order",
+    )
+    list_filter = ("is_active", "currency", "event__category")
+    search_fields = ("name", "description", "event__title")
+    autocomplete_fields = ("event",)
+    ordering = ("event__start_at", "sort_order", "price_amount")
+    list_select_related = ("event",)
+
+    @admin.display(description="Available")
+    def quantity_available_display(self, obj):
+        return obj.quantity_available
+
+
 @admin.register(Event)
 class EventAdmin(ReadonlyOnChangeAdminMixin, AdminImagePreviewMixin, SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
     image_preview_field = "poster"
@@ -130,7 +170,7 @@ class EventAdmin(ReadonlyOnChangeAdminMixin, AdminImagePreviewMixin, SuperuserDe
     search_fields = ("title", "short_description", "description", "location_text", "time_note")
     search_help_text = "Search by title, short summary, description, location, or timing note"
     autocomplete_fields = ("category",)
-    inlines = [EventArtistInline]
+    inlines = [TicketTypeInline, EventArtistInline]
     ordering = ("start_at", "title")
     date_hierarchy = "start_at"
     list_select_related = ("category",)
