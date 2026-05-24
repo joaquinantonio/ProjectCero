@@ -225,7 +225,7 @@ class PublicQueryPerformanceTests(TestCase):
 
     def test_studio_home_query_count_stays_reasonable(self):
         self.assert_max_queries(
-            reverse("studio:studio_home"),
+            reverse("studio:home"),
             max_queries=5,
         )
 
