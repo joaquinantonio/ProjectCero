@@ -22,18 +22,33 @@
     font-size: 0.95rem;
   }
 
+  #content {
+    max-width: none;
+  }
+
+  #content-main {
+    width: 100%;
+  }
+
   .schedule-card {
+    width: 100%;
+    box-sizing: border-box;
     background: var(--body-bg);
     border: 1px solid var(--hairline-color);
     border-radius: 18px;
     padding: 1.25rem;
     box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
-    overflow-x: auto;
+    overflow-x: visible;
   }
 
   #admin-calendar {
+    width: 100%;
+    min-width: 0;
     min-height: 720px;
-    min-width: 760px;
+  }
+
+  #admin-calendar .fc {
+    width: 100%;
   }
 
   /* Legend */
@@ -368,7 +383,26 @@
         events: "{% url 'admin:schedule_calendar_feed' %}"
       });
 
-      calendar.render();
+            calendar.render();
+
+      function refreshCalendarSize() {
+        window.setTimeout(function () {
+          calendar.updateSize();
+        }, 150);
+      }
+
+      window.addEventListener("resize", refreshCalendarSize);
+
+      const navToggle = document.getElementById("toggle-nav-sidebar");
+      if (navToggle) {
+        navToggle.addEventListener("click", refreshCalendarSize);
+      }
+
+      const mainEl = document.getElementById("main");
+      if (mainEl && "ResizeObserver" in window) {
+        const resizeObserver = new ResizeObserver(refreshCalendarSize);
+        resizeObserver.observe(mainEl);
+      }
     });
   </script>
 {% endblock %}

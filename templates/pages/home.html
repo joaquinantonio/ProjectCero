@@ -35,69 +35,7 @@
   </div>
 </section>
 
-<section class="section">
-  <div class="container">
-    <div class="section-heading">
-      <p class="eyebrow">Studio</p>
-      <h2>Featured Services</h2>
-      <p>Core services for artists, bands, and creators.</p>
-    </div>
-
-    <div class="card-grid">
-      {% for service in featured_services %}
-        <article class="card">
-          {% if service.image %}
-            <a class="card-image-link" href="{% url 'studio:service_detail' service.slug %}">
-              <img class="service-image" src="{{ service.image.url }}" alt="{{ service.name }}">
-            </a>
-          {% endif %}
-
-          <h3>
-            <a class="card-title-link" href="{% url 'studio:service_detail' service.slug %}">
-              {{ service.name }}
-            </a>
-          </h3>
-
-          {% if service.short_description %}
-            <p class="muted clamp-2">{{ service.short_description }}</p>
-          {% endif %}
-
-          {% if service.description %}
-            <div class="card-copy muted clamp-4">
-              {{ service.description }}
-            </div>
-          {% endif %}
-
-          <div class="meta-row">
-            {% if service.price_text %}
-              <span class="pill">{{ service.price_text }}</span>
-            {% endif %}
-            {% if service.duration_text %}
-              <span class="pill">{{ service.duration_text }}</span>
-            {% endif %}
-          </div>
-
-          <div class="card-footer">
-            <a class="btn btn-secondary" href="{% url 'studio:service_detail' service.slug %}">
-              View Service
-            </a>
-          </div>
-        </article>
-      {% empty %}
-        <article class="card">
-          <h3>No featured services yet</h3>
-          <p>Mark a studio service as featured in admin to show it here.</p>
-        </article>
-      {% endfor %}
-    </div>
-
-    <div class="section-actions">
-      <a class="btn btn-secondary" href="{% url 'studio:home' %}">See All Studio Services</a>
-    </div>
-  </div>
-</section>
-
-<section class="section">
+    <section class="section">
   <div class="container">
     <div class="section-heading">
       <p class="eyebrow">Featured Artists</p>
@@ -184,6 +122,68 @@
     <div class="section-actions">
       <a class="btn btn-primary" href="{% url 'events:calendar' %}">Open Calendar</a>
       <a class="btn btn-secondary" href="{% url 'events:event_list' %}">View All Events</a>
+    </div>
+  </div>
+</section>
+    
+<section class="section">
+  <div class="container">
+    <div class="section-heading">
+      <p class="eyebrow">Studio</p>
+      <h2>Featured Services</h2>
+      <p>Core services for artists, bands, and creators.</p>
+    </div>
+
+    <div class="card-grid">
+      {% for service in featured_services %}
+        <article class="card">
+          {% if service.image %}
+            <a class="card-image-link" href="{% url 'studio:service_detail' service.slug %}">
+              <img class="service-image" src="{{ service.image.url }}" alt="{{ service.name }}">
+            </a>
+          {% endif %}
+
+          <h3>
+            <a class="card-title-link" href="{% url 'studio:service_detail' service.slug %}">
+              {{ service.name }}
+            </a>
+          </h3>
+
+          {% if service.short_description %}
+            <p class="muted clamp-2">{{ service.short_description }}</p>
+          {% endif %}
+
+          {% if service.description %}
+            <div class="card-copy muted clamp-4">
+              {{ service.description }}
+            </div>
+          {% endif %}
+
+          <div class="meta-row">
+            {% if service.price_text %}
+              <span class="pill">{{ service.price_text }}</span>
+            {% endif %}
+            {% if service.duration_text %}
+              <span class="pill">{{ service.duration_text }}</span>
+            {% endif %}
+          </div>
+
+          <div class="card-footer">
+            <a class="btn btn-secondary" href="{% url 'studio:service_detail' service.slug %}">
+              View Service
+            </a>
+          </div>
+        </article>
+      {% empty %}
+        <article class="card">
+          <h3>No featured services yet</h3>
+          <p>Mark a studio service as featured in admin to show it here.</p>
+        </article>
+      {% endfor %}
+    </div>
+
+    <div class="section-actions">
+      <a class="btn btn-secondary" href="{% url 'studio:home' %}">See All Studio Services</a>
     </div>
   </div>
 </section>

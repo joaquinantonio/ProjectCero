@@ -77,7 +77,7 @@
           </ul>
 
           <div class="button-stack">
-            <a class="btn btn-primary" href="{% url 'bookings:request' %}?type=studio">
+            <a class="btn btn-primary" href="{% url 'bookings:request' %}?type=studio&service={{ service.slug }}">
               Request This Service
             </a>
 

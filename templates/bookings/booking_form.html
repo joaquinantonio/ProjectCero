@@ -183,6 +183,9 @@
         background: #dc2626;
         display: inline-block;
       }
+      .selected-service-card {
+        margin-bottom: 1.5rem;
+      }
     {% endif %}
   </style>
 
@@ -219,7 +222,27 @@
       </div>
     {% endif %}
 
-    <div class="booking-form-shell">
+        <div class="booking-form-shell">
+      {% if selected_service %}
+        <div class="card selected-service-card">
+          <p class="eyebrow">Selected Studio Service</p>
+          <h2>{{ selected_service.name }}</h2>
+
+          {% if selected_service.short_description %}
+            <p class="muted">{{ selected_service.short_description }}</p>
+          {% endif %}
+
+          <div class="meta-row">
+            {% if selected_service.price_text %}
+              <span class="pill">{{ selected_service.price_text }}</span>
+            {% endif %}
+            {% if selected_service.duration_text %}
+              <span class="pill">{{ selected_service.duration_text }}</span>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+
       <div class="card">
         <form method="post" class="styled-form">
         {% csrf_token %}
@@ -296,7 +319,7 @@
         }
 
         const calendar = new FullCalendar.Calendar(calendarEl, {
-          initialView: "timeGridWeek",
+          initialView: "dayGridMonth",
           height: 560,
           expandRows: true,
           nowIndicator: true,
@@ -315,11 +338,12 @@
           headerToolbar: {
             left: "prev,next today",
             center: "title",
-            right: "timeGridWeek,timeGridDay,listWeek"
+            right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek"
           },
 
           buttonText: {
             today: "Today",
+            month: "Month",
             week: "Week",
             day: "Day",
             list: "List"
