@@ -3,11 +3,29 @@ from uuid import uuid4
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.utils import timezone
 
 from apps.core.models import TimeStampedModel
 
 
 class Order(TimeStampedModel):
+    @property
+    def is_inventory_committed(self):
+        return self.inventory_committed_at is not None
+
+    @property
+    def can_commit_inventory(self):
+        return self.status == self.Status.PAID and not self.is_inventory_committed
+
+    @property
+    def can_release_inventory(self):
+        releasable_statuses = {
+            self.Status.CANCELLED,
+            self.Status.EXPIRED,
+            self.Status.REFUNDED,
+        }
+        return self.status in releasable_statuses and self.is_inventory_committed
+    
     class Status(models.TextChoices):
         DRAFT = "draft", "Draft"
         PENDING_PAYMENT = "pending_payment", "Pending Payment"
@@ -57,6 +75,19 @@ class Order(TimeStampedModel):
 
     admin_notes = models.TextField(blank=True)
 
+    inventory_committed_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        editable=False,
+        help_text="Set when stock/ticket inventory has been committed for this order.",
+    )
+    inventory_released_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        editable=False,
+        help_text="Set when previously committed inventory has been released.",
+    )
+
     class Meta:
         ordering = ["-created_at"]
         indexes = [
@@ -64,6 +95,7 @@ class Order(TimeStampedModel):
             models.Index(fields=["reference_code"]),
             models.Index(fields=["customer_email"]),
             models.Index(fields=["currency", "total_amount"]),
+            models.Index(fields=["status", "inventory_committed_at"]),
         ]
         constraints = [
             models.CheckConstraint(

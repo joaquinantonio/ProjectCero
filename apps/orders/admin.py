@@ -9,6 +9,8 @@ from apps.core.admin import (
 
 from .models import Order, OrderItem
 from .services import send_order_status_update
+from django.core.exceptions import ValidationError
+from .inventory import sync_inventory_for_order_status
 
 
 class OrderItemInline(admin.TabularInline):
@@ -29,22 +31,43 @@ class OrderItemInline(admin.TabularInline):
 def update_orders_status(modeladmin, request, queryset, status_value, label):
     updated = 0
     emailed = 0
+    inventory_updated = 0
+    failed = 0
 
     for order in queryset:
         if order.status == status_value:
             continue
 
         order.status = status_value
-        order.save(update_fields=["status", "updated_at"])
-        updated += 1
 
-        if send_order_status_update(order):
-            emailed += 1
+        try:
+            order.save(update_fields=["status", "updated_at"])
+
+            if sync_inventory_for_order_status(order):
+                inventory_updated += 1
+
+            updated += 1
+
+            if send_order_status_update(order):
+                emailed += 1
+
+        except ValidationError as exc:
+            failed += 1
+            modeladmin.message_user(
+                request,
+                f"{order.reference_code}: {exc}",
+                level=messages.ERROR,
+            )
 
     modeladmin.message_user(
         request,
-        f"{updated} order(s) marked as {label}. {emailed} customer email(s) sent.",
-        level=messages.SUCCESS,
+        (
+            f"{updated} order(s) marked as {label}. "
+            f"{inventory_updated} inventory update(s). "
+            f"{emailed} customer email(s) sent. "
+            f"{failed} failed."
+        ),
+        level=messages.SUCCESS if failed == 0 else messages.WARNING,
     )
 
 
@@ -138,6 +161,8 @@ class OrderAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
         "reference_code",
         "subtotal_amount",
         "total_amount",
+        "inventory_committed_at",
+        "inventory_released_at",
         "created_at",
         "updated_at",
     )
@@ -160,9 +185,12 @@ class OrderAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
                 "fields": (
                     "status",
                     "currency",
+                    "inventory_committed_at",
+                    "inventory_released_at",
                 ),
                 "description": (
-                    "Changing the status manually will send a customer status update email."
+                    "Inventory is committed when the order becomes Paid. "
+                    "Committed inventory is released when the order becomes Cancelled, Expired, or Refunded."
                 ),
             },
         ),
@@ -217,11 +245,28 @@ class OrderAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
         super().save_model(request, obj, form, change)
 
         if change and "status" in form.changed_data and old_status != obj.status:
-            if send_order_status_update(obj):
+            try:
+                inventory_updated = sync_inventory_for_order_status(obj)
+
+                if inventory_updated:
+                    self.message_user(
+                        request,
+                        "Inventory updated for this order.",
+                        level=messages.SUCCESS,
+                    )
+
+                if send_order_status_update(obj):
+                    self.message_user(
+                        request,
+                        "Customer status update email sent.",
+                        level=messages.SUCCESS,
+                    )
+
+            except ValidationError as exc:
                 self.message_user(
                     request,
-                    "Customer status update email sent.",
-                    level=messages.SUCCESS,
+                    f"Inventory update failed: {exc}",
+                    level=messages.ERROR,
                 )
 
     def save_related(self, request, form, formsets, change):
