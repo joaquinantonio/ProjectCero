@@ -11,32 +11,47 @@ from .models import BookingRequest
     DEFAULT_FROM_EMAIL="no-reply@example.com",
 )
 class BookingRequestTests(TestCase):
-    def test_general_booking_creates_record_and_sends_email(self):
+    def test_general_booking_redirects_to_general_enquiry(self):
+        response = self.client.get(reverse("bookings:general_request"))
+
+        self.assertRedirects(response, reverse("enquiries:general"))
+        self.assertEqual(BookingRequest.objects.count(), 0)
+
+    def test_studio_booking_creates_record_and_sends_email(self):
         response = self.client.post(
-            reverse("bookings:general_request"),
+            reverse("bookings:request"),
             {
+                "request_type": BookingRequest.RequestType.STUDIO,
                 "name": "Test User",
                 "email": "test@example.com",
-                "phone": "0123456789",
-                "message": "Hello there",
+                "phone_country_code": "+60",
+                "phone": "123456789",
+                "preferred_date": "2026-06-15",
+                "preferred_time": "11:00",
+                "message": "Need a studio session",
             },
         )
 
         self.assertRedirects(response, reverse("bookings:success"))
         self.assertEqual(BookingRequest.objects.count(), 1)
+
+        booking_request = BookingRequest.objects.first()
+        self.assertEqual(booking_request.request_type, BookingRequest.RequestType.STUDIO)
+
         self.assertEqual(len(mail.outbox), 2)
-        # First email is admin notification
-        self.assertIn("General", mail.outbox[0].subject)
-        # Second email is user confirmation
         self.assertEqual(mail.outbox[1].to, ["test@example.com"])
 
-    def test_invalid_venue_booking_does_not_submit(self):
+    def test_invalid_venue_booking_does_not_submit_without_guest_count(self):
         response = self.client.post(
-            reverse("bookings:venue_request"),
+            reverse("bookings:request"),
             {
+                "request_type": BookingRequest.RequestType.VENUE,
                 "name": "CeroPJ User",
                 "email": "venue@example.com",
-                "phone": "0123456789",
+                "phone_country_code": "+60",
+                "phone": "123456789",
+                "preferred_date": "2026-06-15",
+                "preferred_time": "12:00",
                 "message": "Need the venue",
             },
         )
@@ -47,11 +62,15 @@ class BookingRequestTests(TestCase):
 
     def test_honeypot_blocks_submission(self):
         response = self.client.post(
-            reverse("bookings:general_request"),
+            reverse("bookings:request"),
             {
+                "request_type": BookingRequest.RequestType.STUDIO,
                 "name": "Spam Bot",
                 "email": "spam@example.com",
+                "phone_country_code": "+60",
                 "phone": "0000000000",
+                "preferred_date": "2026-06-15",
+                "preferred_time": "11:00",
                 "message": "Spam message",
                 "website": "http://spam.example.com",
             },

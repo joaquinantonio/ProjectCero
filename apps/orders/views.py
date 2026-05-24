@@ -6,12 +6,14 @@ from django.shortcuts import get_object_or_404, redirect, render
 from apps.events.models import Event, TicketType
 from apps.merch.models import MerchItem
 
+from .audit import record_order_created
 from .forms import PublicOrderForm
 from .models import Order, OrderItem
 from .services import (
     send_order_admin_notification,
     send_order_customer_confirmation,
 )
+
 
 def create_merch_order_view(request, slug):
     item = get_object_or_404(
@@ -44,7 +46,7 @@ def create_merch_order_view(request, slug):
                         customer_name=form.cleaned_data["customer_name"],
                         customer_email=form.cleaned_data["customer_email"],
                         customer_phone=form.cleaned_data["customer_phone"],
-                        status=Order.Status.PENDING_PAYMENT, # Important: this creates an order with:status = pending_payment | “pending payment” currently means: admin follow-up / manual bank transfer discussion. not Stripe yet.
+                        status=Order.Status.PENDING_PAYMENT,
                         currency=item.currency,
                     )
 
@@ -58,9 +60,10 @@ def create_merch_order_view(request, slug):
                     )
 
                     order.recalculate_totals(save=True)
+                    record_order_created(order, source="public_merch_order")
 
-                    send_order_admin_notification(order, request=request)
-                    send_order_customer_confirmation(order)
+                send_order_admin_notification(order, request=request)
+                send_order_customer_confirmation(order)
 
                 request.session["last_order_reference"] = order.reference_code
 
@@ -128,6 +131,10 @@ def create_ticket_order_view(request, ticket_type_id):
                     )
 
                     order.recalculate_totals(save=True)
+                    record_order_created(order, source="public_ticket_order")
+
+                send_order_admin_notification(order, request=request)
+                send_order_customer_confirmation(order)
 
                 request.session["last_order_reference"] = order.reference_code
 

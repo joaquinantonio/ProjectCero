@@ -2,6 +2,8 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.urls import reverse
 
+from .audit import record_order_email_event
+
 
 def format_money(currency, amount):
     return f"{currency} {amount:.2f}"
@@ -33,6 +35,12 @@ def send_order_admin_notification(order, request=None):
     recipient = getattr(settings, "ORDER_NOTIFICATION_EMAIL", "")
 
     if not recipient:
+        record_order_email_event(
+            order,
+            email_type="admin_notification",
+            sent=False,
+            recipient="",
+        )
         return False
 
     subject = f"New order request: {order.reference_code}"
@@ -69,11 +77,24 @@ Admin Link:
         fail_silently=True,
     )
 
+    record_order_email_event(
+        order,
+        email_type="admin_notification",
+        sent=True,
+        recipient=recipient,
+    )
+
     return True
 
 
 def send_order_customer_confirmation(order):
     if not order.customer_email:
+        record_order_email_event(
+            order,
+            email_type="customer_confirmation",
+            sent=False,
+            recipient="",
+        )
         return False
 
     subject = f"Your CeroPJ order request: {order.reference_code}"
@@ -109,11 +130,24 @@ CeroPJ
         fail_silently=True,
     )
 
+    record_order_email_event(
+        order,
+        email_type="customer_confirmation",
+        sent=True,
+        recipient=order.customer_email,
+    )
+
     return True
 
 
 def send_order_status_update(order):
     if not order.customer_email:
+        record_order_email_event(
+            order,
+            email_type="status_update",
+            sent=False,
+            recipient="",
+        )
         return False
 
     subject = f"CeroPJ order update: {order.reference_code}"
@@ -145,6 +179,13 @@ CeroPJ
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[order.customer_email],
         fail_silently=True,
+    )
+
+    record_order_email_event(
+        order,
+        email_type="status_update",
+        sent=True,
+        recipient=order.customer_email,
     )
 
     return True
