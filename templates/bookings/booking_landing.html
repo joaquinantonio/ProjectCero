@@ -1,43 +1,103 @@
 {% extends "base.html" %}
 
 {% block title %}Bookings · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+{% block meta_description %}Booking requests for studio sessions, venue hire, events, collaborations, and creative use at {{ site_settings.site_name|default:"ProjectCero" }}.{% endblock %}
 
 {% block content %}
-<section class="page-hero">
-  <div class="container narrow">
-    <p class="eyebrow">Bookings</p>
-    <h1>Booking Requests</h1>
-    <p class="lead">
-      Choose the booking type that best matches what you need.
-      For merch, payments, or general questions, use the enquiry forms instead.
-    </p>
-  </div>
-</section>
+<div class="cero-conversion-page cero-bookings-page">
+  <section class="cero-conversion-hero">
+    <div class="container cero-conversion-hero__grid">
+      <div>
+        <p class="cero-kicker">Bookings</p>
+        <h1>Tell us what you want to do with the space.</h1>
+        <p>
+          Choose the path that best matches your idea. Studio sessions and venue hire start as requests so the details can be discussed properly.
+        </p>
+      </div>
 
-<section class="section">
-  <div class="container">
-    <div class="card-grid">
-      <article class="card">
-        <h2>Studio Booking</h2>
-        <p class="muted">For recording sessions, rehearsals, production work, or studio use.</p>
-        <p>Tell us your preferred date, preferred time, and what kind of session you need.</p>
-        <a class="btn btn-primary" href="{% url 'bookings:request' %}?type=studio">Request Studio Session</a>
-      </article>
-
-      <article class="card">
-        <h2>Venue Request</h2>
-        <p class="muted">For private events, collaborations, gigs, or venue hire discussions.</p>
-        <p>Tell us about your event idea, preferred date, and estimated crowd size.</p>
-        <a class="btn btn-primary" href="{% url 'bookings:request' %}?type=venue">Enquire About Venue Hire</a>
-      </article>
-
-      <article class="card">
-        <h2>Other Enquiries</h2>
-        <p class="muted">For merch, payments, collaborations, or general questions.</p>
-        <p>Use the enquiry pages for requests that are not directly about booking the studio or venue.</p>
-        <a class="btn btn-secondary" href="{% url 'enquiries:landing' %}">Go to Enquiries</a>
-      </article>
+      <aside class="cero-conversion-hero__panel">
+        <p class="cero-card__label">Before you book</p>
+        <h2>Requests first, confirmation after discussion.</h2>
+        <p>
+          Share your preferred date, timing, purpose, and setup needs. The team can then review availability and respond clearly.
+        </p>
+      </aside>
     </div>
-  </div>
-</section>
+  </section>
+
+  <section class="cero-section cero-section--tight">
+    <div class="container">
+      <div class="cero-booking-choice-grid">
+        <article class="cero-card cero-booking-choice-card cero-booking-choice-card--primary">
+          <p class="cero-card__label">Studio</p>
+          <h2>Studio booking</h2>
+          <p>
+            For recording sessions, rehearsals, production work, content sessions, or other studio-related use.
+          </p>
+          <ul class="cero-conversion-list">
+            <li>Recording or rehearsal needs</li>
+            <li>Preferred date and time</li>
+            <li>Selected service, if known</li>
+          </ul>
+          <a class="btn btn-primary" href="{% url 'bookings:request' %}?type=studio">Request Studio Session</a>
+        </article>
+
+        <article class="cero-card cero-booking-choice-card">
+          <p class="cero-card__label">Venue</p>
+          <h2>Venue request</h2>
+          <p>
+            For private events, gigs, collaborations, showcases, launches, community sessions, or venue hire discussions.
+          </p>
+          <ul class="cero-conversion-list">
+            <li>Event idea and format</li>
+            <li>Estimated audience size</li>
+            <li>Preferred date and setup</li>
+          </ul>
+          <a class="btn btn-primary" href="{% url 'bookings:request' %}?type=venue">Enquire About Venue Hire</a>
+        </article>
+
+        <article class="cero-card cero-booking-choice-card">
+          <p class="cero-card__label">Other</p>
+          <h2>Other enquiries</h2>
+          <p>
+            For merch, payment follow-up, collaborations, partnerships, or general questions that are not direct booking requests.
+          </p>
+          <ul class="cero-conversion-list">
+            <li>General questions</li>
+            <li>Merch or payment enquiries</li>
+            <li>Partnership or collaboration notes</li>
+          </ul>
+          <a class="btn btn-secondary" href="{% url 'enquiries:landing' %}">Go to Enquiries</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="cero-section cero-section--tight">
+    <div class="container">
+      <div class="cero-conversion-note-panel">
+        <p class="cero-kicker">How it works</p>
+        <h2>Simple request, then human follow-up.</h2>
+        <div class="cero-process-grid">
+          <article>
+            <strong>01</strong>
+            <span>Send request</span>
+          </article>
+          <article>
+            <strong>02</strong>
+            <span>Team reviews details</span>
+          </article>
+          <article>
+            <strong>03</strong>
+            <span>Availability and setup discussed</span>
+          </article>
+          <article>
+            <strong>04</strong>
+            <span>Booking confirmed manually</span>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
 {% endblock %}

@@ -1,0 +1,49 @@
+<article class="cero-card cero-listing-artist-card">
+  {% if artist.image %}
+    <a class="cero-listing-artist-card__media" href="{% url 'artists:artist_detail' artist.slug %}">
+      <img src="{{ artist.image.url }}" alt="{{ artist.name }}">
+    </a>
+  {% else %}
+    <a class="cero-listing-artist-card__media cero-listing-artist-card__media--placeholder" href="{% url 'artists:artist_detail' artist.slug %}">
+      <span>{{ artist.name|slice:":1" }}</span>
+    </a>
+  {% endif %}
+
+  <div class="cero-listing-artist-card__body">
+    <div class="cero-listing-artist-card__topline">
+      <p class="cero-card__label">
+        {% if artist.get_artist_type_display %}
+          {{ artist.get_artist_type_display }}
+        {% else %}
+          Artist
+        {% endif %}
+      </p>
+    </div>
+
+    <h3>
+      <a href="{% url 'artists:artist_detail' artist.slug %}">{{ artist.name }}</a>
+    </h3>
+
+    {% if artist.short_bio %}
+      <p class="cero-listing-artist-card__summary">{{ artist.short_bio }}</p>
+    {% endif %}
+
+    {% if artist.bio %}
+      <p class="cero-listing-artist-card__copy">{{ artist.bio }}</p>
+    {% endif %}
+
+    <div class="cero-listing-artist-card__actions">
+      <a class="btn btn-secondary" href="{% url 'artists:artist_detail' artist.slug %}">
+        View Artist
+      </a>
+
+      {% if artist.instagram_url %}
+        <a class="cero-text-link" href="{{ artist.instagram_url }}">Instagram →</a>
+      {% elif artist.spotify_url %}
+        <a class="cero-text-link" href="{{ artist.spotify_url }}">Spotify →</a>
+      {% elif artist.youtube_url %}
+        <a class="cero-text-link" href="{{ artist.youtube_url }}">YouTube →</a>
+      {% endif %}
+    </div>
+  </div>
+</article>

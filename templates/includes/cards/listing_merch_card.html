@@ -1,0 +1,50 @@
+<article class="cero-card cero-merch-card">
+  {% if item.image %}
+    <a class="cero-merch-card__media" href="{% url 'merch:merch_detail' item.slug %}">
+      <img src="{{ item.image.url }}" alt="{{ item.name }}">
+    </a>
+  {% else %}
+    <a class="cero-merch-card__media cero-merch-card__media--placeholder" href="{% url 'merch:merch_detail' item.slug %}">
+      <span>Merch</span>
+    </a>
+  {% endif %}
+
+  <div class="cero-merch-card__body">
+    <div class="cero-merch-card__topline">
+      <p class="cero-card__label">Item</p>
+
+      <div class="cero-pill-row">
+        {% if item.price_text %}
+          <span class="cero-pill">{{ item.price_text }}</span>
+        {% endif %}
+        {% if item.availability_text %}
+          <span class="cero-pill">{{ item.availability_text }}</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <h3>
+      <a href="{% url 'merch:merch_detail' item.slug %}">{{ item.name }}</a>
+    </h3>
+
+    {% if item.short_description %}
+      <p class="cero-merch-card__copy">{{ item.short_description }}</p>
+    {% endif %}
+
+    <div class="cero-merch-card__actions">
+      <a class="btn btn-secondary" href="{% url 'merch:merch_detail' item.slug %}">
+        View Item
+      </a>
+
+      {% if item.price_amount > 0 and item.is_in_stock %}
+        <a class="btn btn-primary" href="{% url 'orders:create_merch_order' item.slug %}">
+          Buy Now
+        </a>
+      {% else %}
+        <a class="cero-text-link" href="{% url 'enquiries:merch' %}?item={{ item.slug }}">
+          Enquire →
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</article>

@@ -1,0 +1,35 @@
+<article class="cero-card cero-news-card">
+  {% if post.cover_image %}
+    <a class="cero-news-card__media" href="{% url 'news:news_detail' post.slug %}">
+      <img src="{{ post.cover_image.url }}" alt="{{ post.title }}">
+    </a>
+  {% else %}
+    <a class="cero-news-card__media cero-news-card__media--placeholder" href="{% url 'news:news_detail' post.slug %}">
+      <span>News</span>
+    </a>
+  {% endif %}
+
+  <div class="cero-news-card__body">
+    <p class="cero-card__label">
+      {% if post.published_at %}
+        {{ post.published_at|date:"d M Y" }}
+      {% else %}
+        {{ post.created_at|date:"d M Y" }}
+      {% endif %}
+    </p>
+
+    <h3>
+      <a href="{% url 'news:news_detail' post.slug %}">{{ post.title }}</a>
+    </h3>
+
+    {% if post.summary %}
+      <p class="cero-news-card__copy">{{ post.summary }}</p>
+    {% endif %}
+
+    <div class="cero-news-card__actions">
+      <a class="btn btn-secondary" href="{% url 'news:news_detail' post.slug %}">
+        Read More
+      </a>
+    </div>
+  </div>
+</article>

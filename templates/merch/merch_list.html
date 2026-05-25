@@ -2,119 +2,82 @@
 {% load static %}
 
 {% block title %}Merch · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
-{% block meta_description %}Merchandise and items from {{ site_settings.site_name|default:"CeroPJ" }}.{% endblock %}
+{% block meta_description %}Merchandise, drops, and items from {{ site_settings.site_name|default:"ProjectCero" }}.{% endblock %}
 {% block og_title %}Merch{% endblock %}
-{% block og_description %}Merchandise and items from {{ site_settings.site_name|default:"CeroPJ" }}.{% endblock %}
+{% block og_description %}Merchandise, drops, and items from {{ site_settings.site_name|default:"ProjectCero" }}.{% endblock %}
 {% block og_type %}website{% endblock %}
 {% block og_image %}{% static 'images/og-default.jpg' %}{% endblock %}
 
 {% block content %}
-<section class="page-hero">
-  <div class="container narrow">
-    <p class="eyebrow">Merch</p>
-    <h1>Merchandise</h1>
-    <p class="lead">Browse items, drops, and merch available from the venue.</p>
-  </div>
-</section>
+<div class="cero-content-page cero-merch-page">
+  <section class="cero-content-hero">
+    <div class="container cero-content-hero__grid">
+      <div>
+        <p class="cero-kicker">Merch</p>
+        <h1>Drops, items, and community pieces from the venue.</h1>
+        <p>
+          Browse highlighted items, available merch, and future drops connected to ProjectCero events, artists, and the creative community.
+        </p>
+      </div>
 
-{% if featured_items %}
-<section class="section">
-  <div class="container">
-    <div class="section-heading">
-      <p class="eyebrow">Featured</p>
-      <h2>Highlighted Items</h2>
+      <aside class="cero-content-hero__panel">
+        <p class="cero-card__label">Merch flow</p>
+        <h2>Buy when available, enquire when needed.</h2>
+        <p>
+          Some items may be available for direct order, while others are better handled through a merch enquiry.
+        </p>
+        <div class="cero-actions">
+          <a class="btn btn-primary" href="{% url 'enquiries:merch' %}">Merch Enquiry</a>
+          <a class="btn btn-secondary" href="{% url 'events:event_list' %}">View Events</a>
+        </div>
+      </aside>
     </div>
+  </section>
 
-    <div class="card-grid">
-      {% for item in featured_items %}
-        <article class="card">
-          {% if item.image %}
-            <a class="card-image-link" href="{% url 'merch:merch_detail' item.slug %}">
-              <img class="service-image" src="{{ item.image.url }}" alt="{{ item.name }}">
-            </a>
-          {% endif %}
-
-          <h3>
-            <a class="card-title-link" href="{% url 'merch:merch_detail' item.slug %}">
-              {{ item.name }}
-            </a>
-          </h3>
-
-          {% if item.short_description %}
-            <p class="muted clamp-2">{{ item.short_description }}</p>
-          {% endif %}
-
-          <div class="meta-row">
-            {% if item.price_text %}
-              <span class="pill">{{ item.price_text }}</span>
-            {% endif %}
-            {% if item.availability_text %}
-              <span class="pill">{{ item.availability_text }}</span>
-            {% endif %}
+  {% if featured_items %}
+    <section class="cero-section cero-section--tight">
+      <div class="container">
+        <div class="cero-section-header cero-section-header--split">
+          <div>
+            <p class="cero-kicker">Featured</p>
+            <h2>Highlighted items</h2>
           </div>
+          <p>Selected merch and drops that should stand out before the full catalogue.</p>
+        </div>
 
-          <div class="card-footer">
-            <a class="btn btn-secondary" href="{% url 'merch:merch_detail' item.slug %}">
-              View Item
-            </a>
-          </div>
-        </article>
-      {% endfor %}
+        <div class="cero-merch-featured-grid">
+          {% for item in featured_items %}
+            {% include "includes/cards/listing_merch_card.html" with item=item %}
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+
+  <section class="cero-section cero-section--tight">
+    <div class="container">
+      <div class="cero-section-header cero-section-header--split">
+        <div>
+          <p class="cero-kicker">Catalogue</p>
+          <h2>All merch</h2>
+        </div>
+        <p>Items, drops, and merch currently published by the venue.</p>
+      </div>
+
+      <div class="cero-merch-grid">
+        {% for item in items %}
+          {% include "includes/cards/listing_merch_card.html" with item=item %}
+        {% empty %}
+          <article class="cero-card cero-listing-empty">
+            <p class="cero-card__label">No merch yet</p>
+            <h3>Merch items will appear here.</h3>
+            <p>Add merch items in admin to populate this page.</p>
+          </article>
+        {% endfor %}
+      </div>
+
+      {% include "includes/pagination.html" with page_obj=page_obj %}
     </div>
-  </div>
-</section>
-{% endif %}
-
-<section class="section">
-  <div class="container">
-    <div class="section-heading">
-      <p class="eyebrow">Catalog</p>
-      <h2>All Merch</h2>
-    </div>
-
-    <div class="card-grid">
-      {% for item in items %}
-        <article class="card">
-          {% if item.image %}
-            <a class="card-image-link" href="{% url 'merch:merch_detail' item.slug %}">
-              <img class="service-image" src="{{ item.image.url }}" alt="{{ item.name }}">
-            </a>
-          {% endif %}
-
-          <h3>
-            <a class="card-title-link" href="{% url 'merch:merch_detail' item.slug %}">
-              {{ item.name }}
-            </a>
-          </h3>
-
-          {% if item.short_description %}
-            <p class="card-copy clamp-3">{{ item.short_description }}</p>
-          {% endif %}
-
-          <div class="meta-row">
-            {% if item.price_text %}
-              <span class="pill">{{ item.price_text }}</span>
-            {% endif %}
-            {% if item.availability_text %}
-              <span class="pill">{{ item.availability_text }}</span>
-            {% endif %}
-          </div>
-
-          <div class="card-footer">
-            <a class="btn btn-secondary" href="{% url 'merch:merch_detail' item.slug %}">
-              View Item
-            </a>
-          </div>
-        </article>
-      {% empty %}
-        <article class="card">
-          <h3>No merch yet</h3>
-          <p>Add merch items in admin to populate this page.</p>
-        </article>
-      {% endfor %}
-    </div>
-
-    {% include "includes/pagination.html" with page_obj=page_obj %}
-  </div>
-</section>
+  </section>
+</div>
 {% endblock %}

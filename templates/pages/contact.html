@@ -1,78 +1,95 @@
 {% extends "base.html" %}
 
 {% block title %}Contact · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+{% block meta_description %}Contact {{ site_settings.site_name|default:"ProjectCero" }} for studio work, venue bookings, events, merch, payments, collaborations, and general enquiries.{% endblock %}
 
 {% block content %}
-<section class="page-hero">
-  <div class="container narrow">
-    <p class="eyebrow">Contact</p>
-    <h1>Get in Touch</h1>
-    <p class="lead">
-      Reach out for studio work, venue bookings, merch, payments, collaborations, or general enquiries.
-    </p>
-  </div>
-</section>
+<div class="cero-content-page cero-contact-page">
+  <section class="cero-content-hero">
+    <div class="container cero-content-hero__grid">
+      <div>
+        <p class="cero-kicker">Contact</p>
+        <h1>Get in touch with the right context.</h1>
+        <p>
+          Reach out for studio work, venue bookings, merch, payments, collaborations, or general enquiries.
+        </p>
+      </div>
 
-<section class="section">
-  <div class="container">
-    <div class="detail-layout">
-      <div class="detail-main">
-        <div class="card detail-block">
-          <h2>Contact Information</h2>
+      <aside class="cero-content-hero__panel">
+        <p class="cero-card__label">Best route</p>
+        <h2>Use booking forms for space use.</h2>
+        <p>
+          Studio sessions and venue hire work best through the booking request flow. General questions can go through enquiries.
+        </p>
+        <div class="cero-actions">
+          <a class="btn btn-primary" href="{% url 'bookings:landing' %}">Bookings</a>
+          <a class="btn btn-secondary" href="{% url 'enquiries:landing' %}">Enquiries</a>
+        </div>
+      </aside>
+    </div>
+  </section>
 
-          <ul class="detail-meta-list">
+  <section class="cero-section cero-section--tight">
+    <div class="container cero-content-detail-layout">
+      <main class="cero-content-main">
+        <article class="cero-content-card">
+          <p class="cero-kicker">Contact information</p>
+          <h2>Reach the venue</h2>
+
+          <ul class="cero-content-meta-list cero-contact-list">
             {% if site_settings.contact_email %}
               <li>
-                <span class="detail-label">Email</span>
-                <span class="detail-value">
+                <span>Email</span>
+                <strong>
                   <a href="mailto:{{ site_settings.contact_email }}">
                     {{ site_settings.contact_email }}
                   </a>
-                </span>
+                </strong>
               </li>
             {% endif %}
 
             {% if site_settings.contact_phone %}
               <li>
-                <span class="detail-label">Phone</span>
-                <span class="detail-value">{{ site_settings.contact_phone }}</span>
+                <span>Phone</span>
+                <strong>{{ site_settings.contact_phone }}</strong>
               </li>
             {% endif %}
 
             {% if site_settings.whatsapp_url %}
               <li>
-                <span class="detail-label">WhatsApp</span>
-                <span class="detail-value">
+                <span>WhatsApp</span>
+                <strong>
                   <a href="{{ site_settings.whatsapp_url }}" target="_blank" rel="noopener noreferrer">
-                    Click here to message us on WhatsApp
+                    Message us on WhatsApp
                   </a>
-                </span>
+                </strong>
               </li>
             {% endif %}
 
             {% if site_settings.address_text %}
               <li>
-                <span class="detail-label">Address</span>
-                <span class="detail-value">{{ site_settings.address_text|linebreaksbr }}</span>
+                <span>Address</span>
+                <strong>{{ site_settings.address_text|linebreaksbr }}</strong>
               </li>
             {% endif %}
           </ul>
 
           {% if site_settings.google_maps_url %}
-            <div class="detail-actions">
+            <div class="cero-content-actions">
               <a class="btn btn-secondary" href="{{ site_settings.google_maps_url }}" target="_blank" rel="noopener noreferrer">
                 Open in Maps
               </a>
             </div>
           {% endif %}
-        </div>
+        </article>
 
         {% if site_settings.instagram_url or site_settings.facebook_url or site_settings.tiktok_url or site_settings.youtube_url %}
-          <div class="card detail-block">
-            <h2>Socials</h2>
-            <p class="muted">Follow us for updates, events, drops, and announcements.</p>
+          <article class="cero-content-card">
+            <p class="cero-kicker">Socials</p>
+            <h2>Follow for updates</h2>
+            <p>Follow ProjectCero for events, drops, studio updates, and announcements.</p>
 
-            <div class="button-row">
+            <div class="cero-content-actions cero-content-actions--inline">
               {% if site_settings.instagram_url %}
                 <a class="btn btn-secondary" href="{{ site_settings.instagram_url }}" target="_blank" rel="noopener noreferrer">
                   Instagram
@@ -97,29 +114,31 @@
                 </a>
               {% endif %}
             </div>
-          </div>
+          </article>
         {% endif %}
 
         {% for section in sections %}
-          <div class="card detail-block">
+          <article class="cero-content-card">
             {% if section.title %}
+              <p class="cero-kicker">Info</p>
               <h2>{{ section.title }}</h2>
             {% endif %}
-            <div class="detail-richtext">
+            <div class="cero-content-richtext">
               {{ section.body|linebreaks }}
             </div>
-          </div>
+          </article>
         {% endfor %}
-      </div>
+      </main>
 
-      <div class="detail-side">
-        <div class="card detail-summary">
-          <h2>What do you need?</h2>
-          <p class="muted">
-            Choose the request type that best matches your purpose.
+      <aside class="cero-content-sidebar">
+        <section class="cero-content-card cero-content-summary-card">
+          <p class="cero-kicker">What do you need?</p>
+          <h2>Choose the right path</h2>
+          <p>
+            Pick the route that best matches your purpose so the team receives the right information.
           </p>
 
-          <div class="button-stack">
+          <div class="cero-content-actions">
             <a class="btn btn-primary" href="{% url 'bookings:studio_request' %}">
               Book the Studio
             </a>
@@ -136,9 +155,9 @@
               Payment Enquiry
             </a>
           </div>
-        </div>
-      </div>
+        </section>
+      </aside>
     </div>
-  </div>
-</section>
+  </section>
+</div>
 {% endblock %}

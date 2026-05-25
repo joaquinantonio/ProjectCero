@@ -1,0 +1,45 @@
+<section class="cero-section">
+  <div class="container">
+    <div class="cero-section-header cero-section-header--split">
+      <div>
+        <p class="cero-kicker">Studio capability</p>
+        <h2>Serious creative work, without losing the community feel.</h2>
+      </div>
+      <a class="cero-text-link" href="{% url 'studio:home' %}">See studio services →</a>
+    </div>
+
+    <div class="cero-card-grid">
+      {% for service in featured_services|slice:":3" %}
+        <article class="cero-card cero-service-card">
+          {% if service.image %}
+            <a class="cero-service-card__image" href="{% url 'studio:service_detail' service.slug %}">
+              <img src="{{ service.image.url }}" alt="{{ service.name }}">
+            </a>
+          {% endif %}
+
+          <p class="cero-card__label">Studio</p>
+          <h3>
+            <a href="{% url 'studio:service_detail' service.slug %}">{{ service.name }}</a>
+          </h3>
+
+          {% if service.short_description %}
+            <p>{{ service.short_description }}</p>
+          {% elif service.description %}
+            <p>{{ service.description|truncatewords:24 }}</p>
+          {% endif %}
+
+          <div class="cero-pill-row">
+            {% if service.price_text %}<span class="cero-pill">{{ service.price_text }}</span>{% endif %}
+            {% if service.duration_text %}<span class="cero-pill">{{ service.duration_text }}</span>{% endif %}
+          </div>
+        </article>
+      {% empty %}
+        <article class="cero-card cero-empty-card">
+          <p class="cero-card__label">Studio</p>
+          <h3>Featured services will appear here.</h3>
+          <p>Mark studio services as featured in admin.</p>
+        </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>

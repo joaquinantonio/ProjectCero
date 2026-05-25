@@ -1,70 +1,82 @@
-<footer class="site-footer">
-  <div class="container footer-grid">
-    <div>
-      <h3>{{ site_settings.site_name|default:"CeroPJ" }}</h3>
+<footer class="site-footer cero-site-footer">
+  <div class="container cero-footer-grid">
+    <section class="cero-footer-brand">
+      <a class="cero-footer-logo" href="{% url 'pages:home' %}">
+        {{ site_settings.site_name|default:"ProjectCero" }}
+      </a>
+
       {% if site_settings.tagline %}
         <p>{{ site_settings.tagline }}</p>
+      {% else %}
+        <p>A creative house for live nights, studio sessions, private gatherings, and artist community.</p>
       {% endif %}
-    </div>
 
-    <div>
-  <h4>Contact</h4>
-
-  {% if site_settings.contact_email %}
-    <p>
-      <a href="mailto:{{ site_settings.contact_email }}">
-        {{ site_settings.contact_email }}
-      </a>
-    </p>
-  {% endif %}
-
-  {% if site_settings.contact_phone %}
-    <p>{{ site_settings.contact_phone }}</p>
-  {% endif %}
-
-  {% if site_settings.whatsapp_url %}
-    <p>
-      <a href="{{ site_settings.whatsapp_url }}" target="_blank" rel="noopener noreferrer">
-        WhatsApp us
-      </a>
-    </p>
-  {% endif %}
-
-  {% if site_settings.address_text %}
-    <p>{{ site_settings.address_text }}</p>
-  {% endif %}
-
-  {% if site_settings.google_maps_url %}
-    <p>
-      <a href="{{ site_settings.google_maps_url }}" target="_blank" rel="noopener noreferrer">
-        View on Google Maps
-      </a>
-    </p>
-  {% endif %}
-</div>
-
-
-    {% if site_settings.instagram_url or site_settings.facebook_url or site_settings.tiktok_url or site_settings.youtube_url or site_settings.whatsapp_url %}
-      <div>
-        <h4>Social</h4>
-        <div class="footer-links social-links">
-          {% if site_settings.instagram_url %}
-            <a href="{{ site_settings.instagram_url }}" target="_blank" rel="noopener noreferrer">Instagram</a>
-          {% endif %}
-          {% if site_settings.facebook_url %}
-            <a href="{{ site_settings.facebook_url }}" target="_blank" rel="noopener noreferrer">Facebook</a>
-          {% endif %}
-          {% if site_settings.tiktok_url %}
-            <a href="{{ site_settings.tiktok_url }}" target="_blank" rel="noopener noreferrer">TikTok</a>
-          {% endif %}
-          {% if site_settings.youtube_url %}
-            <a href="{{ site_settings.youtube_url }}" target="_blank" rel="noopener noreferrer">YouTube</a>
-          {% endif %}
-          {% if site_settings.whatsapp_url %}
-            <a href="{{ site_settings.whatsapp_url }}" target="_blank" rel="noopener noreferrer">WhatsApp</a>
-          {% endif %}
-        </div>
+      <div class="cero-footer-cta-row">
+        <a class="btn btn-primary" href="{% url 'bookings:landing' %}">Book the Space</a>
+        <a class="btn btn-secondary" href="{% url 'enquiries:landing' %}">Send Enquiry</a>
       </div>
+    </section>
+
+    <section class="cero-footer-links">
+      <h4>Explore</h4>
+      <a href="{% url 'events:event_list' %}">Events</a>
+      <a href="{% url 'events:calendar' %}">Calendar</a>
+      <a href="{% url 'studio:home' %}">Studio</a>
+      <a href="{% url 'artists:artist_list' %}">Artists</a>
+      <a href="{% url 'merch:merch_list' %}">Merch</a>
+      <a href="{% url 'news:news_list' %}">News</a>
+    </section>
+
+    <section class="cero-footer-links">
+      <h4>Contact</h4>
+
+      {% if site_settings.contact_email %}
+        <a href="mailto:{{ site_settings.contact_email }}">{{ site_settings.contact_email }}</a>
+      {% endif %}
+
+      {% if site_settings.contact_phone %}
+        <span>{{ site_settings.contact_phone }}</span>
+      {% endif %}
+
+      {% if site_settings.whatsapp_url %}
+        <a href="{{ site_settings.whatsapp_url }}" target="_blank" rel="noopener noreferrer">
+          WhatsApp
+        </a>
+      {% endif %}
+
+      {% if site_settings.google_maps_url %}
+        <a href="{{ site_settings.google_maps_url }}" target="_blank" rel="noopener noreferrer">
+          Open in Maps
+        </a>
+      {% endif %}
+
+      <a href="{% url 'pages:contact' %}">Contact Page</a>
+    </section>
+
+    {% if site_settings.instagram_url or site_settings.facebook_url or site_settings.tiktok_url or site_settings.youtube_url %}
+      <section class="cero-footer-links">
+        <h4>Social</h4>
+
+        {% if site_settings.instagram_url %}
+          <a href="{{ site_settings.instagram_url }}" target="_blank" rel="noopener noreferrer">Instagram</a>
+        {% endif %}
+        {% if site_settings.facebook_url %}
+          <a href="{{ site_settings.facebook_url }}" target="_blank" rel="noopener noreferrer">Facebook</a>
+        {% endif %}
+        {% if site_settings.tiktok_url %}
+          <a href="{{ site_settings.tiktok_url }}" target="_blank" rel="noopener noreferrer">TikTok</a>
+        {% endif %}
+        {% if site_settings.youtube_url %}
+          <a href="{{ site_settings.youtube_url }}" target="_blank" rel="noopener noreferrer">YouTube</a>
+        {% endif %}
+      </section>
+    {% endif %}
+  </div>
+
+  <div class="container cero-footer-bottom">
+    <p>© {% now "Y" %} {{ site_settings.site_name|default:"ProjectCero" }}. All rights reserved.</p>
+    {% if site_settings.address_text %}
+      <p>{{ site_settings.address_text }}</p>
     {% endif %}
   </div>
 </footer>

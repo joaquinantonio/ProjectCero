@@ -1,0 +1,43 @@
+<section class="cero-section cero-section--feature">
+  <div class="container cero-feature-panel">
+    <div>
+      <p class="cero-kicker">The space</p>
+      <h2>A black-box creative venue built for flexibility.</h2>
+    </div>
+
+    <div class="cero-feature-panel__copy">
+      <p>
+        ProjectCero can shift between event mode, studio mode, and private creative use. The space should feel intimate, atmospheric, and practical for organisers, artists, and collaborators.
+      </p>
+
+      <div class="cero-space-stats" aria-label="ProjectCero use cases">
+        <div>
+          <strong>01</strong>
+          <span>Live events</span>
+        </div>
+        <div>
+          <strong>02</strong>
+          <span>Studio sessions</span>
+        </div>
+        <div>
+          <strong>03</strong>
+          <span>Private creative use</span>
+        </div>
+      </div>
+
+      {% if sections %}
+        <div class="cero-mini-grid">
+          {% for section in sections|slice:":3" %}
+            <article class="cero-mini-card">
+              {% if section.title %}<h3>{{ section.title }}</h3>{% endif %}
+              {% if section.subtitle %}<p>{{ section.subtitle }}</p>{% endif %}
+              {% if section.cta_url and section.cta_text %}
+                <a class="cero-text-link" href="{{ section.cta_url }}">{{ section.cta_text }} →</a>
+              {% endif %}
+            </article>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>

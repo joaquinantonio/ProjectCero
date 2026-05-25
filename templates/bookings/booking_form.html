@@ -7,282 +7,148 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
 
-  <style>
-    /* Choices.js dark theme override for ProjectCero forms */
-    .styled-form .choices {
-      width: 100%;
-      margin-bottom: 0;
-      color: var(--text);
-    }
-
-    .styled-form .choices__inner {
-      width: 100%;
-      min-height: 50px;
-      padding: 0.65rem 1rem;
-      border-radius: 12px;
-      border: 1px solid var(--line);
-      background: #0f1318;
-      color: var(--text);
-      font-size: 0.98rem;
-    }
-
-    .styled-form .choices.is-focused .choices__inner,
-    .styled-form .choices.is-open .choices__inner {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(142, 240, 199, 0.12);
-    }
-
-    .styled-form .choices__list--single {
-      padding: 0;
-    }
-
-    .styled-form .choices__item {
-      color: var(--text);
-    }
-
-    .styled-form .choices__placeholder {
-      color: var(--muted);
-      opacity: 1;
-    }
-
-    .styled-form .choices__list--dropdown,
-    .styled-form .choices__list[aria-expanded] {
-      background: #0f1318;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      margin-top: 0.35rem;
-      z-index: 100;
-      color: var(--text);
-      overflow: hidden;
-    }
-
-    .styled-form .choices__list--dropdown .choices__list,
-    .styled-form .choices__list[aria-expanded] .choices__list {
-      max-height: 170px;
-      overflow-y: auto;
-    }
-
-    .styled-form .choices__list--dropdown .choices__item,
-    .styled-form .choices__list[aria-expanded] .choices__item {
-      padding: 0.75rem 1rem;
-      color: var(--text);
-      background: #0f1318;
-    }
-
-    .styled-form .choices__list--dropdown .choices__item--selectable.is-highlighted,
-    .styled-form .choices__list[aria-expanded] .choices__item--selectable.is-highlighted {
-      background: var(--panel-2);
-      color: var(--accent);
-    }
-
-    .styled-form .choices__input,
-.styled-form .choices__input--cloned,
-.styled-form .choices__list--dropdown .choices__input {
-  background: #13171c !important;
-  color: var(--text) !important;
-  border: 1px solid var(--line) !important;
-  border-radius: 10px !important;
-  padding: 0.75rem 0.9rem !important;
-  margin-bottom: 0.5rem !important;
-  font-size: 0.95rem !important;
-  box-shadow: none !important;
-}
-
-.styled-form .choices__input:focus,
-.styled-form .choices__input--cloned:focus,
-.styled-form .choices__list--dropdown .choices__input:focus {
-  background: #0f1318 !important;
-  color: var(--text) !important;
-  border-color: var(--accent) !important;
-  box-shadow: 0 0 0 3px rgba(142, 240, 199, 0.12) !important;
-  outline: none !important;
-}
-
-.styled-form .choices__input::placeholder,
-.styled-form .choices__input--cloned::placeholder,
-.styled-form .choices__list--dropdown .choices__input::placeholder {
-  color: #a9b2bc !important;
-  opacity: 1 !important;
-}
-
-    {% if show_availability_calendar %}
-      .booking-request-layout {
-  width: min(1080px, calc(100% - 2rem));
-  margin: 0 auto;
-}
-
-.booking-form-shell {
-  width: 100%;
-  margin: 0 auto;
-}
-
-.availability-card {
-  margin-bottom: 1.5rem;
-}
-
-.availability-note {
-  margin-bottom: 1rem;
-  color: var(--muted, #64748b);
-}
-
-#booking-availability-calendar {
-  min-height: 480px;
-}
-
-      .fc {
-        font-size: 0.92rem;
-      }
-
-      .fc .fc-toolbar {
-        flex-wrap: wrap;
-        gap: 0.75rem;
-        margin-bottom: 1rem;
-      }
-
-      .fc .fc-toolbar-title {
-        font-size: 1.15rem;
-        font-weight: 700;
-      }
-
-      .fc .fc-button {
-        border-radius: 999px;
-        padding: 0.4rem 0.75rem;
-        font-size: 0.82rem;
-        font-weight: 700;
-      }
-
-      .fc .fc-timegrid-slot {
-          height: 1.75rem;
-        }
-
-      .fc .fc-day-today {
-        background: rgba(37, 99, 235, 0.07) !important;
-      }
-
-      .fc .public-unavailable-block {
-        background: #dc2626;
-        border-color: #dc2626;
-        border-radius: 8px;
-        padding: 0.15rem 0.35rem;
-        font-weight: 700;
-      }
-
-      .availability-legend {
-        display: flex;
-        align-items: center;
-        gap: 0.45rem;
-        margin-bottom: 1rem;
-        font-size: 0.9rem;
-        color: var(--muted, #64748b);
-      }
-
-      .availability-dot {
-        width: 0.75rem;
-        height: 0.75rem;
-        border-radius: 999px;
-        background: #dc2626;
-        display: inline-block;
-      }
-      .selected-service-card {
-        margin-bottom: 1.5rem;
-      }
-    {% endif %}
-  </style>
-
   {% if show_availability_calendar %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.css">
   {% endif %}
 {% endblock %}
 
 {% block content %}
-<section class="page-hero">
-  <div class="container narrow">
-    <p class="eyebrow">Bookings</p>
-    <h1>{{ page_title }}</h1>
-    <p class="lead">{{ intro_text }}</p>
-  </div>
-</section>
-
-<section class="section">
-  <div class="booking-request-layout">
-
-    {% if show_availability_calendar %}
-      <div class="card availability-card">
-        <h2>{{ availability_title }}</h2>
-        <p class="availability-note">
-          {{ availability_note }}
-        </p>
-
-        <div class="availability-legend">
-          <span class="availability-dot"></span>
-          <span>Unavailable</span>
-        </div>
-
-        <div id="booking-availability-calendar"></div>
+<div class="cero-conversion-page cero-booking-request-page">
+  <section class="cero-conversion-hero">
+    <div class="container cero-conversion-hero__grid">
+      <div>
+        <p class="cero-kicker">Bookings</p>
+        <h1>{{ page_title }}</h1>
+        <p>{{ intro_text }}</p>
       </div>
-    {% endif %}
 
-        <div class="booking-form-shell">
-      {% if selected_service %}
-        <div class="card selected-service-card">
-          <p class="eyebrow">Selected Studio Service</p>
-          <h2>{{ selected_service.name }}</h2>
+      <aside class="cero-conversion-hero__panel">
+        <p class="cero-card__label">Request details</p>
+        <h2>Share enough context for a clear response.</h2>
+        <p>
+          Include the date, time, purpose, expected setup, and any practical notes. This is a request form, not an automatic confirmed booking.
+        </p>
+      </aside>
+    </div>
+  </section>
 
-          {% if selected_service.short_description %}
-            <p class="muted">{{ selected_service.short_description }}</p>
-          {% endif %}
+  <section class="cero-section cero-section--tight">
+    <div class="container cero-booking-form-layout">
 
-          <div class="meta-row">
-            {% if selected_service.price_text %}
-              <span class="pill">{{ selected_service.price_text }}</span>
-            {% endif %}
-            {% if selected_service.duration_text %}
-              <span class="pill">{{ selected_service.duration_text }}</span>
-            {% endif %}
+      {% if show_availability_calendar %}
+        <section class="cero-card cero-calendar-card">
+          <div class="cero-calendar-card__header">
+            <div>
+              <p class="cero-card__label">Availability</p>
+              <h2>{{ availability_title }}</h2>
+              <p>{{ availability_note }}</p>
+            </div>
+
+            <div class="cero-calendar-legend">
+              <span class="cero-calendar-dot"></span>
+              <span>Unavailable</span>
+            </div>
           </div>
-        </div>
+
+          <div id="booking-availability-calendar"></div>
+        </section>
       {% endif %}
 
-      <div class="card">
-        <form method="post" class="styled-form">
-        {% csrf_token %}
+      <div class="cero-booking-form-grid">
+        <main class="cero-booking-form-main">
+          {% if selected_service %}
+            <section class="cero-card cero-selected-service-card">
+              <p class="cero-card__label">Selected studio service</p>
+              <h2>{{ selected_service.name }}</h2>
 
-        {% for hidden_field in form.hidden_fields %}
-          {{ hidden_field }}
-          {% if hidden_field.errors %}
-            <div class="field-error">{{ hidden_field.errors }}</div>
-          {% endif %}
-        {% endfor %}
+              {% if selected_service.short_description %}
+                <p>{{ selected_service.short_description }}</p>
+              {% endif %}
 
-        {% if form.non_field_errors %}
-          <div class="alert">
-            {{ form.non_field_errors }}
-          </div>
-        {% endif %}
-
-        {% for field in form.visible_fields %}
-          <div class="form-field">
-            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
-
-            {% if field.help_text %}
-              <p class="field-help">{{ field.help_text }}</p>
-            {% endif %}
-
-            {% if field.errors %}
-              <div class="field-error">
-                {{ field.errors }}
+              <div class="cero-pill-row">
+                {% if selected_service.price_text %}
+                  <span class="cero-pill">{{ selected_service.price_text }}</span>
+                {% endif %}
+                {% if selected_service.duration_text %}
+                  <span class="cero-pill">{{ selected_service.duration_text }}</span>
+                {% endif %}
               </div>
-            {% endif %}
-          </div>
-        {% endfor %}
+            </section>
+          {% endif %}
 
-          <button class="btn btn-primary" type="submit">Submit Request</button>
-        </form>
+          <section class="cero-card cero-form-card">
+            <p class="cero-card__label">Request form</p>
+            <h2>Send your booking request</h2>
+
+            <form method="post" class="styled-form cero-styled-form" novalidate>
+              {% csrf_token %}
+
+              {% for hidden_field in form.hidden_fields %}
+                {{ hidden_field }}
+                {% if hidden_field.errors %}
+                  <div class="field-error">{{ hidden_field.errors }}</div>
+                {% endif %}
+              {% endfor %}
+
+              {% if form.non_field_errors %}
+                <div class="alert">
+                  {{ form.non_field_errors }}
+                </div>
+              {% endif %}
+
+              {% for field in form.visible_fields %}
+                <div class="form-field">
+                  <label for="{{ field.id_for_label }}">
+                    {{ field.label }}
+                    {% if field.field.required %}<span aria-hidden="true">*</span>{% endif %}
+                  </label>
+                  {{ field }}
+
+                  {% if field.help_text %}
+                    <p class="field-help">{{ field.help_text }}</p>
+                  {% endif %}
+
+                  {% if field.errors %}
+                    <div class="field-error">
+                      {{ field.errors }}
+                    </div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+
+              <div class="cero-form-actions">
+                <button class="btn btn-primary" type="submit">Submit Request</button>
+                <a class="btn btn-secondary" href="{% url 'bookings:landing' %}">Back to Booking Options</a>
+              </div>
+            </form>
+          </section>
+        </main>
+
+        <aside class="cero-booking-form-side">
+          <section class="cero-card cero-form-help-card">
+            <p class="cero-card__label">Helpful details</p>
+            <h2>What to include</h2>
+            <ul class="cero-conversion-list">
+              <li>Preferred date and time</li>
+              <li>Purpose of the session or event</li>
+              <li>Estimated number of people</li>
+              <li>Setup, equipment, or room needs</li>
+              <li>Any flexibility in your schedule</li>
+            </ul>
+          </section>
+
+          <section class="cero-card cero-form-help-card">
+            <p class="cero-card__label">After submission</p>
+            <h2>What happens next?</h2>
+            <p>
+              The team reviews your request and follows up with availability, questions, and next steps before anything is confirmed.
+            </p>
+          </section>
+        </aside>
       </div>
     </div>
-  </div>
-</section>
+  </section>
+</div>
 {% endblock %}
 
 {% block extra_js %}

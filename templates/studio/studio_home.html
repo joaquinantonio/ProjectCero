@@ -2,112 +2,139 @@
 {% load static %}
 
 {% block title %}Studio Services · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
-{% block meta_description %}Recording, production, rehearsals, and creative studio services.{% endblock %}
+{% block meta_description %}Recording, production, rehearsals, and creative studio services at {{ site_settings.site_name|default:"ProjectCero" }}.{% endblock %}
 {% block og_title %}Studio Services{% endblock %}
 {% block og_description %}Recording, production, rehearsals, and creative studio services.{% endblock %}
 {% block og_type %}website{% endblock %}
 {% block og_image %}{% static 'images/og-default.jpg' %}{% endblock %}
 
 {% block content %}
-<section class="page-hero">
-  <div class="container narrow">
-    <p class="eyebrow">Studio</p>
-    <h1>Studio Services</h1>
-    <p class="lead">Recording, production, rehearsals, and creative sessions.</p>
-  </div>
-</section>
-
-<section class="section">
-  <div class="container">
-    <div class="card">
-      <h2>Need studio time?</h2>
-      <p class="muted">
-        Browse our studio services or send a request for recording, rehearsal,
-        production, or other studio-related sessions.
-      </p>
-      <div class="button-row">
-        <a class="btn btn-primary" href="{% url 'bookings:request' %}?type=studio">
-          Request Studio Session
-        </a>
-        <a class="btn btn-secondary" href="{% url 'bookings:landing' %}">
-          View All Booking Options
-        </a>
+<div class="cero-studio-page">
+  <section class="cero-listing-hero cero-studio-hero">
+    <div class="container cero-listing-hero__grid">
+      <div>
+        <p class="cero-kicker">Studio</p>
+        <h1>Serious creative work in an intimate black-box space.</h1>
+        <p>
+          Recording, production, rehearsal, content, and creative sessions inside a flexible venue that still feels connected to the community.
+        </p>
       </div>
-    </div>
-  </div>
-</section>
 
-<section class="section">
-  <div class="container">
-    <form method="get" class="card search-bar">
-      <div class="search-grid single-search">
+      <aside class="cero-listing-hero__panel cero-studio-hero__panel">
+        <p class="cero-card__label">Studio capability</p>
+        <h2>Book the room, shape the session.</h2>
+        <p>
+          Use ProjectCero for focused recording sessions, rehearsals, production days, and creative work that needs atmosphere.
+        </p>
+        <div class="cero-actions">
+          <a class="btn btn-primary" href="{% url 'bookings:request' %}?type=studio">
+            Request Studio Session
+          </a>
+          <a class="btn btn-secondary" href="{% url 'bookings:landing' %}">
+            Booking Options
+          </a>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="cero-section cero-section--tight">
+    <div class="container">
+      <div class="cero-studio-intro-panel">
         <div>
-          <label for="studio-service-search">Search studio services</label>
-          <input
-            id="studio-service-search"
-            type="text"
-            name="q"
-            value="{{ search_query }}"
-            placeholder="Search by service name or description"
-          >
+          <p class="cero-kicker">Built for flexible use</p>
+          <h2>From studio mode to venue mode.</h2>
         </div>
 
-        <div class="search-actions">
-          <button class="btn btn-primary" type="submit">Search</button>
-          <a class="btn btn-secondary" href="{% url 'studio:home' %}">Reset</a>
+        <div class="cero-studio-mode-grid" aria-label="Studio use modes">
+          <article>
+            <strong>01</strong>
+            <span>Recording</span>
+          </article>
+          <article>
+            <strong>02</strong>
+            <span>Rehearsal</span>
+          </article>
+          <article>
+            <strong>03</strong>
+            <span>Production</span>
+          </article>
+          <article>
+            <strong>04</strong>
+            <span>Creative sessions</span>
+          </article>
         </div>
       </div>
-    </form>
-
-    <div class="card-grid">
-      {% for service in services %}
-        <article class="card">
-          {% if service.image %}
-            <a class="card-image-link" href="{% url 'studio:service_detail' service.slug %}">
-              <img class="service-image" src="{{ service.image.url }}" alt="{{ service.name }}">
-            </a>
-          {% endif %}
-
-          <h2>
-            <a class="card-title-link" href="{% url 'studio:service_detail' service.slug %}">
-              {{ service.name }}
-            </a>
-          </h2>
-
-          {% if service.short_description %}
-            <p class="muted clamp-2">{{ service.short_description }}</p>
-          {% endif %}
-
-          {% if service.description %}
-            <div class="card-copy muted clamp-4">
-              {{ service.description }}
-            </div>
-          {% endif %}
-
-          <div class="meta-row">
-            {% if service.price_text %}
-              <span class="pill">{{ service.price_text }}</span>
-            {% endif %}
-            {% if service.duration_text %}
-              <span class="pill">{{ service.duration_text }}</span>
-            {% endif %}
-          </div>
-
-          <div class="card-footer">
-            <a class="btn btn-secondary" href="{% url 'studio:service_detail' service.slug %}">
-              View Service
-            </a>
-          </div>
-        </article>
-      {% empty %}
-        <article class="card">
-          <h2>No studio services found</h2>
-          <p>Try another search term or add services in admin.</p>
-        </article>
-      {% endfor %}
     </div>
+  </section>
 
-    {% include "includes/pagination.html" with page_obj=services %}
-  </div>
-</section>
+  <section class="cero-section cero-section--tight">
+    <div class="container">
+      <form method="get" class="cero-studio-search">
+        <div class="cero-studio-search__grid">
+          <div>
+            <label for="studio-service-search">Search studio services</label>
+            <input
+              id="studio-service-search"
+              type="text"
+              name="q"
+              value="{{ search_query }}"
+              placeholder="Search by service name or description"
+            >
+          </div>
+
+          <div class="cero-studio-search__actions">
+            <button class="btn btn-primary" type="submit">Search</button>
+            <a class="btn btn-secondary" href="{% url 'studio:home' %}">Reset</a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="cero-section cero-section--tight">
+    <div class="container">
+      <div class="cero-section-header cero-section-header--split">
+        <div>
+          <p class="cero-kicker">Services</p>
+          <h2>Studio services</h2>
+        </div>
+        <p>
+          Browse the available studio-related services. Each service can lead into a booking request so sessions stay enquiry-led and flexible.
+        </p>
+      </div>
+
+      <div class="cero-studio-service-grid">
+        {% for service in services %}
+          {% include "includes/cards/listing_studio_service_card.html" with service=service %}
+        {% empty %}
+          <article class="cero-card cero-listing-empty">
+            <p class="cero-card__label">No services found</p>
+            <h3>No studio services match this search.</h3>
+            <p>Try another keyword, reset the search, or add services in admin.</p>
+            <a class="btn btn-secondary" href="{% url 'studio:home' %}">Reset search</a>
+          </article>
+        {% endfor %}
+      </div>
+
+      {% include "includes/pagination.html" with page_obj=services %}
+    </div>
+  </section>
+
+  <section class="cero-section cero-section--tight cero-studio-cta-section">
+    <div class="container">
+      <div class="cero-studio-cta">
+        <p class="cero-kicker">Not sure what to book?</p>
+        <h2>Send the idea first. The session can be shaped after.</h2>
+        <p>
+          For studio work, creative production, or mixed use of the space, start with a booking request and discuss the details with the team.
+        </p>
+        <div class="cero-actions cero-actions--center">
+          <a class="btn btn-primary" href="{% url 'bookings:request' %}?type=studio">Request Studio Session</a>
+          <a class="btn btn-secondary" href="{% url 'enquiries:landing' %}">General Enquiry</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
 {% endblock %}

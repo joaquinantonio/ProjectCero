@@ -1,0 +1,58 @@
+<article class="cero-card cero-listing-event-card {% if is_past %}is-past{% endif %}">
+  {% if event.poster %}
+    <a class="cero-listing-event-card__media" href="{% url 'events:event_detail' event.slug %}">
+      <img src="{{ event.poster.url }}" alt="{{ event.title }}">
+    </a>
+  {% else %}
+    <a class="cero-listing-event-card__media cero-listing-event-card__media--date" href="{% url 'events:event_detail' event.slug %}">
+      <strong>{{ event.start_at|date:"d" }}</strong>
+      <span>{{ event.start_at|date:"M Y" }}</span>
+    </a>
+  {% endif %}
+
+  <div class="cero-listing-event-card__body">
+    <div class="cero-listing-event-card__topline">
+      <p class="cero-card__label">
+        {% if is_past %}Past event{% else %}Upcoming{% endif %}
+      </p>
+
+      {% if event.price_text %}
+        <span class="cero-pill">{{ event.price_text }}</span>
+      {% endif %}
+    </div>
+
+    <h3>
+      <a href="{% url 'events:event_detail' event.slug %}">{{ event.title }}</a>
+    </h3>
+
+    <p class="cero-listing-event-card__date">
+      {{ event.start_at|date:"d M Y" }}
+      {% if event.time_note %}
+        · {{ event.time_note }}
+      {% else %}
+        · {{ event.start_at|time:"g:i A" }}
+        {% if event.end_at %} – {{ event.end_at|time:"g:i A" }}{% endif %}
+      {% endif %}
+    </p>
+
+    {% if event.location_text %}
+      <p class="cero-muted cero-listing-event-card__location">{{ event.location_text }}</p>
+    {% endif %}
+
+    {% if event.short_description %}
+      <p class="cero-listing-event-card__copy">{{ event.short_description }}</p>
+    {% endif %}
+
+    <div class="cero-listing-event-card__actions">
+      <a class="btn btn-secondary" href="{% url 'events:event_detail' event.slug %}">
+        View Details
+      </a>
+
+      {% if not is_past and event.ticket_url %}
+        <a class="btn btn-primary" href="{{ event.ticket_url }}">
+          Tickets / RSVP
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</article>

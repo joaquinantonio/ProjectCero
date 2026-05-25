@@ -15,105 +15,104 @@
 {% endblock %}
 
 {% block content %}
-<section class="page-hero">
-  <div class="container narrow">
-    <p class="eyebrow">News</p>
-    <h1>{{ post.title }}</h1>
-    <p class="lead">
-      {% if post.published_at %}
-        {{ post.published_at|date:"d M Y" }}
-      {% else %}
-        {{ post.created_at|date:"d M Y" }}
-      {% endif %}
-    </p>
-  </div>
-</section>
+<div class="cero-content-page cero-news-detail-page">
+  <section class="cero-content-detail-hero">
+    <div class="container cero-content-detail-hero__grid">
+      <div>
+        <p class="cero-kicker">News</p>
+        <h1>{{ post.title }}</h1>
 
-<section class="section">
-  <div class="container">
-    <div class="detail-layout">
-      <div class="detail-main">
-        {% if post.cover_image %}
-          <div class="detail-image-wrap">
-            <img class="detail-image" src="{{ post.cover_image.url }}" alt="{{ post.title }}">
-          </div>
+        <div class="cero-content-meta-strip">
+          <span>
+            {% if post.published_at %}
+              {{ post.published_at|date:"d M Y" }}
+            {% else %}
+              {{ post.created_at|date:"d M Y" }}
+            {% endif %}
+          </span>
+          <span>ProjectCero update</span>
+        </div>
+
+        {% if post.summary %}
+          <p>{{ post.summary }}</p>
         {% endif %}
 
-        <div class="card detail-block">
-          {% if post.summary %}
-            <p class="muted">{{ post.summary }}</p>
-          {% endif %}
-
-          <div class="detail-richtext">
-            {{ post.body|linebreaks }}
-          </div>
+        <div class="cero-actions">
+          <a class="btn btn-secondary" href="{% url 'news:news_list' %}">Back to News</a>
         </div>
       </div>
 
-      <div class="detail-side">
-        <div class="card detail-summary">
-          <h2>Post Details</h2>
+      <aside class="cero-content-detail-hero__media">
+        {% if post.cover_image %}
+          <img src="{{ post.cover_image.url }}" alt="{{ post.title }}">
+        {% else %}
+          <div class="cero-content-placeholder">
+            <strong>News</strong>
+            <span>Update</span>
+          </div>
+        {% endif %}
+      </aside>
+    </div>
+  </section>
 
-          <ul class="detail-meta-list">
+  <section class="cero-section cero-section--tight">
+    <div class="container cero-content-detail-layout">
+      <main class="cero-content-main">
+        <article class="cero-content-card cero-news-article-card">
+          {% if post.summary %}
+            <p class="cero-news-article-summary">{{ post.summary }}</p>
+          {% endif %}
+
+          <div class="cero-content-richtext">
+            {{ post.body|linebreaks }}
+          </div>
+        </article>
+      </main>
+
+      <aside class="cero-content-sidebar">
+        <section class="cero-content-card cero-content-summary-card">
+          <p class="cero-kicker">Post details</p>
+          <h2>Published</h2>
+
+          <ul class="cero-content-meta-list">
             <li>
-              <span class="detail-label">Published</span>
-              <span class="detail-value">
+              <span>Date</span>
+              <strong>
                 {% if post.published_at %}
                   {{ post.published_at|date:"d M Y" }}
                 {% else %}
                   {{ post.created_at|date:"d M Y" }}
                 {% endif %}
-              </span>
+              </strong>
             </li>
           </ul>
 
-          <div class="detail-actions">
+          <div class="cero-content-actions">
             <a class="btn btn-secondary" href="{% url 'news:news_list' %}">Back to News</a>
           </div>
+        </section>
+      </aside>
+    </div>
+  </section>
+
+  {% if recent_posts %}
+    <section class="cero-section cero-section--tight">
+      <div class="container">
+        <div class="cero-section-header cero-section-header--split">
+          <div>
+            <p class="cero-kicker">More news</p>
+            <h2>Recent posts</h2>
+          </div>
+          <a class="cero-text-link" href="{% url 'news:news_list' %}">View all news →</a>
+        </div>
+
+        <div class="cero-news-grid">
+          {% for item in recent_posts %}
+            {% include "includes/cards/listing_news_card.html" with post=item %}
+          {% endfor %}
         </div>
       </div>
-    </div>
-  </div>
-</section>
-
-{% if recent_posts %}
-<section class="section">
-  <div class="container">
-    <div class="section-heading">
-      <p class="eyebrow">More News</p>
-      <h2>Recent Posts</h2>
-    </div>
-
-    <div class="related-grid">
-      {% for item in recent_posts %}
-        <article class="card fact-card">
-          <p class="event-date">
-            {% if item.published_at %}
-              {{ item.published_at|date:"d M Y" }}
-            {% else %}
-              {{ item.created_at|date:"d M Y" }}
-            {% endif %}
-          </p>
-
-          <h3>
-            <a href="{% url 'news:news_detail' item.slug %}">
-              {{ item.title }}
-            </a>
-          </h3>
-
-          {% if item.summary %}
-            <p class="muted clamp-3">{{ item.summary }}</p>
-          {% endif %}
-
-          <div class="card-footer">
-            <a class="btn btn-secondary" href="{% url 'news:news_detail' item.slug %}">
-              Read More
-            </a>
-          </div>
-        </article>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-{% endif %}
+    </section>
+  {% endif %}
+</div>
 {% endblock %}

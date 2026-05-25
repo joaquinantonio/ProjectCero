@@ -15,126 +15,127 @@
 {% endblock %}
 
 {% block content %}
-<section class="page-hero">
-  <div class="container narrow">
-    <p class="eyebrow">Merch</p>
-    <h1>{{ item.name }}</h1>
-    {% if item.short_description %}
-      <p class="lead">{{ item.short_description }}</p>
-    {% endif %}
-  </div>
-</section>
+<div class="cero-content-page cero-merch-detail-page">
+  <section class="cero-content-detail-hero">
+    <div class="container cero-content-detail-hero__grid">
+      <div>
+        <p class="cero-kicker">Merch</p>
+        <h1>{{ item.name }}</h1>
 
-<section class="section">
-  <div class="container">
-    <div class="detail-layout">
-      <div class="detail-main">
-        {% if item.image %}
-          <div class="detail-image-wrap">
-            <img class="detail-image" src="{{ item.image.url }}" alt="{{ item.name }}">
-          </div>
+        {% if item.short_description %}
+          <p>{{ item.short_description }}</p>
         {% endif %}
 
-        <div class="card detail-block">
-          <h2>About This Item</h2>
-          <div class="detail-richtext">
-            {% if item.description %}
-              {{ item.description|linebreaks }}
-            {% else %}
-              <p class="muted">No further details added yet.</p>
-            {% endif %}
-          </div>
+        <div class="cero-content-meta-strip">
+          {% if item.price_text %}<span>{{ item.price_text }}</span>{% endif %}
+          {% if item.availability_text %}<span>{{ item.availability_text }}</span>{% endif %}
+          <span>ProjectCero item</span>
+        </div>
+
+        <div class="cero-actions">
+          {% if item.price_amount > 0 and item.is_in_stock %}
+            <a class="btn btn-primary" href="{% url 'orders:create_merch_order' item.slug %}">
+              Buy Now
+            </a>
+          {% endif %}
+          <a class="btn btn-secondary" href="{% url 'enquiries:merch' %}?item={{ item.slug }}">
+            Enquire About This Item
+          </a>
+          <a class="btn btn-secondary" href="{% url 'merch:merch_list' %}">
+            Back to Merch
+          </a>
         </div>
       </div>
 
-      <div class="detail-side">
-        <div class="card detail-summary">
-          <h2>Item Details</h2>
+      <aside class="cero-content-detail-hero__media">
+        {% if item.image %}
+          <img src="{{ item.image.url }}" alt="{{ item.name }}">
+        {% else %}
+          <div class="cero-content-placeholder">
+            <strong>Merch</strong>
+            <span>Item</span>
+          </div>
+        {% endif %}
+      </aside>
+    </div>
+  </section>
 
-          <ul class="detail-meta-list">
+  <section class="cero-section cero-section--tight">
+    <div class="container cero-content-detail-layout">
+      <main class="cero-content-main">
+        <article class="cero-content-card">
+          <p class="cero-kicker">About</p>
+          <h2>About this item</h2>
+
+          <div class="cero-content-richtext">
+            {% if item.description %}
+              {{ item.description|linebreaks }}
+            {% else %}
+              <p>No further details added yet.</p>
+            {% endif %}
+          </div>
+        </article>
+      </main>
+
+      <aside class="cero-content-sidebar">
+        <section class="cero-content-card cero-content-summary-card">
+          <p class="cero-kicker">Item details</p>
+          <h2>Availability</h2>
+
+          <ul class="cero-content-meta-list">
             {% if item.price_text %}
               <li>
-                <span class="detail-label">Price</span>
-                <span class="detail-value">{{ item.price_text }}</span>
+                <span>Price</span>
+                <strong>{{ item.price_text }}</strong>
               </li>
             {% endif %}
 
             {% if item.availability_text %}
               <li>
-                <span class="detail-label">Availability</span>
-                <span class="detail-value">{{ item.availability_text }}</span>
+                <span>Availability</span>
+                <strong>{{ item.availability_text }}</strong>
               </li>
             {% endif %}
           </ul>
 
-          <div class="detail-actions">
+          <div class="cero-content-actions">
             {% if item.price_amount > 0 and item.is_in_stock %}
               <a class="btn btn-primary" href="{% url 'orders:create_merch_order' item.slug %}">
                 Buy Now
               </a>
             {% endif %}
-              <a class="btn btn-primary" href="{% url 'enquiries:merch' %}?item={{ item.slug }}">
-                Enquire About This Item
-              </a>
 
-              <!-- {% if item.cta_url and item.cta_text %}
-                <a class="btn btn-secondary" href="{{ item.cta_url }}" target="_blank" rel="noopener noreferrer">
-                  {{ item.cta_text }}
-                </a>
-              {% endif %} -->
+            <a class="btn btn-secondary" href="{% url 'enquiries:merch' %}?item={{ item.slug }}">
+              Enquire About This Item
+            </a>
 
-              <a class="btn btn-secondary" href="{% url 'merch:merch_list' %}">
-                Back to Merch
-              </a>
-            </div>
+            <a class="btn btn-secondary" href="{% url 'merch:merch_list' %}">
+              Back to Merch
+            </a>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </section>
+
+  {% if related_items %}
+    <section class="cero-section cero-section--tight">
+      <div class="container">
+        <div class="cero-section-header cero-section-header--split">
+          <div>
+            <p class="cero-kicker">More merch</p>
+            <h2>Related items</h2>
+          </div>
+          <a class="cero-text-link" href="{% url 'merch:merch_list' %}">View all merch →</a>
+        </div>
+
+        <div class="cero-merch-grid">
+          {% for related in related_items %}
+            {% include "includes/cards/listing_merch_card.html" with item=related %}
+          {% endfor %}
         </div>
       </div>
-    </div>
-  </div>
-</section>
-
-{% if related_items %}
-<section class="section">
-  <div class="container">
-    <div class="section-heading">
-      <p class="eyebrow">More Merch</p>
-      <h2>Related Items</h2>
-    </div>
-
-    <div class="related-grid">
-      {% for related in related_items %}
-        <article class="card fact-card">
-          {% if related.image %}
-            <a class="card-image-link" href="{% url 'merch:merch_detail' related.slug %}">
-              <img class="service-image" src="{{ related.image.url }}" alt="{{ related.name }}">
-            </a>
-          {% endif %}
-
-          <h3>
-            <a href="{% url 'merch:merch_detail' related.slug %}">
-              {{ related.name }}
-            </a>
-          </h3>
-
-          {% if related.short_description %}
-            <p class="muted clamp-3">{{ related.short_description }}</p>
-          {% endif %}
-
-          <div class="meta-row">
-            {% if related.price_text %}
-              <span class="pill">{{ related.price_text }}</span>
-            {% endif %}
-          </div>
-
-          <div class="card-footer">
-            <a class="btn btn-secondary" href="{% url 'merch:merch_detail' related.slug %}">
-              View Item
-            </a>
-          </div>
-        </article>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-{% endif %}
+    </section>
+  {% endif %}
+</div>
 {% endblock %}

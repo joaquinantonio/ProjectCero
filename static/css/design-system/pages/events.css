@@ -1,0 +1,335 @@
+/* Events listing redesign - scoped to /events/ */
+
+.cero-events-page {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(142,240,199,0.08), transparent 30rem),
+    linear-gradient(180deg, rgba(255,255,255,0.025), transparent 24rem),
+    var(--bg);
+}
+
+.cero-listing-hero {
+  position: relative;
+  isolation: isolate;
+  padding: clamp(4rem, 8vw, 7rem) 0 clamp(2.75rem, 5vw, 4.5rem);
+  overflow: hidden;
+}
+
+.cero-listing-hero::before {
+  content: "";
+  position: absolute;
+  inset: -20% -10% auto;
+  z-index: -1;
+  height: 90%;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(142,240,199,0.18), transparent 32%),
+    radial-gradient(circle at 85% 18%, rgba(255,255,255,0.1), transparent 28%);
+}
+
+.cero-listing-hero__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.55fr);
+  gap: clamp(2rem, 5vw, 5rem);
+  align-items: end;
+}
+
+.cero-listing-hero h1 {
+  max-width: 12ch;
+  margin-bottom: 1rem;
+  font-size: clamp(3rem, 7vw, 6.5rem);
+  line-height: 0.9;
+  letter-spacing: -0.085em;
+  text-wrap: balance;
+}
+
+.cero-listing-hero p {
+  max-width: 720px;
+  color: var(--muted);
+  font-size: clamp(1rem, 1.6vw, 1.18rem);
+}
+
+.cero-listing-hero__panel {
+  padding: 1.5rem;
+  border: 1px solid rgba(255,255,255,0.13);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top left, rgba(142,240,199,0.13), transparent 34%),
+    rgba(19, 23, 28, 0.86);
+  box-shadow: 0 24px 70px rgba(0,0,0,0.28);
+}
+
+.cero-listing-hero__panel h2 {
+  margin-bottom: 0.6rem;
+  font-size: clamp(1.45rem, 2.4vw, 2.2rem);
+  letter-spacing: -0.045em;
+}
+
+.cero-event-search {
+  padding: 1.2rem;
+  border: 1px solid rgba(255,255,255,0.13);
+  border-radius: 26px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015)),
+    rgba(19, 23, 28, 0.84);
+  box-shadow: 0 20px 55px rgba(0,0,0,0.22);
+}
+
+.cero-event-search__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(220px, 0.65fr) auto;
+  gap: 1rem;
+  align-items: end;
+}
+
+.cero-event-search label {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: var(--text);
+  font-weight: 800;
+}
+
+.cero-event-search input,
+.cero-event-search select {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 16px;
+  background: rgba(7, 9, 12, 0.82);
+  color: var(--text);
+  font-size: 0.98rem;
+}
+
+.cero-event-search input:focus,
+.cero-event-search select:focus {
+  outline: none;
+  border-color: rgba(142,240,199,0.7);
+  box-shadow: 0 0 0 3px rgba(142,240,199,0.12);
+}
+
+.cero-event-search__actions {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.cero-category-strip {
+  display: flex;
+  gap: 0.65rem;
+  overflow-x: auto;
+  padding: 1rem 0 0.25rem;
+  scrollbar-width: thin;
+}
+
+.cero-category-pill {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  min-height: 40px;
+  border: 1px solid rgba(255,255,255,0.13);
+  border-radius: 999px;
+  padding: 0.55rem 0.9rem;
+  color: var(--muted);
+  background: rgba(255,255,255,0.035);
+  font-weight: 800;
+}
+
+.cero-category-pill:hover,
+.cero-category-pill.is-active {
+  border-color: rgba(142,240,199,0.55);
+  color: #07110d;
+  background: var(--accent);
+}
+
+.cero-event-listing-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.cero-past-event-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.cero-listing-event-card {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1fr);
+  min-height: 330px;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.cero-listing-event-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(142,240,199,0.34);
+}
+
+.cero-listing-event-card__media {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 100%;
+  overflow: hidden;
+  background: #10151b;
+}
+
+.cero-listing-event-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease, filter 0.35s ease;
+}
+
+.cero-listing-event-card:hover .cero-listing-event-card__media img {
+  transform: scale(1.04);
+  filter: saturate(1.08) contrast(1.02);
+}
+
+.cero-listing-event-card__media--date {
+  gap: 0.2rem;
+  align-content: center;
+  background:
+    radial-gradient(circle at 40% 25%, rgba(142,240,199,0.24), transparent 35%),
+    linear-gradient(135deg, #151b22, #080a0d);
+}
+
+.cero-listing-event-card__media--date strong {
+  color: var(--text);
+  font-size: clamp(4rem, 7vw, 6rem);
+  line-height: 1;
+  letter-spacing: -0.09em;
+}
+
+.cero-listing-event-card__media--date span {
+  color: var(--muted);
+  font-weight: 850;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.cero-listing-event-card__body {
+  display: flex;
+  flex-direction: column;
+  padding: clamp(1.2rem, 2.2vw, 1.7rem);
+}
+
+.cero-listing-event-card__topline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.cero-listing-event-card h3 {
+  margin-bottom: 0.65rem;
+  font-size: clamp(1.45rem, 2.4vw, 2.15rem);
+  line-height: 1.02;
+  letter-spacing: -0.05em;
+}
+
+.cero-listing-event-card__date {
+  margin-bottom: 0.65rem;
+  color: var(--accent) !important;
+  font-weight: 850;
+}
+
+.cero-listing-event-card__location {
+  margin-bottom: 0.65rem;
+}
+
+.cero-listing-event-card__copy {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  color: var(--muted);
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.cero-listing-event-card__actions {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+
+.cero-past-event-grid .cero-listing-event-card {
+  grid-template-columns: 1fr;
+  min-height: 0;
+}
+
+.cero-past-event-grid .cero-listing-event-card__media {
+  min-height: 190px;
+  max-height: 220px;
+}
+
+.cero-past-event-grid .cero-listing-event-card__body {
+  min-height: 280px;
+}
+
+.cero-listing-event-card.is-past {
+  opacity: 0.84;
+}
+
+.cero-listing-empty {
+  padding: 1.5rem;
+  min-height: 260px;
+}
+
+.cero-events-page .pagination {
+  margin-top: 2rem;
+}
+
+@media (max-width: 1000px) {
+  .cero-listing-hero__grid,
+  .cero-event-search__grid,
+  .cero-listing-event-card {
+    grid-template-columns: 1fr;
+  }
+
+  .cero-listing-event-card__media {
+    min-height: 260px;
+  }
+
+  .cero-event-listing-grid,
+  .cero-past-event-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cero-past-event-grid .cero-listing-event-card__body {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .cero-listing-hero {
+    padding-top: 3.5rem;
+  }
+
+  .cero-listing-hero h1 {
+    font-size: clamp(3rem, 16vw, 4.8rem);
+  }
+
+  .cero-listing-hero__panel,
+  .cero-event-search,
+  .cero-listing-empty {
+    border-radius: 24px;
+    padding: 1rem;
+  }
+
+  .cero-event-search__actions .btn,
+  .cero-listing-event-card__actions .btn {
+    width: 100%;
+  }
+
+  .cero-listing-event-card__media {
+    min-height: 225px;
+  }
+
+  .cero-listing-event-card__body {
+    padding: 1.1rem;
+  }
+}

@@ -1,0 +1,253 @@
+/* Artist listing redesign - scoped to /artists/ */
+
+.cero-artists-page {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(142,240,199,0.08), transparent 30rem),
+    linear-gradient(180deg, rgba(255,255,255,0.025), transparent 24rem),
+    var(--bg);
+}
+
+.cero-artists-hero::before {
+  background:
+    radial-gradient(circle at 18% 12%, rgba(142,240,199,0.16), transparent 32%),
+    radial-gradient(circle at 82% 18%, rgba(255,255,255,0.11), transparent 28%),
+    radial-gradient(circle at 50% 70%, rgba(142,240,199,0.05), transparent 36%);
+}
+
+.cero-artists-hero__panel {
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.cero-artist-search {
+  padding: 1.2rem;
+  border: 1px solid rgba(255,255,255,0.13);
+  border-radius: 26px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015)),
+    rgba(19, 23, 28, 0.84);
+  box-shadow: 0 20px 55px rgba(0,0,0,0.22);
+}
+
+.cero-artist-search__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: end;
+}
+
+.cero-artist-search label {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: var(--text);
+  font-weight: 800;
+}
+
+.cero-artist-search input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 16px;
+  background: rgba(7, 9, 12, 0.82);
+  color: var(--text);
+  font-size: 0.98rem;
+}
+
+.cero-artist-search input:focus {
+  outline: none;
+  border-color: rgba(142,240,199,0.7);
+  box-shadow: 0 0 0 3px rgba(142,240,199,0.12);
+}
+
+.cero-artist-search__actions {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.cero-artist-listing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.cero-listing-artist-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.cero-listing-artist-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(142,240,199,0.34);
+}
+
+.cero-listing-artist-card__media {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: clamp(260px, 26vw, 360px);
+  overflow: hidden;
+  background: #10151b;
+}
+
+.cero-listing-artist-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease, filter 0.35s ease;
+}
+
+.cero-listing-artist-card:hover .cero-listing-artist-card__media img {
+  transform: scale(1.04);
+  filter: saturate(1.08) contrast(1.02);
+}
+
+.cero-listing-artist-card__media--placeholder {
+  background:
+    radial-gradient(circle at 38% 22%, rgba(142,240,199,0.22), transparent 36%),
+    linear-gradient(135deg, #151b22, #080a0d);
+}
+
+.cero-listing-artist-card__media--placeholder span {
+  color: rgba(243,245,247,0.88);
+  font-size: clamp(5rem, 12vw, 9rem);
+  font-weight: 950;
+  letter-spacing: -0.12em;
+  text-transform: uppercase;
+}
+
+.cero-listing-artist-card__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: clamp(1.15rem, 2vw, 1.55rem);
+}
+
+.cero-listing-artist-card__topline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.cero-listing-artist-card h3 {
+  margin-bottom: 0.7rem;
+  font-size: clamp(1.55rem, 2.6vw, 2.25rem);
+  line-height: 1;
+  letter-spacing: -0.055em;
+}
+
+.cero-listing-artist-card__summary {
+  margin-bottom: 0.75rem;
+  color: var(--text) !important;
+  font-weight: 700;
+}
+
+.cero-listing-artist-card__copy {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  color: var(--muted);
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+}
+
+.cero-listing-artist-card__actions {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: auto;
+}
+
+.cero-artist-cta-section {
+  padding-top: clamp(3rem, 6vw, 5rem);
+}
+
+.cero-artist-cta {
+  position: relative;
+  overflow: hidden;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 4.25rem);
+  text-align: center;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: clamp(28px, 4.4vw, 48px);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(142,240,199,0.18), transparent 38%),
+    radial-gradient(circle at 15% 90%, rgba(255,255,255,0.08), transparent 26%),
+    rgba(19, 23, 28, 0.96);
+  box-shadow: 0 28px 80px rgba(0,0,0,0.32);
+}
+
+.cero-artist-cta h2 {
+  max-width: 760px;
+  margin: 0 auto 0.8rem;
+  font-size: clamp(2.1rem, 5vw, 4.4rem);
+  line-height: 0.96;
+  letter-spacing: -0.06em;
+  text-wrap: balance;
+}
+
+.cero-artist-cta p {
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+  color: var(--muted);
+}
+
+.cero-artists-page .pagination {
+  margin-top: 2rem;
+}
+
+@media (max-width: 1000px) {
+  .cero-artist-listing-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cero-artist-search__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .cero-artist-listing-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cero-listing-artist-card__media {
+    height: 320px;
+  }
+}
+
+@media (max-width: 640px) {
+  .cero-artist-search,
+  .cero-artist-cta {
+    border-radius: 24px;
+    padding: 1rem;
+  }
+
+  .cero-artist-search__actions .btn,
+  .cero-listing-artist-card__actions .btn {
+    width: 100%;
+  }
+
+  .cero-listing-artist-card__media {
+    height: 280px;
+  }
+
+  .cero-listing-artist-card__body {
+    padding: 1.1rem;
+  }
+
+  .cero-artist-cta h2 {
+    font-size: clamp(2.1rem, 12vw, 3.1rem);
+  }
+}

@@ -1,0 +1,47 @@
+<article class="cero-card cero-listing-studio-card">
+  {% if service.image %}
+    <a class="cero-listing-studio-card__media" href="{% url 'studio:service_detail' service.slug %}">
+      <img src="{{ service.image.url }}" alt="{{ service.name }}">
+    </a>
+  {% else %}
+    <a class="cero-listing-studio-card__media cero-listing-studio-card__media--placeholder" href="{% url 'studio:service_detail' service.slug %}">
+      <span>Studio</span>
+    </a>
+  {% endif %}
+
+  <div class="cero-listing-studio-card__body">
+    <div class="cero-listing-studio-card__topline">
+      <p class="cero-card__label">Service</p>
+
+      <div class="cero-pill-row">
+        {% if service.price_text %}
+          <span class="cero-pill">{{ service.price_text }}</span>
+        {% endif %}
+        {% if service.duration_text %}
+          <span class="cero-pill">{{ service.duration_text }}</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <h3>
+      <a href="{% url 'studio:service_detail' service.slug %}">{{ service.name }}</a>
+    </h3>
+
+    {% if service.short_description %}
+      <p class="cero-listing-studio-card__summary">{{ service.short_description }}</p>
+    {% endif %}
+
+    {% if service.description %}
+      <p class="cero-listing-studio-card__copy">{{ service.description }}</p>
+    {% endif %}
+
+    <div class="cero-listing-studio-card__actions">
+      <a class="btn btn-secondary" href="{% url 'studio:service_detail' service.slug %}">
+        View Service
+      </a>
+      <a class="btn btn-primary" href="{% url 'bookings:request' %}?type=studio&service={{ service.slug }}">
+        Request Session
+      </a>
+    </div>
+  </div>
+</article>

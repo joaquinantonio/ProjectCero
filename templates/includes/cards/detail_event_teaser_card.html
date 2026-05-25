@@ -1,0 +1,24 @@
+<article class="cero-card cero-detail-event-teaser {% if is_past %}is-past{% endif %}">
+  <p class="cero-card__label">{% if is_past %}Past event{% else %}Upcoming{% endif %}</p>
+
+  <h3>
+    <a href="{% url 'events:event_detail' event.slug %}">{{ event.title }}</a>
+  </h3>
+
+  <p class="cero-detail-event-teaser__date">
+    {{ event.start_at|date:"d M Y" }}
+    {% if not is_past %}
+      · {{ event.start_at|time:"g:i A" }}
+    {% endif %}
+  </p>
+
+  {% if event.short_description %}
+    <p class="cero-detail-event-teaser__copy">{{ event.short_description }}</p>
+  {% endif %}
+
+  <div class="cero-detail-event-teaser__actions">
+    <a class="btn btn-secondary" href="{% url 'events:event_detail' event.slug %}">
+      View Event
+    </a>
+  </div>
+</article>

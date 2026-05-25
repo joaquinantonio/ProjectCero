@@ -15,57 +15,87 @@
 {% endblock %}
 
 {% block content %}
-<section class="page-hero">
-  <div class="container narrow">
-    <p class="eyebrow">Artist</p>
-    <h1>{{ artist.name }}</h1>
-    {% if artist.short_bio %}
-      <p class="lead">{{ artist.short_bio }}</p>
-    {% endif %}
-  </div>
-</section>
+<div class="cero-detail-page cero-artist-detail-page">
+  <section class="cero-detail-hero">
+    <div class="container cero-detail-hero__grid">
+      <div class="cero-detail-hero__copy">
+        <p class="cero-kicker">Artist</p>
+        <h1>{{ artist.name }}</h1>
 
-<section class="section">
-  <div class="container">
-    <div class="detail-layout">
-      <div class="detail-main">
-        {% if artist.image %}
-          <div class="detail-image-wrap">
-            <img class="detail-image" src="{{ artist.image.url }}" alt="{{ artist.name }}">
-          </div>
+        {% if artist.short_bio %}
+          <p class="cero-detail-hero__lead">{{ artist.short_bio }}</p>
         {% endif %}
 
-        <div class="card detail-block">
-          <h2>About the Artist</h2>
-          <div class="detail-richtext">
-            {% if artist.bio %}
-              {{ artist.bio|linebreaks }}
-            {% else %}
-              <p class="muted">No bio added yet.</p>
-            {% endif %}
-          </div>
+        <div class="cero-detail-meta-strip">
+          <span>{{ artist.get_artist_type_display }}</span>
+          {% if artist.instagram_url %}<span>Instagram</span>{% endif %}
+          {% if artist.spotify_url %}<span>Spotify</span>{% endif %}
+          {% if artist.youtube_url %}<span>YouTube</span>{% endif %}
+        </div>
+
+        <div class="cero-actions">
+          {% if artist.instagram_url %}
+            <a class="btn btn-secondary" href="{{ artist.instagram_url }}">Instagram</a>
+          {% endif %}
+          {% if artist.spotify_url %}
+            <a class="btn btn-secondary" href="{{ artist.spotify_url }}">Spotify</a>
+          {% endif %}
+          {% if artist.youtube_url %}
+            <a class="btn btn-secondary" href="{{ artist.youtube_url }}">YouTube</a>
+          {% endif %}
+          <a class="btn btn-secondary" href="{% url 'artists:artist_list' %}">Back to Artists</a>
         </div>
       </div>
 
-      <div class="detail-side">
-        <div class="card detail-summary">
-          <h2>Artist Profile</h2>
+      <aside class="cero-detail-hero__media cero-detail-hero__media--portrait">
+        {% if artist.image %}
+          <img src="{{ artist.image.url }}" alt="{{ artist.name }}">
+        {% else %}
+          <div class="cero-detail-hero__placeholder">
+            <strong>{{ artist.name|slice:":1" }}</strong>
+            <span>Artist</span>
+          </div>
+        {% endif %}
+      </aside>
+    </div>
+  </section>
 
-          <ul class="detail-meta-list">
+  <section class="cero-section cero-section--tight">
+    <div class="container cero-detail-layout">
+      <main class="cero-detail-main">
+        <article class="cero-detail-card">
+          <p class="cero-kicker">Profile</p>
+          <h2>About the artist</h2>
+          <div class="cero-detail-richtext">
+            {% if artist.bio %}
+              {{ artist.bio|linebreaks }}
+            {% else %}
+              <p>No bio added yet.</p>
+            {% endif %}
+          </div>
+        </article>
+      </main>
+
+      <aside class="cero-detail-sidebar">
+        <section class="cero-detail-card cero-detail-summary-card">
+          <p class="cero-kicker">Artist profile</p>
+          <h2>Profile details</h2>
+
+          <ul class="cero-detail-meta-list">
             <li>
-              <span class="detail-label">Type</span>
-              <span class="detail-value">{{ artist.get_artist_type_display }}</span>
+              <span>Type</span>
+              <strong>{{ artist.get_artist_type_display }}</strong>
             </li>
 
             {% if artist.short_bio %}
               <li>
-                <span class="detail-label">Summary</span>
-                <span class="detail-value">{{ artist.short_bio }}</span>
+                <span>Summary</span>
+                <strong>{{ artist.short_bio }}</strong>
               </li>
             {% endif %}
           </ul>
 
-          <div class="social-links">
+          <div class="cero-detail-actions">
             {% if artist.instagram_url %}
               <a class="btn btn-secondary" href="{{ artist.instagram_url }}">Instagram</a>
             {% endif %}
@@ -76,67 +106,57 @@
               <a class="btn btn-secondary" href="{{ artist.youtube_url }}">YouTube</a>
             {% endif %}
           </div>
+        </section>
+      </aside>
+    </div>
+  </section>
+
+  <section class="cero-section cero-section--tight">
+    <div class="container">
+      <div class="cero-section-header cero-section-header--split">
+        <div>
+          <p class="cero-kicker">Upcoming</p>
+          <h2>Upcoming appearances</h2>
         </div>
+        <p>Future events connected to this artist will appear here automatically.</p>
+      </div>
+
+      <div class="cero-detail-related-grid">
+        {% for event in upcoming_events %}
+          {% include "includes/cards/detail_event_teaser_card.html" with event=event %}
+        {% empty %}
+          <article class="cero-card cero-listing-empty">
+            <p class="cero-card__label">No upcoming appearances</p>
+            <h3>Nothing scheduled yet.</h3>
+            <p>Upcoming appearances will show here once available.</p>
+          </article>
+        {% endfor %}
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="section">
-  <div class="container">
-    <div class="section-heading">
-      <p class="eyebrow">Upcoming</p>
-      <h2>Upcoming Appearances</h2>
-    </div>
+  <section class="cero-section cero-section--tight">
+    <div class="container">
+      <div class="cero-section-header cero-section-header--split">
+        <div>
+          <p class="cero-kicker">Archive</p>
+          <h2>Past appearances</h2>
+        </div>
+        <p>Past events help show the artist’s connection to the ProjectCero community.</p>
+      </div>
 
-    <div class="related-grid">
-      {% for event in upcoming_events %}
-        <article class="card fact-card">
-          <p class="event-date">{{ event.start_at|date:"d M Y" }} · {{ event.start_at|time:"g:i A" }}</p>
-          <h3><a href="{% url 'events:event_detail' event.slug %}">{{ event.title }}</a></h3>
-          {% if event.short_description %}
-            <p class="muted clamp-3">{{ event.short_description }}</p>
-          {% endif %}
-          <div class="card-footer">
-            <a class="btn btn-secondary" href="{% url 'events:event_detail' event.slug %}">View Event</a>
-          </div>
-        </article>
-      {% empty %}
-        <article class="card">
-          <h3>No upcoming appearances</h3>
-          <p>Nothing scheduled yet.</p>
-        </article>
-      {% endfor %}
+      <div class="cero-detail-related-grid">
+        {% for event in past_events %}
+          {% include "includes/cards/detail_event_teaser_card.html" with event=event is_past=True %}
+        {% empty %}
+          <article class="cero-card cero-listing-empty">
+            <p class="cero-card__label">No past appearances</p>
+            <h3>Past events will appear here.</h3>
+            <p>Past appearances will show here once available.</p>
+          </article>
+        {% endfor %}
+      </div>
     </div>
-  </div>
-</section>
-
-<section class="section">
-  <div class="container">
-    <div class="section-heading">
-      <p class="eyebrow">Archive</p>
-      <h2>Past Appearances</h2>
-    </div>
-
-    <div class="related-grid">
-      {% for event in past_events %}
-        <article class="card fact-card">
-          <p class="event-date">{{ event.start_at|date:"d M Y" }}</p>
-          <h3><a href="{% url 'events:event_detail' event.slug %}">{{ event.title }}</a></h3>
-          {% if event.short_description %}
-            <p class="muted clamp-3">{{ event.short_description }}</p>
-          {% endif %}
-          <div class="card-footer">
-            <a class="btn btn-secondary" href="{% url 'events:event_detail' event.slug %}">View Event</a>
-          </div>
-        </article>
-      {% empty %}
-        <article class="card">
-          <h3>No past appearances yet</h3>
-          <p>Past events will show here once available.</p>
-        </article>
-      {% endfor %}
-    </div>
-  </div>
-</section>
+  </section>
+</div>
 {% endblock %}
