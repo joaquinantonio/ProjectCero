@@ -231,7 +231,7 @@ class ArtistEnquiryAdmin(
     autocomplete_fields = ("related_artist",)
     list_select_related = ("related_artist",)
 
-    readonly_fields = ("reference_code", "created_at", "updated_at")
+    readonly_fields = ("reference_code", "created_at", "updated_at", "contact_display", "availability_display")
     readonly_on_change = (
         "name",
         "email",
@@ -265,6 +265,18 @@ class ArtistEnquiryAdmin(
             tone_map.get(obj.status, "neutral"),
         )
 
+    @admin.display(description="Contact Info")
+    def contact_display(self, obj):
+        """Display contact information in a clear, scannable format."""
+        return f"{obj.name} | {obj.email} | {obj.phone}"
+
+    @admin.display(description="Availability")
+    def availability_display(self, obj):
+        """Display date and time availability in a clear format."""
+        date_str = obj.preferred_date.strftime('%a, %b %d, %Y') if obj.preferred_date else "No date"
+        time_str = f"{obj.time_start.strftime('%I:%M %p')} – {obj.time_end.strftime('%I:%M %p')}"
+        return f"{date_str} | {time_str}"
+
     def get_fieldsets(self, request, obj=None):
         workflow_fields = ("status", "admin_notes")
         if obj:
@@ -280,16 +292,16 @@ class ArtistEnquiryAdmin(
                 },
             ),
             (
-                "Sender",
+                "Contact Information",
                 {
-                    "fields": (("name", "email"), "phone"),
+                    "fields": (("name", "email"), "phone", "contact_display") if obj else (("name", "email"), "phone"),
                 },
             ),
             (
                 "Artist & Availability",
                 {
-                    "fields": ("related_artist", "preferred_date", ("time_start", "time_end")),
-                    "description": "Date and time range provided by the enquirer.",
+                    "fields": ("related_artist", ("preferred_date", "time_start", "time_end"), "availability_display") if obj else ("related_artist", ("preferred_date", "time_start", "time_end")),
+                    "description": "Date and time range provided by the enquirer. 30-minute increments selected from 8am–midnight.",
                 },
             ),
             (
@@ -300,3 +312,27 @@ class ArtistEnquiryAdmin(
                 },
             ),
         )
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+
+        if "status" in form.base_fields:
+            form.base_fields["status"].help_text = "Mark as 'Contacted' after reaching out via WhatsApp/call. Mark as 'Closed' once complete."
+
+        if "admin_notes" in form.base_fields:
+            form.base_fields["admin_notes"].label = "Internal notes"
+            form.base_fields["admin_notes"].help_text = "Visible only in admin. Record outcomes of contact attempts."
+            form.base_fields["admin_notes"].widget.attrs["rows"] = 6
+
+        if "preferred_date" in form.base_fields:
+            form.base_fields["preferred_date"].help_text = "Date the enquirer is available."
+
+        if "time_start" in form.base_fields:
+            form.base_fields["time_start"].label = "Available from"
+            form.base_fields["time_start"].help_text = "Selected from 30-minute increments."
+
+        if "time_end" in form.base_fields:
+            form.base_fields["time_end"].label = "Available until"
+            form.base_fields["time_end"].help_text = "Selected from 30-minute increments."
+
+        return form

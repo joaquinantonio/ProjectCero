@@ -1,8 +1,24 @@
 from django import forms
+from datetime import time, timedelta
 
 from apps.events.models import Event
 from apps.merch.models import MerchItem
 from .models import EnquirySubmission, ArtistEnquiry
+
+
+def get_time_choices():
+    """Generate time choices in 30-minute increments (business hours: 8am-midnight)."""
+    choices = [("", "Select a time")]
+    start_hour = 8
+    end_hour = 24
+
+    for hour in range(start_hour, end_hour):
+        for minute in [0, 30]:
+            t = time(hour % 24, minute)
+            formatted = t.strftime("%I:%M %p")
+            choices.append((t.isoformat(), formatted))
+
+    return choices
 
 
 class BaseEnquiryForm(forms.ModelForm):
@@ -156,13 +172,15 @@ class ArtistEnquiryForm(forms.ModelForm):
         self.fields["preferred_date"].help_text = "When would you like to meet?"
         self.fields["preferred_date"].required = True
 
+        time_choices = get_time_choices()
+
         self.fields["time_start"].label = "Available from"
-        self.fields["time_start"].widget = forms.TimeInput(attrs={"type": "time"})
-        self.fields["time_start"].help_text = "E.g., 2:00 PM"
+        self.fields["time_start"].widget = forms.Select(choices=time_choices)
+        self.fields["time_start"].help_text = "30-minute increments, 8am–midnight"
 
         self.fields["time_end"].label = "Available until"
-        self.fields["time_end"].widget = forms.TimeInput(attrs={"type": "time"})
-        self.fields["time_end"].help_text = "E.g., 4:00 PM"
+        self.fields["time_end"].widget = forms.Select(choices=time_choices)
+        self.fields["time_end"].help_text = "30-minute increments, 8am–midnight"
 
     def clean(self):
         cleaned_data = super().clean()
