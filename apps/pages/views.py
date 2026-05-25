@@ -24,7 +24,7 @@ def home_view(request):
         .order_by("display_order", "name")[:4]
     )
 
-    featured_artists = get_featured_artists(limit=4)
+    featured_artists = get_featured_artists(limit=6)
 
     latest_news = (
         NewsPost.objects.filter(status=NewsPost.Status.PUBLISHED)

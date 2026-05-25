@@ -94,7 +94,7 @@ class BookingResource(SluggedModelMixin, TimeStampedModel):
     """
     Physical bookable resource.
 
-    For now, ProjectCero has one physical resource:
+    For now, CeroPJ has one physical resource:
     CeroPJ Venue.
 
     Studio and venue are booking types/workflows, not separate physical resources.

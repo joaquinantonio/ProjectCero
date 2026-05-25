@@ -1,11 +1,8 @@
 <section class="cero-section">
   <div class="container">
-    <div class="cero-section-header cero-section-header--split">
-      <div>
-        <p class="cero-kicker">Coming up</p>
-        <h2>Upcoming events</h2>
-      </div>
-      <a class="cero-text-link" href="{% url 'events:event_list' %}">View all events →</a>
+    <div class="cero-section-header">
+      <p class="cero-kicker">Coming up</p>
+      <h2>Upcoming events</h2>
     </div>
 
     <div class="cero-event-rail">
@@ -21,8 +18,8 @@
     </div>
 
     <div class="cero-actions cero-actions--section">
-      <a class="btn btn-primary" href="{% url 'events:calendar' %}">Open Calendar</a>
-      <a class="btn btn-secondary" href="{% url 'events:event_list' %}">View All Events</a>
+      <a class="btn btn-primary" href="{% url 'events:event_list' %}">View All Events</a>
+      <a class="btn btn-secondary" href="{% url 'events:calendar' %}">Open Calendar</a>
     </div>
   </div>
 </section>

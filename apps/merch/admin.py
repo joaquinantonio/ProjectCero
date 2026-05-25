@@ -163,7 +163,7 @@ class MerchItemAdmin(AdminImagePreviewMixin, SuperuserDeleteOnlyAdminMixin, Time
 
         if "track_stock" in form.base_fields:
             form.base_fields["track_stock"].help_text = (
-                "Enable this if ProjectCero should track available quantity."
+                "Enable this if CeroPJ should track available quantity."
             )
 
         if "stock_quantity" in form.base_fields:

@@ -1,11 +1,8 @@
 <section class="cero-section">
   <div class="container">
-    <div class="cero-section-header cero-section-header--split">
-      <div>
-        <p class="cero-kicker">Community</p>
-        <h2>Artists connected to the space.</h2>
-      </div>
-      <a class="cero-text-link" href="{% url 'artists:artist_list' %}">View artists →</a>
+    <div class="cero-section-header">
+      <p class="cero-kicker">Featured Artists</p>
+      <h2>Artists connected to the space.</h2>
     </div>
 
     <div class="cero-artist-rail">
@@ -18,6 +15,10 @@
           <p>Mark artists as featured in admin to show them here.</p>
         </article>
       {% endfor %}
+    </div>
+
+    <div class="cero-actions cero-actions--section">
+      <a class="btn btn-primary" href="{% url 'artists:artist_list' %}">View Artists</a>
     </div>
   </div>
 </section>

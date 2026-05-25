@@ -1,14 +1,21 @@
+{% load static %}
 <header class="site-header cero-site-header">
   <div class="container nav-shell cero-nav-shell">
     <div class="brand cero-brand">
-      <a href="{% url 'pages:home' %}" class="brand-link cero-brand-link">
-        {{ site_settings.site_name|default:"ProjectCero" }}
+      <a href="{% url 'pages:home' %}" class="cero-brand-mark" aria-label="{{ site_settings.site_name|default:'CeroPJ' }} home">
+        <img src="{% static 'images/cero_logo.png' %}" alt="" class="cero-brand-logo">
       </a>
-      {% if site_settings.tagline %}
-        <p class="brand-tagline cero-brand-tagline">{{ site_settings.tagline }}</p>
-      {% else %}
-        <p class="brand-tagline cero-brand-tagline">Creative venue · Studio · Community</p>
-      {% endif %}
+
+      <div class="cero-brand-copy">
+        <a href="{% url 'pages:home' %}" class="brand-link cero-brand-link">
+          {{ site_settings.site_name|default:"CeroPJ" }}
+        </a>
+        {% if site_settings.tagline %}
+          <p class="brand-tagline cero-brand-tagline">{{ site_settings.tagline }}</p>
+        {% else %}
+          <p class="brand-tagline cero-brand-tagline">Creative venue · Studio · Community</p>
+        {% endif %}
+      </div>
     </div>
 
     <button

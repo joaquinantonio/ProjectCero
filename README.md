@@ -1,4 +1,4 @@
-                  # ProjectCero
+                  # CeroPJ
 A Django web application for CeroPJ with public artist, event, and studio pages, a booking workflow, and an editor-friendly Django admin.
 ## Features
 - Public pages for home, about, contact, artists, events, studio, and bookings

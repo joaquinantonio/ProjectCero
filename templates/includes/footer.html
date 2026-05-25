@@ -2,7 +2,7 @@
   <div class="container cero-footer-grid">
     <section class="cero-footer-brand">
       <a class="cero-footer-logo" href="{% url 'pages:home' %}">
-        {{ site_settings.site_name|default:"ProjectCero" }}
+        {{ site_settings.site_name|default:"CeroPJ" }}
       </a>
 
       {% if site_settings.tagline %}
@@ -74,7 +74,7 @@
   </div>
 
   <div class="container cero-footer-bottom">
-    <p>© {% now "Y" %} {{ site_settings.site_name|default:"ProjectCero" }}. All rights reserved.</p>
+    <p>© {% now "Y" %} {{ site_settings.site_name|default:"CeroPJ" }}. All rights reserved.</p>
     {% if site_settings.address_text %}
       <p>{{ site_settings.address_text }}</p>
     {% endif %}

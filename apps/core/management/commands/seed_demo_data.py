@@ -61,7 +61,7 @@ class Command(BaseCommand):
             pk=1,
             defaults={
                 "site_name": "CeroPJ",
-                "tagline": "Recording studio, event space, live music, culture, and fun nights.",
+                "tagline": "Life is good when you're here.",
                 "contact_email": "hello@ceropj.com",
                 "contact_phone": "+60 12-345 6789",
                 "address_text": (

@@ -1,8 +1,8 @@
-# ProjectCero Frontend Redesign Plan
+# CeroPJ Frontend Redesign Plan
 
 ## Design Direction
 
-ProjectCero should feel like a dark, modern music venue and studio platform. The frontend should communicate energy, creativity, and professionalism while staying simple enough for fast Django template rendering.
+CeroPJ should feel like a dark, modern music venue and studio platform. The frontend should communicate energy, creativity, and professionalism while staying simple enough for fast Django template rendering.
 
 ## Brand Feel
 

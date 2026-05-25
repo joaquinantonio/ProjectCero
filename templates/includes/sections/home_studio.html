@@ -1,11 +1,8 @@
 <section class="cero-section">
   <div class="container">
-    <div class="cero-section-header cero-section-header--split">
-      <div>
-        <p class="cero-kicker">Studio capability</p>
-        <h2>Serious creative work, without losing the community feel.</h2>
-      </div>
-      <a class="cero-text-link" href="{% url 'studio:home' %}">See studio services →</a>
+    <div class="cero-section-header">
+      <p class="cero-kicker">Studio capability</p>
+      <h2>Serious creative work, without losing the community feel.</h2>
     </div>
 
     <div class="cero-card-grid">
@@ -40,6 +37,11 @@
           <p>Mark studio services as featured in admin.</p>
         </article>
       {% endfor %}
+    </div>
+
+    <div class="cero-actions cero-actions--section">
+      <a class="btn btn-primary" href="{% url 'studio:home' %}">View Studio Services</a>
+      <a class="btn btn-secondary" href="{% url 'bookings:request' %}?type=studio">Book a Session</a>
     </div>
   </div>
 </section>

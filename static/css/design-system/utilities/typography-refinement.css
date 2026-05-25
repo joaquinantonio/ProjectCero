@@ -1,0 +1,170 @@
+/* Phase 11C: Typography Refinement
+   Purpose:
+   - Keep the homepage cinematic
+   - Reduce oversized titles on regular pages
+   - Improve desktop balance for Studio, Events, Artists, Booking, Merch, News, and Contact
+   - Leave mobile scale mostly unchanged because mobile already feels good
+*/
+
+/* Desktop and tablet page hero tuning */
+@media (min-width: 901px) {
+  .cero-listing-hero,
+  .cero-studio-page .cero-listing-hero,
+  .cero-content-hero,
+  .cero-content-detail-hero,
+  .cero-conversion-hero {
+    padding-top: clamp(3.1rem, 5.4vw, 5rem);
+    padding-bottom: clamp(2.2rem, 4vw, 3.6rem);
+  }
+
+  .cero-listing-hero h1,
+  .cero-studio-page .cero-listing-hero h1,
+  .cero-content-hero h1,
+  .cero-content-detail-hero h1,
+  .cero-conversion-hero h1 {
+    max-width: 16ch;
+    margin-bottom: 0.9rem;
+    font-size: clamp(2.55rem, 4.45vw, 4.7rem);
+    line-height: 0.96;
+    letter-spacing: -0.068em;
+  }
+
+  .cero-listing-hero p,
+  .cero-studio-page .cero-listing-hero p,
+  .cero-content-hero p,
+  .cero-content-detail-hero p,
+  .cero-conversion-hero p {
+    max-width: 680px;
+    font-size: clamp(0.98rem, 1.25vw, 1.1rem);
+    line-height: 1.62;
+  }
+
+  .cero-listing-hero__grid,
+  .cero-studio-page .cero-listing-hero__grid,
+  .cero-content-hero__grid,
+  .cero-content-detail-hero__grid,
+  .cero-conversion-hero__grid {
+    gap: clamp(1.6rem, 4vw, 3.6rem);
+  }
+
+  .cero-listing-hero__panel h2,
+  .cero-studio-page .cero-listing-hero__panel h2,
+  .cero-content-hero__panel h2,
+  .cero-conversion-hero__panel h2 {
+    font-size: clamp(1.35rem, 1.8vw, 1.85rem);
+    line-height: 1.08;
+    letter-spacing: -0.04em;
+  }
+
+  /* Section title tuning across non-hero areas */
+  .cero-section-header h2,
+  .cero-feature-panel h2,
+  .cero-final-cta h2,
+  .cero-studio-intro-panel h2,
+  .cero-conversion-note-panel h2,
+  .cero-studio-cta h2 {
+    font-size: clamp(1.9rem, 3.55vw, 3.45rem);
+    line-height: 1.02;
+    letter-spacing: -0.055em;
+  }
+
+  .cero-section-header {
+    max-width: 720px;
+  }
+
+  .cero-section-header--split {
+    max-width: none;
+    grid-template-columns: minmax(0, 0.86fr) minmax(280px, 0.58fr);
+  }
+
+  .cero-section-header p,
+  .cero-feature-panel p,
+  .cero-final-cta p,
+  .cero-studio-cta p,
+  .cero-conversion-note-panel p {
+    font-size: 1rem;
+    line-height: 1.62;
+  }
+
+  /* Detail and listing card headings should not compete with page titles */
+  .cero-listing-event-card h3,
+  .cero-listing-artist-card h3,
+  .cero-listing-studio-card h3,
+  .cero-merch-card h3,
+  .cero-news-card h3,
+  .cero-featured-news-card h2,
+  .cero-booking-choice-card h2,
+  .cero-enquiry-choice-card h2 {
+    font-size: clamp(1.35rem, 2vw, 1.95rem);
+    line-height: 1.08;
+    letter-spacing: -0.045em;
+  }
+
+  /* The page still needs one cinematic exception: homepage hero remains large. */
+  .cero-home .cero-hero__copy h1 {
+    font-size: clamp(4.4rem, 10vw, 9.2rem);
+  }
+}
+
+/* Very wide screens: prevent title scale from becoming billboard-sized */
+@media (min-width: 1440px) {
+  .cero-listing-hero h1,
+  .cero-studio-page .cero-listing-hero h1,
+  .cero-content-hero h1,
+  .cero-content-detail-hero h1,
+  .cero-conversion-hero h1 {
+    font-size: 4.45rem;
+  }
+
+  .cero-section-header h2,
+  .cero-feature-panel h2,
+  .cero-final-cta h2,
+  .cero-studio-intro-panel h2,
+  .cero-conversion-note-panel h2,
+  .cero-studio-cta h2 {
+    font-size: 3.25rem;
+  }
+}
+
+/* Medium desktop / laptop refinement */
+@media (min-width: 901px) and (max-width: 1180px) {
+  .cero-listing-hero h1,
+  .cero-studio-page .cero-listing-hero h1,
+  .cero-content-hero h1,
+  .cero-content-detail-hero h1,
+  .cero-conversion-hero h1 {
+    font-size: clamp(2.35rem, 4.1vw, 3.7rem);
+    max-width: 17ch;
+  }
+
+  .cero-section-header h2,
+  .cero-feature-panel h2,
+  .cero-final-cta h2,
+  .cero-studio-intro-panel h2,
+  .cero-conversion-note-panel h2,
+  .cero-studio-cta h2 {
+    font-size: clamp(1.75rem, 3.4vw, 2.85rem);
+  }
+}
+
+/* Mobile stays cinematic but not oversized */
+@media (max-width: 640px) {
+  .cero-listing-hero h1,
+  .cero-studio-page .cero-listing-hero h1,
+  .cero-content-hero h1,
+  .cero-content-detail-hero h1,
+  .cero-conversion-hero h1 {
+    font-size: clamp(2.55rem, 13vw, 4rem);
+    line-height: 0.94;
+    letter-spacing: -0.075em;
+  }
+
+  .cero-section-header h2,
+  .cero-feature-panel h2,
+  .cero-final-cta h2,
+  .cero-studio-intro-panel h2,
+  .cero-conversion-note-panel h2,
+  .cero-studio-cta h2 {
+    font-size: clamp(2rem, 10.5vw, 3rem);
+  }
+}

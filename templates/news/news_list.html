@@ -9,7 +9,7 @@
 {% block og_image %}{% static 'images/og-default.jpg' %}{% endblock %}
 
 {% block content %}
-<div class="cero-content-page cero-news-page">
+<div class="cero-content-page cero-news-page cero-news-journal-page">
   <section class="cero-content-hero">
     <div class="container cero-content-hero__grid">
       <div>
@@ -24,35 +24,18 @@
         <p class="cero-card__label">Venue journal</p>
         <h2>Keep the site alive.</h2>
         <p>
-          News posts help show recent activity, build trust, and give visitors a reason to return.
+          Short updates, community stories, and behind-the-scenes notes help visitors understand what is happening without needing to open every post.
         </p>
       </aside>
     </div>
   </section>
 
   {% if featured_post %}
-    <section class="cero-section cero-section--tight">
+    <section class="cero-section cero-section--tight cero-news-feature-section">
       <div class="container">
-        <div class="cero-section-header cero-section-header--split">
-          <div>
+        <article class="cero-news-journal-feature">
+          <div class="cero-news-journal-feature__copy">
             <p class="cero-kicker">Featured</p>
-            <h2>Highlighted post</h2>
-          </div>
-          <a class="cero-text-link" href="{% url 'news:news_detail' featured_post.slug %}">Read featured post →</a>
-        </div>
-
-        <article class="cero-featured-news-card">
-          {% if featured_post.cover_image %}
-            <a class="cero-featured-news-card__media" href="{% url 'news:news_detail' featured_post.slug %}">
-              <img src="{{ featured_post.cover_image.url }}" alt="{{ featured_post.title }}">
-            </a>
-          {% else %}
-            <a class="cero-featured-news-card__media cero-featured-news-card__media--placeholder" href="{% url 'news:news_detail' featured_post.slug %}">
-              <span>News</span>
-            </a>
-          {% endif %}
-
-          <div class="cero-featured-news-card__body">
             <p class="cero-card__label">
               {% if featured_post.published_at %}
                 {{ featured_post.published_at|date:"d M Y" }}
@@ -61,36 +44,90 @@
               {% endif %}
             </p>
 
-            <h3>
+            <h2>
               <a href="{% url 'news:news_detail' featured_post.slug %}">
                 {{ featured_post.title }}
               </a>
-            </h3>
+            </h2>
 
             {% if featured_post.summary %}
-              <p>{{ featured_post.summary }}</p>
+              <p class="cero-news-journal-feature__lead">{{ featured_post.summary }}</p>
+            {% elif featured_post.body %}
+              <p class="cero-news-journal-feature__lead">{{ featured_post.body|striptags|truncatewords:70 }}</p>
             {% endif %}
 
-            <a class="btn btn-primary" href="{% url 'news:news_detail' featured_post.slug %}">Read More</a>
+            {% if featured_post.body %}
+              <div class="cero-news-journal-excerpt">
+                {{ featured_post.body|striptags|truncatewords:95 }}
+              </div>
+            {% endif %}
+
+            <a class="btn btn-primary" href="{% url 'news:news_detail' featured_post.slug %}">
+              Read Full Post
+            </a>
           </div>
+
+          <a class="cero-news-journal-feature__media" href="{% url 'news:news_detail' featured_post.slug %}" aria-label="{{ featured_post.title }}">
+            {% if featured_post.cover_image %}
+              <img src="{{ featured_post.cover_image.url }}" alt="{{ featured_post.title }}">
+            {% else %}
+              <span>News</span>
+            {% endif %}
+          </a>
         </article>
       </div>
     </section>
   {% endif %}
 
-  <section class="cero-section cero-section--tight">
+  <section class="cero-section cero-section--tight cero-news-journal-section">
     <div class="container">
-      <div class="cero-section-header cero-section-header--split">
-        <div>
-          <p class="cero-kicker">Archive</p>
-          <h2>More news</h2>
-        </div>
-        <p>Recent updates and announcements from the venue.</p>
+      <div class="cero-section-header">
+        <p class="cero-kicker">Journal</p>
+        <h2>Latest updates</h2>
+        <p>Read recent notes directly from the news page, then open the full post when you want the complete story.</p>
       </div>
 
-      <div class="cero-news-grid">
+      <div class="cero-news-journal-list">
         {% for post in posts %}
-          {% include "includes/cards/listing_news_card.html" with post=post %}
+          <article class="cero-news-journal-item">
+            <a class="cero-news-journal-item__media" href="{% url 'news:news_detail' post.slug %}" aria-label="{{ post.title }}">
+              {% if post.cover_image %}
+                <img src="{{ post.cover_image.url }}" alt="{{ post.title }}">
+              {% else %}
+                <span>News</span>
+              {% endif %}
+            </a>
+
+            <div class="cero-news-journal-item__body">
+              <p class="cero-card__label">
+                {% if post.published_at %}
+                  {{ post.published_at|date:"d M Y" }}
+                {% else %}
+                  {{ post.created_at|date:"d M Y" }}
+                {% endif %}
+              </p>
+
+              <h3>
+                <a href="{% url 'news:news_detail' post.slug %}">{{ post.title }}</a>
+              </h3>
+
+              {% if post.summary %}
+                <p class="cero-news-journal-item__summary">{{ post.summary }}</p>
+              {% elif post.body %}
+                <p class="cero-news-journal-item__summary">{{ post.body|striptags|truncatewords:60 }}</p>
+              {% endif %}
+
+              {% if post.body %}
+                <div class="cero-news-journal-excerpt">
+                  {{ post.body|striptags|truncatewords:90 }}
+                </div>
+              {% endif %}
+
+              <a class="cero-text-link" href="{% url 'news:news_detail' post.slug %}">
+                Continue reading →
+              </a>
+            </div>
+          </article>
         {% empty %}
           <article class="cero-card cero-listing-empty">
             <p class="cero-card__label">No news yet</p>

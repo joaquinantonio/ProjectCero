@@ -1,0 +1,158 @@
+/* Phase 11E: Listing, Image, and Spacing Polish
+   Fixes:
+   1. Tighter Event/Artist listing hero typography, especially long event headings
+   2. Event and artist detail images show more of the full image instead of aggressive cropping
+   3. Upcoming/past event listing images favour full poster visibility
+   4. Smaller gap between listing heroes and search bars on Events/Artists
+*/
+
+/* 1) Event/Artist listing hero title scale: calmer on desktop */
+@media (min-width: 901px) {
+  .cero-events-page .cero-listing-hero,
+  .cero-artists-page .cero-listing-hero {
+    padding-top: clamp(2.8rem, 4.6vw, 4.4rem);
+    padding-bottom: clamp(1.1rem, 2.2vw, 1.8rem);
+  }
+
+  .cero-events-page .cero-listing-hero h1,
+  .cero-artists-page .cero-listing-hero h1 {
+    max-width: 20ch;
+    font-size: clamp(2.1rem, 3.35vw, 3.65rem);
+    line-height: 1.02;
+    letter-spacing: -0.055em;
+  }
+
+  .cero-events-page .cero-listing-hero p,
+  .cero-artists-page .cero-listing-hero p {
+    font-size: clamp(0.96rem, 1.12vw, 1.05rem);
+    line-height: 1.6;
+  }
+
+  .cero-events-page .cero-listing-hero__panel h2,
+  .cero-artists-page .cero-listing-hero__panel h2 {
+    font-size: clamp(1.25rem, 1.6vw, 1.65rem);
+    line-height: 1.1;
+  }
+
+  /* 4) Reduce gap from hero to search section */
+  .cero-events-page .cero-listing-hero + .cero-section--tight,
+  .cero-artists-page .cero-listing-hero + .cero-section--tight {
+    padding-top: clamp(0.75rem, 1.8vw, 1.35rem);
+  }
+
+  .cero-events-page .cero-event-search,
+  .cero-artists-page .cero-artist-search {
+    margin-top: 0;
+  }
+}
+
+/* 2) Detail pages: make long event titles less shouty */
+@media (min-width: 901px) {
+  .cero-event-detail-page .cero-detail-hero__copy h1 {
+    max-width: 18ch;
+    font-size: clamp(2.25rem, 3.7vw, 4.15rem);
+    line-height: 1;
+    letter-spacing: -0.06em;
+  }
+
+  .cero-artist-detail-page .cero-detail-hero__copy h1 {
+    max-width: 16ch;
+    font-size: clamp(2.4rem, 4vw, 4.4rem);
+    line-height: 0.98;
+    letter-spacing: -0.065em;
+  }
+
+  .cero-event-detail-page .cero-detail-hero,
+  .cero-artist-detail-page .cero-detail-hero {
+    padding-top: clamp(3rem, 5vw, 5rem);
+    padding-bottom: clamp(2rem, 4vw, 3.5rem);
+  }
+}
+
+/* 3) Event listing images: show full poster/image rather than harsh crop */
+.cero-events-page .cero-listing-event-card__media {
+  background:
+    radial-gradient(circle at 35% 22%, rgba(214, 168, 92, 0.18), transparent 38%),
+    radial-gradient(circle at 76% 72%, rgba(111, 29, 47, 0.18), transparent 40%),
+    linear-gradient(135deg, #17120f, #08090b);
+}
+
+.cero-events-page .cero-listing-event-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center center;
+  padding: clamp(0.35rem, 1vw, 0.65rem);
+  background: rgba(7, 9, 12, 0.58);
+}
+
+@media (min-width: 901px) {
+  .cero-event-listing-grid .cero-listing-event-card {
+    grid-template-columns: minmax(210px, 0.52fr) minmax(0, 1fr);
+    min-height: 380px;
+  }
+
+  .cero-past-event-grid .cero-listing-event-card {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .cero-past-event-grid .cero-listing-event-card__media {
+    min-height: 300px;
+  }
+}
+
+/* Detail hero media: keep full uploaded artwork/photo visible */
+.cero-event-detail-page .cero-detail-hero__media,
+.cero-artist-detail-page .cero-detail-hero__media {
+  display: grid;
+  place-items: center;
+  min-height: auto;
+  aspect-ratio: 4 / 5;
+  background:
+    radial-gradient(circle at 35% 22%, rgba(214, 168, 92, 0.18), transparent 38%),
+    radial-gradient(circle at 76% 72%, rgba(111, 29, 47, 0.18), transparent 40%),
+    linear-gradient(135deg, #17120f, #08090b);
+}
+
+.cero-event-detail-page .cero-detail-hero__media img,
+.cero-artist-detail-page .cero-detail-hero__media img {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  object-fit: contain;
+  object-position: center center;
+  padding: clamp(0.45rem, 1.2vw, 0.8rem);
+}
+
+.cero-event-detail-page .cero-detail-hero__media::after,
+.cero-artist-detail-page .cero-detail-hero__media::after {
+  display: none;
+}
+
+/* Mobile tuning */
+@media (max-width: 700px) {
+  .cero-events-page .cero-listing-hero,
+  .cero-artists-page .cero-listing-hero {
+    padding-bottom: 1.2rem;
+  }
+
+  .cero-events-page .cero-listing-hero + .cero-section--tight,
+  .cero-artists-page .cero-listing-hero + .cero-section--tight {
+    padding-top: 0.9rem;
+  }
+
+  .cero-event-detail-page .cero-detail-hero__media,
+  .cero-artist-detail-page .cero-detail-hero__media {
+    aspect-ratio: 4 / 5;
+    border-radius: 26px;
+  }
+
+  .cero-events-page .cero-listing-event-card__media {
+    min-height: 340px;
+  }
+
+  .cero-events-page .cero-listing-event-card__media img {
+    padding: 0.5rem;
+  }
+}
