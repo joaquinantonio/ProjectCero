@@ -43,6 +43,7 @@
           {% if artist.youtube_url %}
             <a class="btn btn-secondary" href="{{ artist.youtube_url }}">YouTube</a>
           {% endif %}
+          <a class="btn btn-primary" href="{% url 'enquiries:artist' artist.slug %}">Enquire</a>
           <a class="btn btn-secondary" href="{% url 'artists:artist_list' %}">Back to Artists</a>
         </div>
       </div>

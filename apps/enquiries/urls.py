@@ -6,6 +6,7 @@ from .views import (
     GeneralEnquiryCreateView,
     MerchEnquiryCreateView,
     PaymentEnquiryCreateView,
+    ArtistEnquiryCreateView,
 )
 
 app_name = "enquiries"
@@ -15,5 +16,6 @@ urlpatterns = [
     path("general/", GeneralEnquiryCreateView.as_view(), name="general"),
     path("merch/", MerchEnquiryCreateView.as_view(), name="merch"),
     path("payment/", PaymentEnquiryCreateView.as_view(), name="payment"),
+    path("artist/<slug:artist_slug>/", ArtistEnquiryCreateView.as_view(), name="artist"),
     path("success/", EnquirySuccessView.as_view(), name="success"),
 ]

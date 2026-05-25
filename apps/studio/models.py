@@ -33,3 +33,23 @@ class StudioService(SluggedModelMixin, TimeStampedModel):
 
     def __str__(self):
         return self.name
+
+
+class Equipment(TimeStampedModel):
+    """Studio equipment list."""
+
+    name = models.CharField(max_length=150)
+    category = models.CharField(max_length=100, blank=True)
+    description = models.TextField(blank=True)
+    quantity = models.PositiveIntegerField(default=1)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["name"]
+        indexes = [
+            models.Index(fields=["is_active", "name"]),
+        ]
+        verbose_name_plural = "Equipment"
+
+    def __str__(self):
+        return self.name

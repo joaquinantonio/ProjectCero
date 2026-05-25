@@ -9,9 +9,9 @@
     <div class="container cero-listing-hero__grid">
       <div>
         <p class="cero-kicker">Artists</p>
-        <h1>The people shaping the sound and culture of the space.</h1>
+        <h1>All artists and performers connected to the space.</h1>
         <p>
-          Meet featured artists, musicians, performers, and creative collaborators connected to CeroPJ.
+          Meet all musicians, performers, and creative collaborators connected to CeroPJ.
         </p>
       </div>
 
@@ -57,28 +57,28 @@
     <div class="container">
       <div class="cero-section-header cero-section-header--split">
         <div>
-          <p class="cero-kicker">Featured artists</p>
+          <p class="cero-kicker">All artists</p>
           <h2>Artist profiles</h2>
         </div>
         <p>
-          A curated view of artists connected to the venue, ready to grow with images, bios, music links, and future appearances.
+          A complete view of all artists connected to the venue, with images, bios, music links, and upcoming appearances.
         </p>
       </div>
 
       <div class="cero-artist-listing-grid">
-        {% for artist in featured_artists %}
+        {% for artist in artists %}
           {% include "includes/cards/listing_artist_card.html" with artist=artist %}
         {% empty %}
           <article class="cero-card cero-listing-empty">
             <p class="cero-card__label">No artists found</p>
-            <h3>No featured artists match this search.</h3>
+            <h3>No artists match this search.</h3>
             <p>Try another keyword or reset the search.</p>
             <a class="btn btn-secondary" href="{% url 'artists:artist_list' %}">Reset search</a>
           </article>
         {% endfor %}
       </div>
 
-      {% include "includes/pagination.html" with page_obj=featured_artists %}
+      {% include "includes/pagination.html" with page_obj=artists %}
     </div>
   </section>
 

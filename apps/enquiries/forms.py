@@ -2,7 +2,7 @@ from django import forms
 
 from apps.events.models import Event
 from apps.merch.models import MerchItem
-from .models import EnquirySubmission
+from .models import EnquirySubmission, ArtistEnquiry
 
 
 class BaseEnquiryForm(forms.ModelForm):
@@ -128,3 +128,39 @@ class PaymentEnquiryForm(BaseEnquiryForm):
         self.fields["message"].widget.attrs.update(
             {"placeholder": "Example: asking about deposit, balance payment, package pricing, or proof of transfer"}
         )
+
+
+class ArtistEnquiryForm(forms.ModelForm):
+    """Form for enquiring about/contacting artists."""
+
+    website = forms.CharField(required=False, widget=forms.HiddenInput)
+
+    class Meta:
+        model = ArtistEnquiry
+        fields = ["name", "email", "phone", "time_start", "time_end"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["name"].label = "Your name"
+        self.fields["name"].widget.attrs.update({"placeholder": "Your full name"})
+
+        self.fields["email"].label = "Email address"
+        self.fields["email"].widget.attrs.update({"placeholder": "you@example.com"})
+
+        self.fields["phone"].label = "Phone / WhatsApp"
+        self.fields["phone"].widget.attrs.update({"placeholder": "+60..."})
+
+        self.fields["time_start"].label = "Available from"
+        self.fields["time_start"].widget = forms.TimeInput(attrs={"type": "time"})
+        self.fields["time_start"].help_text = "E.g., 2:00 PM"
+
+        self.fields["time_end"].label = "Available until"
+        self.fields["time_end"].widget = forms.TimeInput(attrs={"type": "time"})
+        self.fields["time_end"].help_text = "E.g., 4:00 PM"
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data.get("website"):
+            raise forms.ValidationError("Spam detected.")
+        return cleaned_data

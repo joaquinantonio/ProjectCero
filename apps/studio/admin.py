@@ -8,7 +8,7 @@ from apps.core.admin import (
     basic_fieldset,
     make_bulk_update_action,
 )
-from .models import StudioService
+from .models import StudioService, Equipment
 
 
 make_services_active = make_bulk_update_action(
@@ -41,6 +41,23 @@ make_services_not_featured = make_bulk_update_action(
     value=False,
     description="Remove featured status from selected services",
     success_message="{updated} service(s) unfeatured.",
+)
+
+
+make_equipment_active = make_bulk_update_action(
+    action_name="make_equipment_active",
+    field_name="is_active",
+    value=True,
+    description="Mark selected equipment as active",
+    success_message="{updated} equipment item(s) marked as active.",
+)
+
+make_equipment_inactive = make_bulk_update_action(
+    action_name="make_equipment_inactive",
+    field_name="is_active",
+    value=False,
+    description="Mark selected equipment as inactive",
+    success_message="{updated} equipment item(s) marked as inactive.",
 )
 
 
@@ -109,3 +126,35 @@ class StudioServiceAdmin(
                 },
             ),
         )
+
+
+@admin.register(Equipment)
+class EquipmentAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
+    list_display = ("name", "category", "quantity", "is_active", "updated_at")
+    list_filter = ("category", "is_active")
+    search_fields = ("name", "category", "description")
+    search_help_text = "Search by equipment name, category, or description"
+    ordering = ("name",)
+    list_editable = ("is_active",)
+    actions = [make_equipment_active, make_equipment_inactive]
+
+    fieldsets = (
+        (
+            "Equipment Details",
+            {
+                "fields": ("name", "category", "quantity", "is_active"),
+            },
+        ),
+        (
+            "Description",
+            {
+                "fields": ("description",),
+            },
+        ),
+        (
+            "System",
+            {
+                "fields": ("created_at", "updated_at"),
+            },
+        ),
+    )

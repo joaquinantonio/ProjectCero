@@ -1,11 +1,12 @@
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, TemplateView
 
 from apps.events.models import Event
 from apps.merch.models import MerchItem
-from .forms import GeneralEnquiryForm, MerchEnquiryForm, PaymentEnquiryForm
-from .models import EnquirySubmission
+from apps.artists.models import Artist
+from .forms import GeneralEnquiryForm, MerchEnquiryForm, PaymentEnquiryForm, ArtistEnquiryForm
+from .models import EnquirySubmission, ArtistEnquiry
 from .services import send_enquiry_notification
 
 
@@ -106,3 +107,27 @@ class PaymentEnquiryCreateView(BaseEnquiryCreateView):
                 initial["related_event"] = event.pk
                 initial["subject"] = f"Payment enquiry: {event.title}"
         return initial
+
+
+class ArtistEnquiryCreateView(CreateView):
+    model = ArtistEnquiry
+    form_class = ArtistEnquiryForm
+    template_name = "enquiries/artist_enquiry_form.html"
+    success_url = reverse_lazy("enquiries:success")
+
+    def get_object(self, queryset=None):
+        """Get the artist being enquired about."""
+        return get_object_or_404(Artist, slug=self.kwargs["artist_slug"], is_active=True)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["artist"] = self.get_object()
+        return context
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.related_artist = self.get_object()
+        self.object.save()
+
+        self.request.session["last_enquiry_reference"] = self.object.reference_code
+        return redirect(self.get_success_url())

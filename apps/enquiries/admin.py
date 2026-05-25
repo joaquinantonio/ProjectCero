@@ -7,7 +7,7 @@ from apps.core.admin import (
     make_bulk_update_action,
     render_admin_badge,
 )
-from .models import EnquirySubmission
+from .models import EnquirySubmission, ArtistEnquiry
 
 
 mark_in_review = make_bulk_update_action(
@@ -32,6 +32,23 @@ mark_closed = make_bulk_update_action(
     value=EnquirySubmission.Status.CLOSED,
     description="Mark selected enquiries as Closed",
     success_message="{updated} enquiry(ies) marked as Closed.",
+)
+
+
+mark_artist_enquiry_contacted = make_bulk_update_action(
+    action_name="mark_artist_enquiry_contacted",
+    field_name="status",
+    value=ArtistEnquiry.Status.CONTACTED,
+    description="Mark selected enquiries as Contacted",
+    success_message="{updated} artist enquiry(ies) marked as Contacted.",
+)
+
+mark_artist_enquiry_closed = make_bulk_update_action(
+    action_name="mark_artist_enquiry_closed",
+    field_name="status",
+    value=ArtistEnquiry.Status.CLOSED,
+    description="Mark selected enquiries as Closed",
+    success_message="{updated} artist enquiry(ies) marked as Closed.",
 )
 
 
@@ -180,3 +197,99 @@ class EnquirySubmissionAdmin(
             form.base_fields["message"].widget.attrs["rows"] = 6
 
         return form
+
+
+@admin.register(ArtistEnquiry)
+class ArtistEnquiryAdmin(
+    ReadonlyOnChangeAdminMixin,
+    SuperuserDeleteOnlyAdminMixin,
+    TimestampedAdmin,
+):
+    list_display = (
+        "reference_code",
+        "name",
+        "related_artist",
+        "time_range_display",
+        "status_badge",
+        "created_at",
+    )
+    list_filter = ("status", "related_artist", "created_at")
+    search_fields = (
+        "reference_code",
+        "name",
+        "email",
+        "phone",
+        "related_artist__name",
+        "admin_notes",
+    )
+    search_help_text = "Search by reference, name, email, phone, artist name, or admin notes"
+    ordering = ("-created_at",)
+    date_hierarchy = "created_at"
+    actions = [mark_artist_enquiry_contacted, mark_artist_enquiry_closed]
+    autocomplete_fields = ("related_artist",)
+    list_select_related = ("related_artist",)
+
+    readonly_fields = ("reference_code", "created_at", "updated_at")
+    readonly_on_change = (
+        "name",
+        "email",
+        "phone",
+        "time_start",
+        "time_end",
+        "related_artist",
+    )
+
+    def has_add_permission(self, request):
+        return request.user.is_superuser
+
+    @admin.display(description="Time Range")
+    def time_range_display(self, obj):
+        return f"{obj.time_start.strftime('%I:%M %p')} – {obj.time_end.strftime('%I:%M %p')}"
+
+    @admin.display(ordering="status", description="Status")
+    def status_badge(self, obj):
+        tone_map = {
+            ArtistEnquiry.Status.NEW: "warning",
+            ArtistEnquiry.Status.CONTACTED: "success",
+            ArtistEnquiry.Status.CLOSED: "neutral",
+        }
+        return render_admin_badge(
+            obj.get_status_display(),
+            tone_map.get(obj.status, "neutral"),
+        )
+
+    def get_fieldsets(self, request, obj=None):
+        workflow_fields = ("status", "admin_notes")
+        if obj:
+            workflow_fields = ("reference_code", "status", "admin_notes")
+
+        return (
+            (
+                "Workflow",
+                {
+                    "fields": workflow_fields,
+                    "classes": ("wide", "workflow-panel"),
+                    "description": "Update the status and internal notes here. Contact the sender using their phone number via WhatsApp or call.",
+                },
+            ),
+            (
+                "Sender",
+                {
+                    "fields": (("name", "email"), "phone"),
+                },
+            ),
+            (
+                "Artist & Availability",
+                {
+                    "fields": ("related_artist", ("time_start", "time_end")),
+                    "description": "Time range provided by the enquirer.",
+                },
+            ),
+            (
+                "System",
+                {
+                    "fields": ("created_at", "updated_at"),
+                    "classes": ("collapse",),
+                },
+            ),
+        )

@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Enquire About {{ artist.name }} · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+
+{% block content %}
+<div class="cero-conversion-page cero-enquiry-form-page">
+  <section class="cero-conversion-hero">
+    <div class="container cero-conversion-hero__grid">
+      <div>
+        <p class="cero-kicker">Contact an Artist</p>
+        <h1>Get in touch with {{ artist.name }}</h1>
+        <p>
+          Submit your contact details and preferred time range. The team will pass this along to the artist for them to contact you directly.
+        </p>
+      </div>
+
+      <aside class="cero-conversion-hero__panel">
+        <p class="cero-card__label">About this form</p>
+        <h2>How it works</h2>
+        <p>
+          We collect your contact info and time availability. Our team reviews the enquiry and forwards your details to the artist if they are interested in collaborating.
+        </p>
+      </aside>
+    </div>
+  </section>
+
+  <section class="cero-section cero-section--tight">
+    <div class="container cero-enquiry-form-layout">
+      <main class="cero-enquiry-form-main">
+        <section class="cero-card cero-form-card">
+          <p class="cero-card__label">Enquiry form</p>
+          <h2>Your contact details</h2>
+
+          <form method="post" class="styled-form cero-styled-form" novalidate>
+            {% csrf_token %}
+
+            {% for hidden_field in form.hidden_fields %}
+              {{ hidden_field }}
+            {% endfor %}
+
+            {% if form.non_field_errors %}
+              <div class="alert">
+                {{ form.non_field_errors }}
+              </div>
+            {% endif %}
+
+            {% for field in form.visible_fields %}
+              <div class="form-field">
+                <label for="{{ field.id_for_label }}">
+                  {{ field.label }}
+                  {% if field.field.required %}<span aria-hidden="true">*</span>{% endif %}
+                </label>
+                {{ field }}
+                {% if field.help_text %}
+                  <div class="field-help">{{ field.help_text }}</div>
+                {% endif %}
+                {% for error in field.errors %}
+                  <div class="field-error">{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endfor %}
+
+            <div class="cero-form-actions">
+              <button type="submit" class="btn btn-primary">Send Enquiry</button>
+              <a class="btn btn-secondary" href="{% url 'artists:artist_detail' artist.slug %}">Back to {{ artist.name }}</a>
+            </div>
+          </form>
+        </section>
+      </main>
+
+      <aside class="cero-enquiry-form-side">
+        <section class="cero-card cero-form-help-card">
+          <p class="cero-card__label">About {{ artist.name }}</p>
+          <h2>{{ artist.name }}</h2>
+          <p>{{ artist.short_bio }}</p>
+          {% if artist.instagram_url %}
+            <a class="cero-text-link" href="{{ artist.instagram_url }}" target="_blank">Instagram →</a>
+          {% endif %}
+        </section>
+
+        <section class="cero-card cero-form-help-card">
+          <p class="cero-card__label">Need help?</p>
+          <h2>General enquiries</h2>
+          <p>
+            If you need to reach the venue for general queries, use the main enquiry form.
+          </p>
+          <a class="cero-text-link" href="{% url 'enquiries:landing' %}">Go to enquiries →</a>
+        </section>
+      </aside>
+    </div>
+  </section>
+</div>
+{% endblock %}
+

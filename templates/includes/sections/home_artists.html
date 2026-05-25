@@ -1,24 +1,19 @@
 <section class="cero-section">
   <div class="container">
     <div class="cero-section-header">
-      <p class="cero-kicker">Featured Artists</p>
-      <h2>Artists connected to the space.</h2>
+      <p class="cero-kicker">Artists</p>
+      <h2>Connected creators and performers.</h2>
     </div>
 
     <div class="cero-artist-rail">
-      {% for artist in featured_artists %}
-        {% include "includes/cards/home_artist_card.html" with artist=artist %}
-      {% empty %}
-        <article class="cero-card cero-empty-card">
-          <p class="cero-card__label">No artists yet</p>
-          <h3>Featured artists will appear here.</h3>
-          <p>Mark artists as featured in admin to show them here.</p>
-        </article>
-      {% endfor %}
-    </div>
-
-    <div class="cero-actions cero-actions--section">
-      <a class="btn btn-primary" href="{% url 'artists:artist_list' %}">View Artists</a>
+      <article class="cero-card">
+        <p class="cero-card__label">Complete Directory</p>
+        <h3>All artists connected to CeroPJ</h3>
+        <p>Explore our complete artist directory with galleries, bios, music links, and upcoming appearances. Sorted alphabetically for easy browsing.</p>
+        <div class="cero-actions">
+          <a class="btn btn-primary" href="{% url 'artists:artist_list' %}">View All Artists</a>
+        </div>
+      </article>
     </div>
   </div>
 </section>

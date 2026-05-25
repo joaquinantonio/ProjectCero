@@ -9,27 +9,27 @@ from apps.events.selectors import (
 )
 
 from .models import Artist
-from .selectors import get_artist_by_slug, get_featured_artists
+from .selectors import get_artist_by_slug
 
 
 def artist_list_view(request):
-    featured_artists = get_featured_artists()
+    artists = Artist.objects.active().order_by("name")
     search_query = request.GET.get("q", "").strip()
 
     if search_query:
-        featured_artists = featured_artists.filter(
+        artists = artists.filter(
             Q(name__icontains=search_query)
             | Q(short_bio__icontains=search_query)
             | Q(bio__icontains=search_query)
         )
 
-    page_obj = paginate_queryset(request, featured_artists, per_page=8)
+    page_obj = paginate_queryset(request, artists, per_page=8)
 
     return render(
         request,
         "artists/artist_list.html",
         {
-            "featured_artists": page_obj,
+            "artists": page_obj,
             "search_query": search_query,
         },
     )

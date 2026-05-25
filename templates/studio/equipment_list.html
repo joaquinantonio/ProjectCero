@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Studio Equipment · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+{% block meta_description %}Complete list of studio equipment and gear available at {{ site_settings.site_name|default:"CeroPJ" }}.{% endblock %}
+
+{% block content %}
+<div class="cero-studio-page">
+  <section class="cero-listing-hero">
+    <div class="container cero-listing-hero__grid">
+      <div>
+        <p class="cero-kicker">Studio</p>
+        <h1>Complete equipment list</h1>
+        <p>
+          All studio equipment and gear available for your sessions.
+        </p>
+      </div>
+
+      <aside class="cero-listing-hero__panel">
+        <p class="cero-card__label">Tools</p>
+        <h2>What you get access to.</h2>
+        <p>
+          Browse our complete equipment inventory. Need something specific? Contact the team.
+        </p>
+        <div class="cero-actions">
+          <a class="btn btn-secondary" href="{% url 'enquiries:general' %}">Ask About Equipment</a>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="cero-section cero-section--tight">
+    <div class="container">
+      <form method="get" class="cero-artist-search">
+        <div class="cero-artist-search__grid">
+          <div>
+            <label for="equipment-search">Search equipment</label>
+            <input
+              id="equipment-search"
+              type="text"
+              name="q"
+              value="{{ search_query }}"
+              placeholder="Search by name or category"
+            >
+          </div>
+
+          <div class="cero-artist-search__actions">
+            <button class="btn btn-primary" type="submit">Search</button>
+            <a class="btn btn-secondary" href="{% url 'studio:equipment_list' %}">Reset</a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="cero-section cero-section--tight">
+    <div class="container">
+      <div class="cero-section-header cero-section-header--split">
+        <div>
+          <p class="cero-kicker">Equipment</p>
+          <h2>Studio gear & instruments</h2>
+        </div>
+        <p>
+          All equipment listed alphabetically by name. Contact us for specific setup needs.
+        </p>
+      </div>
+
+      <div class="cero-equipment-listing-grid">
+        {% for item in equipment %}
+          <article class="cero-card">
+            <div class="cero-equipment-header">
+              <h3>{{ item.name }}</h3>
+              {% if item.category %}
+                <p class="cero-card__label">{{ item.category }}</p>
+              {% endif %}
+            </div>
+
+            {% if item.description %}
+              <p class="cero-card__copy">{{ item.description }}</p>
+            {% endif %}
+
+            {% if item.quantity > 1 %}
+              <p class="cero-card__meta">Qty: {{ item.quantity }}</p>
+            {% endif %}
+          </article>
+        {% empty %}
+          <article class="cero-card cero-listing-empty">
+            <p class="cero-card__label">No equipment found</p>
+            <h3>No equipment matches this search.</h3>
+            <p>Try another keyword or reset the search.</p>
+            <a class="btn btn-secondary" href="{% url 'studio:equipment_list' %}">Reset search</a>
+          </article>
+        {% endfor %}
+      </div>
+
+      {% include "includes/pagination.html" with page_obj=equipment %}
+    </div>
+  </section>
+
+  <section class="cero-section cero-section--tight">
+    <div class="container">
+      <div class="cero-card text-center">
+        <p class="cero-kicker">Need something specific?</p>
+        <h2>Contact us about your setup</h2>
+        <p class="lead">
+          Let us know if you have specific setup requirements or need to discuss equipment for your session.
+        </p>
+        <div class="cero-actions cero-actions--center">
+          <a class="btn btn-primary" href="{% url 'bookings:studio_request' %}">Book the Studio</a>
+          <a class="btn btn-secondary" href="{% url 'enquiries:general' %}">Send an Enquiry</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
