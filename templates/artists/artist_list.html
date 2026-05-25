@@ -9,9 +9,9 @@
     <div class="container cero-listing-hero__grid">
       <div>
         <p class="cero-kicker">Artists</p>
-        <h1>All artists and performers connected to the space.</h1>
+        <h1>All artists connected to the space.</h1>
         <p>
-          Meet all musicians, performers, and creative collaborators connected to CeroPJ.
+          Browse all musicians, performers, and creative collaborators connected to CeroPJ, sorted alphabetically.
         </p>
       </div>
 
@@ -58,16 +58,30 @@
       <div class="cero-section-header cero-section-header--split">
         <div>
           <p class="cero-kicker">All artists</p>
-          <h2>Artist profiles</h2>
+          <h2>Artist directory</h2>
         </div>
         <p>
-          A complete view of all artists connected to the venue, with images, bios, music links, and upcoming appearances.
+          Complete list of all artists and performers. Click any artist to view their full profile, upcoming appearances, and social links.
         </p>
       </div>
 
       <div class="cero-artist-listing-grid">
         {% for artist in artists %}
-          {% include "includes/cards/listing_artist_card.html" with artist=artist %}
+          <article class="cero-card">
+            {% if artist.image %}
+              <a href="{% url 'artists:artist_detail' artist.slug %}">
+                <img class="service-image" src="{{ artist.image.url }}" alt="{{ artist.name }}">
+              </a>
+            {% else %}
+              <div class="cero-detail-hero__placeholder" style="min-height: 280px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 8px;">
+                <div style="text-align: center;">
+                  <strong style="font-size: 2rem;">{{ artist.name|slice:":1" }}</strong>
+                  <p style="margin-top: 0.5rem; color: #999;">Artist</p>
+                </div>
+              </div>
+            {% endif %}
+            <h3><a href="{% url 'artists:artist_detail' artist.slug %}">{{ artist.name }}</a></h3>
+          </article>
         {% empty %}
           <article class="cero-card cero-listing-empty">
             <p class="cero-card__label">No artists found</p>
