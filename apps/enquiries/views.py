@@ -7,7 +7,7 @@ from apps.merch.models import MerchItem
 from apps.artists.models import Artist
 from .forms import GeneralEnquiryForm, MerchEnquiryForm, PaymentEnquiryForm, ArtistEnquiryForm
 from .models import EnquirySubmission, ArtistEnquiry
-from .services import send_enquiry_notification
+from .services import send_enquiry_notification, send_artist_enquiry_notification
 
 
 class EnquiryLandingView(TemplateView):
@@ -127,7 +127,10 @@ class ArtistEnquiryCreateView(CreateView):
     def form_valid(self, form):
         self.object = form.save(commit=False)
         self.object.related_artist = self.get_object()
+        self.object.full_clean()  # Trigger model validation
         self.object.save()
+
+        send_artist_enquiry_notification(self.object)
 
         self.request.session["last_enquiry_reference"] = self.object.reference_code
         return redirect(self.get_success_url())

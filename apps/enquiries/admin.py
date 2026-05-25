@@ -209,11 +209,12 @@ class ArtistEnquiryAdmin(
         "reference_code",
         "name",
         "related_artist",
+        "preferred_date_display",
         "time_range_display",
         "status_badge",
         "created_at",
     )
-    list_filter = ("status", "related_artist", "created_at")
+    list_filter = ("status", "related_artist", "preferred_date", "created_at")
     search_fields = (
         "reference_code",
         "name",
@@ -234,6 +235,7 @@ class ArtistEnquiryAdmin(
         "name",
         "email",
         "phone",
+        "preferred_date",
         "time_start",
         "time_end",
         "related_artist",
@@ -241,6 +243,10 @@ class ArtistEnquiryAdmin(
 
     def has_add_permission(self, request):
         return request.user.is_superuser
+
+    @admin.display(description="Date")
+    def preferred_date_display(self, obj):
+        return obj.preferred_date.strftime('%a, %b %d, %Y') if obj.preferred_date else "-"
 
     @admin.display(description="Time Range")
     def time_range_display(self, obj):
@@ -281,8 +287,8 @@ class ArtistEnquiryAdmin(
             (
                 "Artist & Availability",
                 {
-                    "fields": ("related_artist", ("time_start", "time_end")),
-                    "description": "Time range provided by the enquirer.",
+                    "fields": ("related_artist", "preferred_date", ("time_start", "time_end")),
+                    "description": "Date and time range provided by the enquirer.",
                 },
             ),
             (

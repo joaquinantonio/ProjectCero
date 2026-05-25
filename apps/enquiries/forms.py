@@ -132,12 +132,12 @@ class PaymentEnquiryForm(BaseEnquiryForm):
 
 class ArtistEnquiryForm(forms.ModelForm):
     """Form for enquiring about/contacting artists."""
-
+    
     website = forms.CharField(required=False, widget=forms.HiddenInput)
 
     class Meta:
         model = ArtistEnquiry
-        fields = ["name", "email", "phone", "time_start", "time_end"]
+        fields = ["name", "email", "phone", "preferred_date", "time_start", "time_end"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -151,6 +151,10 @@ class ArtistEnquiryForm(forms.ModelForm):
         self.fields["phone"].label = "Phone / WhatsApp"
         self.fields["phone"].widget.attrs.update({"placeholder": "+60..."})
 
+        self.fields["preferred_date"].label = "Preferred date"
+        self.fields["preferred_date"].widget = forms.DateInput(attrs={"type": "date"})
+        self.fields["preferred_date"].help_text = "When would you like to meet?"
+
         self.fields["time_start"].label = "Available from"
         self.fields["time_start"].widget = forms.TimeInput(attrs={"type": "time"})
         self.fields["time_start"].help_text = "E.g., 2:00 PM"
@@ -163,4 +167,11 @@ class ArtistEnquiryForm(forms.ModelForm):
         cleaned_data = super().clean()
         if cleaned_data.get("website"):
             raise forms.ValidationError("Spam detected.")
+        
+        time_start = cleaned_data.get("time_start")
+        time_end = cleaned_data.get("time_end")
+        if time_start and time_end and time_end <= time_start:
+            raise forms.ValidationError(
+                "End time must be after start time (e.g., 2pm to 4pm)."
+            )
         return cleaned_data

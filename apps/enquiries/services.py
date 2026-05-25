@@ -42,3 +42,44 @@ Message:
         recipient_list=[recipient],
         fail_silently=False,
     )
+
+
+def send_artist_enquiry_notification(artist_enquiry):
+    """Send notification about new artist enquiry to admin."""
+    recipient = (
+        getattr(settings, "ENQUIRY_NOTIFICATION_EMAIL", "")
+        or getattr(settings, "BOOKING_NOTIFICATION_EMAIL", "")
+    )
+
+    if not recipient:
+        return
+
+    subject = (
+        f"[{artist_enquiry.reference_code}] "
+        f"New artist enquiry for {artist_enquiry.related_artist.name} from {artist_enquiry.name}"
+    )
+
+    body = f"""
+A new artist enquiry has been submitted.
+
+Reference: {artist_enquiry.reference_code}
+Artist: {artist_enquiry.related_artist.name}
+Name: {artist_enquiry.name}
+Email: {artist_enquiry.email}
+Phone: {artist_enquiry.phone}
+Preferred date: {artist_enquiry.preferred_date}
+Time range: {artist_enquiry.time_start.strftime('%I:%M %p')} – {artist_enquiry.time_end.strftime('%I:%M %p')}
+Status: {artist_enquiry.get_status_display()}
+Created at: {artist_enquiry.created_at}
+
+Action:
+Review the enquiry in admin and contact {artist_enquiry.name} by phone or WhatsApp at {artist_enquiry.phone}.
+""".strip()
+
+    send_mail(
+        subject=subject,
+        message=body,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[recipient],
+        fail_silently=False,
+    )
