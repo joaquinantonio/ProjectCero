@@ -61,7 +61,7 @@ class AdminImagePreviewMixin:
         image_field = getattr(obj, field_name, None)
         if image_field and getattr(image_field, "url", None):
             return mark_safe(
-                f'<img src="{escape(image_field.url)}" style="max-height:64px; border-radius:8px;" />'
+                f'<img src="{escape(image_field.url)}" class="cero-admin-thumb" loading="lazy" />'
             )
         return "-"
 

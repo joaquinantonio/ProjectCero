@@ -1,313 +1,121 @@
 {% extends "admin/base_site.html" %}
 {% load i18n log %}
 
-{% block extrastyle %}
-  {{ block.super }}
-  <style>
-  html,
-  body {
-    overflow-x: hidden;
-  }
-
-  #container {
-    min-width: 0;
-    width: 100%;
-  }
-
-  #header {
-    width: 100%;
-    box-sizing: border-box;
-    padding-left: 24px;
-    padding-right: 24px;
-  }
-
-  #content {
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-  }
-
-  #content-main {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    float: none;
-    margin-right: 0;
-  }
-
-  .dashboard-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-    min-width: 0;
-  }
-
-  .dashboard-sections-row {
-    display: grid;
-    grid-template-columns: 0.6fr 1fr;
-    gap: 1.2rem;
-    min-width: 0;
-  }
-
-  .app-list-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    min-width: 0;
-  }
-
-  .app-module {
-    min-width: 0;
-  }
-
-  .app-module h3 {
-    margin-top: 0;
-    margin-bottom: 0.75rem;
-    font-size: 1rem;
-    font-weight: 700;
-    border-bottom: 1px solid var(--hairline-color);
-    padding-bottom: 0.5rem;
-  }
-
-  .model-links {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    min-width: 0;
-  }
-
-  .model-links a {
-    color: var(--link-fg);
-    text-decoration: none;
-    word-break: break-word;
-  }
-
-  .model-links a:hover {
-    color: var(--link-hover-color);
-    text-decoration: underline;
-  }
-
-  .dashboard-grid,
-  .dashboard-links {
-    display: grid;
-    gap: 1rem;
-    min-width: 0;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  }
-
-  .dashboard-card,
-  .dashboard-link-card,
-  .dashboard-section {
-    background: color-mix(in srgb, var(--body-bg) 94%, var(--body-fg) 6%);
-    color: var(--body-fg);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 1rem 1.1rem;
-    box-shadow: none;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .dashboard-card a,
-  .dashboard-link-card a,
-  .dashboard-section a {
-    text-decoration: none;
-    color: inherit;
-  }
-
-  .dashboard-label {
-    display: block;
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--body-quiet-color);
-    margin-bottom: 0.35rem;
-  }
-
-  .dashboard-value {
-    font-size: 2rem;
-    font-weight: 700;
-    line-height: 1;
-    color: var(--body-fg);
-    margin-bottom: 0.45rem;
-  }
-
-  .dashboard-hint,
-  .dashboard-link-subtitle,
-  .dashboard-item-hint,
-  .recent-actions-list .mini {
-    color: var(--body-quiet-color);
-    font-size: 0.9rem;
-  }
-
-  .dashboard-link-title,
-  .dashboard-section h2,
-  .dashboard-item-title {
-    font-weight: 700;
-    color: var(--body-fg);
-  }
-
-  .dashboard-section h2 {
-    margin-top: 0;
-    margin-bottom: 0.9rem;
-    padding-bottom: 0.65rem;
-    border-bottom: 1px solid var(--hairline-color);
-  }
-
-  .dashboard-items {
-    display: flex;
-    flex-direction: column;
-    gap: 0.85rem;
-    min-width: 0;
-  }
-
-  .dashboard-item {
-    padding-bottom: 0.85rem;
-    border-bottom: 1px solid var(--hairline-color);
-    min-width: 0;
-  }
-
-  .dashboard-item:last-child {
-    padding-bottom: 0;
-    border-bottom: 0;
-  }
-
-  .dashboard-item-title {
-    display: block;
-    margin-bottom: 0.2rem;
-  }
-
-  .dashboard-item a:hover .dashboard-item-title,
-  .dashboard-link-card a:hover .dashboard-link-title,
-  .dashboard-card a:hover .dashboard-label {
-    color: var(--link-fg);
-  }
-
-  .recent-actions-list {
-    margin: 0;
-    padding-left: 1.1rem;
-  }
-
-  .recent-actions-list li + li {
-    margin-top: 0.75rem;
-  }
-
-  .recent-actions-list a {
-    color: var(--link-fg);
-  }
-
-  .recent-actions-list a:hover {
-    color: var(--link-hover-color);
-  }
-
-  @media (max-width: 1024px) {
-    #header {
-      padding-left: 18px;
-      padding-right: 18px;
-    }
-
-    .dashboard-sections-row {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  @media (max-width: 767px) {
-    #header {
-      padding-left: 16px;
-      padding-right: 16px;
-    }
-
-    .dashboard-grid,
-    .dashboard-links,
-    .dashboard-sections-row {
-      grid-template-columns: 1fr;
-    }
-
-    .dashboard-value {
-      font-size: 1.75rem;
-    }
-  }
-</style>
-{% endblock %}
-
 {% block content %}
-  <div id="content-main">
-    <div class="dashboard-wrap">
-      <div class="dashboard-grid">
-        {% for card in dashboard_cards %}
-          <div class="dashboard-card">
-            <a href="{{ card.url }}">
-              <span class="dashboard-label">{{ card.title }}</span>
-              <div class="dashboard-value">{{ card.value }}</div>
-              <div class="dashboard-hint">{{ card.hint }}</div>
-            </a>
-          </div>
-        {% endfor %}
+  <div id="content-main" class="cero-admin-dashboard">
+    <section class="cero-dashboard-hero">
+      <div>
+        <p class="cero-admin-kicker">Control room</p>
+        <h1>{{ index_title|default:"Site Control Panel" }}</h1>
+        <p>
+          Manage bookings, calendar blocks, events, artists, news, merchandise, enquiries, and public website settings from one place.
+        </p>
       </div>
 
-      <div class="dashboard-links">
-        {% for item in quick_links %}
-          <div class="dashboard-link-card">
-            <a href="{{ item.url }}">
-              <span class="dashboard-link-title">{{ item.label }}</span>
-              <span class="dashboard-link-subtitle">Open</span>
-            </a>
-          </div>
+      <div class="cero-dashboard-hero__actions">
+        {% for item in quick_links|slice:":4" %}
+          <a href="{{ item.url }}">{{ item.label }}</a>
         {% endfor %}
       </div>
+    </section>
 
-      <div class="dashboard-sections-row">
-        <div class="dashboard-section">
-          <h2>{% translate "Recent actions" %}</h2>
+    <section class="cero-dashboard-metrics" aria-label="Admin summary">
+      {% for card in dashboard_cards %}
+        <a class="cero-dashboard-metric" href="{{ card.url }}">
+          <span>{{ card.title }}</span>
+          <strong>{{ card.value }}</strong>
+          <small>{{ card.hint }}</small>
+        </a>
+      {% endfor %}
+    </section>
+
+    <section class="cero-dashboard-layout">
+      <div class="cero-dashboard-main">
+        <section class="cero-dashboard-panel">
+          <div class="cero-dashboard-panel__heading">
+            <div>
+              <p class="cero-admin-kicker">Shortcuts</p>
+              <h2>Common admin tasks</h2>
+            </div>
+          </div>
+
+          <div class="cero-dashboard-quick-grid">
+            {% for item in quick_links %}
+              <a class="cero-dashboard-quick-card" href="{{ item.url }}">
+                <strong>{{ item.label }}</strong>
+                <span>Open</span>
+              </a>
+            {% endfor %}
+          </div>
+        </section>
+
+        <section class="cero-dashboard-panel">
+          <div class="cero-dashboard-panel__heading">
+            <div>
+              <p class="cero-admin-kicker">Content management</p>
+              <h2>Work areas</h2>
+            </div>
+          </div>
+
+          <div class="cero-dashboard-section-grid">
+            {% for section in dashboard_sections %}
+              <article class="cero-dashboard-section-card">
+                <h3>{{ section.title }}</h3>
+                <div class="cero-dashboard-section-items">
+                  {% for item in section.items %}
+                    <a href="{{ item.url }}">
+                      <strong>{{ item.label }}</strong>
+                      <span>{{ item.hint }}</span>
+                    </a>
+                  {% endfor %}
+                </div>
+              </article>
+            {% endfor %}
+          </div>
+        </section>
+      </div>
+
+      <aside class="cero-dashboard-sidebar">
+        <section class="cero-dashboard-panel">
+          <div class="cero-dashboard-panel__heading">
+            <div>
+              <p class="cero-admin-kicker">Activity</p>
+              <h2>{% translate "Recent actions" %}</h2>
+            </div>
+          </div>
+
           {% get_admin_log 10 as admin_log for_user user %}
           {% if not admin_log %}
-            <p>{% translate "None available" %}</p>
+            <p class="cero-admin-muted">{% translate "None available" %}</p>
           {% else %}
-            <ul class="recent-actions-list">
+            <ol class="cero-recent-actions">
               {% for entry in admin_log %}
                 <li>
-                  {% if entry.is_addition %}
-                    {% translate "Added:" %}
-                  {% elif entry.is_change %}
-                    {% translate "Changed:" %}
-                  {% elif entry.is_deletion %}
-                    {% translate "Deleted:" %}
-                  {% endif %}
+                  <span class="cero-recent-actions__type">
+                    {% if entry.is_addition %}
+                      {% translate "Added" %}
+                    {% elif entry.is_change %}
+                      {% translate "Changed" %}
+                    {% elif entry.is_deletion %}
+                      {% translate "Deleted" %}
+                    {% endif %}
+                  </span>
 
                   {% if entry.is_deletion or not entry.get_admin_url %}
-                    {{ entry.object_repr }}
+                    <strong>{{ entry.object_repr }}</strong>
                   {% else %}
                     <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
                   {% endif %}
 
-                  <div class="mini">{{ entry.content_type }}</div>
+                  <small>{{ entry.content_type }}</small>
                 </li>
               {% endfor %}
-            </ul>
+            </ol>
           {% endif %}
-        </div>
+        </section>
 
-        <div class="dashboard-section">
-  <h2>{% translate "Content management" %}</h2>
-
-  <div class="app-list-grid">
-    {% for app in app_list %}
-      <div class="app-module">
-        <h3>{{ app.name }}</h3>
-        <div class="model-links">
-          {% for model in app.models %}
-            {% if model.admin_url %}
-              <a href="{{ model.admin_url }}">{{ model.name }}</a>
-            {% endif %}
-          {% endfor %}
-        </div>
-      </div>
-    {% endfor %}
-  </div>
-</div>
-      </div>
-    </div>
+        
+      </aside>
+    </section>
   </div>
 {% endblock %}

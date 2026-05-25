@@ -1,0 +1,116 @@
+/* ProjectCero Phase 12C Admin Background Cleanup
+   Purpose:
+   - Remove the visible "half page" background effect, especially in light mode
+   - Make the admin page feel like one continuous canvas
+   - Keep cards/forms/tables visually separated
+*/
+
+html,
+body,
+#container,
+#main {
+  min-height: 100%;
+}
+
+body {
+  background-attachment: fixed;
+}
+
+#container,
+#main,
+.main {
+  background: transparent !important;
+}
+
+#content,
+#content-main,
+#changelist,
+.change-form,
+.dashboard,
+.cero-admin-dashboard,
+.cero-admin-calendar-page {
+  background: transparent !important;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+}
+
+html[data-theme="dark"] body,
+html[data-theme="auto"] body {
+  background: #0b0d10 !important;
+}
+
+html[data-theme="dark"] body::before,
+html[data-theme="auto"] body::before {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(111, 29, 47, 0.18), transparent 28rem),
+    radial-gradient(circle at 85% 0%, rgba(214, 168, 92, 0.11), transparent 28rem),
+    linear-gradient(180deg, #0b0d10 0%, #100e0d 58%, #07090c 100%);
+}
+
+html[data-theme="light"] body {
+  background: #efe2cf !important;
+}
+
+html[data-theme="light"] body::before {
+  background:
+    radial-gradient(circle at 10% 0%, rgba(214, 168, 92, 0.18), transparent 30rem),
+    radial-gradient(circle at 88% 0%, rgba(194, 103, 58, 0.1), transparent 28rem),
+    linear-gradient(180deg, #f7efe4 0%, #efe2cf 42%, #eadcca 100%);
+}
+
+@media (prefers-color-scheme: light) {
+  html[data-theme="auto"] body {
+    background: #efe2cf !important;
+  }
+
+  html[data-theme="auto"] body::before {
+    background:
+      radial-gradient(circle at 10% 0%, rgba(214, 168, 92, 0.18), transparent 30rem),
+      radial-gradient(circle at 88% 0%, rgba(194, 103, 58, 0.1), transparent 28rem),
+      linear-gradient(180deg, #f7efe4 0%, #efe2cf 42%, #eadcca 100%);
+  }
+}
+
+html[data-theme="light"] #header {
+  background:
+    linear-gradient(180deg, rgba(255, 248, 237, 0.96), rgba(246, 235, 220, 0.9)) !important;
+}
+
+html[data-theme="light"] div.breadcrumbs {
+  background: rgba(234, 220, 202, 0.82) !important;
+}
+
+html[data-theme="light"] #changelist,
+html[data-theme="light"] .change-form,
+html[data-theme="light"] .dashboard,
+html[data-theme="light"] #content-main {
+  background: transparent !important;
+}
+
+#footer {
+  background: transparent !important;
+  color: var(--body-quiet-color);
+}
+
+html[data-theme="light"] .module,
+html[data-theme="light"] .inline-group,
+html[data-theme="light"] fieldset.module,
+html[data-theme="light"] .cero-dashboard-panel,
+html[data-theme="light"] .cero-admin-calendar-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 248, 237, 0.36)),
+    rgba(255, 248, 237, 0.86) !important;
+}
+
+html[data-theme="light"] .cero-dashboard-hero {
+  background:
+    radial-gradient(circle at 14% 10%, rgba(214, 168, 92, 0.22), transparent 26rem),
+    radial-gradient(circle at 90% 0%, rgba(194, 103, 58, 0.11), transparent 24rem),
+    rgba(255, 248, 237, 0.82) !important;
+}

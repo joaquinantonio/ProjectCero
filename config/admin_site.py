@@ -15,9 +15,9 @@ from django.utils.dateparse import parse_datetime
 
 
 class CeroAdminSite(AdminSite):
-    site_header = "CeroPJ Admin"
-    site_title = "CeroPJ Admin"
-    index_title = "Site Control Panel"
+    site_header = "CeroPJ Control Room"
+    site_title = "CeroPJ Control Room"
+    index_title = "Admin Dashboard"
     empty_value_display = "-"
     index_template = "admin/custom_index.html"
     # enable_nav_sidebar = False
