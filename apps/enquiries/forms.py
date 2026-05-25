@@ -154,6 +154,7 @@ class ArtistEnquiryForm(forms.ModelForm):
         self.fields["preferred_date"].label = "Preferred date"
         self.fields["preferred_date"].widget = forms.DateInput(attrs={"type": "date"})
         self.fields["preferred_date"].help_text = "When would you like to meet?"
+        self.fields["preferred_date"].required = True
 
         self.fields["time_start"].label = "Available from"
         self.fields["time_start"].widget = forms.TimeInput(attrs={"type": "time"})

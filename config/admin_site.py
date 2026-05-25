@@ -3,7 +3,7 @@ from django.core.exceptions import PermissionDenied
 from apps.artists.models import Artist
 from apps.bookings.availability import get_confirmed_booking_blocks, get_event_blocks
 from apps.bookings.models import Booking, BookingRequest
-from apps.enquiries.models import EnquirySubmission
+from apps.enquiries.models import EnquirySubmission, ArtistEnquiry
 from apps.events.models import Event
 from apps.merch.models import MerchItem
 from apps.news.models import NewsPost
@@ -140,6 +140,12 @@ class CeroAdminSite(AdminSite):
                 "hint": "General, merch, and payment enquiries",
             },
             {
+                "title": "New Artist Enquiries",
+                "value": ArtistEnquiry.objects.filter(status=ArtistEnquiry.Status.NEW).count(),
+                "url": reverse("admin:enquiries_artistenquiry_changelist") + "?status__exact=new",
+                "hint": "Artist contact requests waiting for follow-up",
+            },
+            {
                 "title": "Draft News",
                 "value": NewsPost.objects.filter(status=NewsPost.Status.DRAFT).count(),
                 "url": reverse("admin:news_newspost_changelist") + "?status__exact=draft",
@@ -170,6 +176,7 @@ class CeroAdminSite(AdminSite):
             {"label": "Admin Calendar", "url": reverse("admin:schedule_calendar")},
             {"label": "Review Booking Requests", "url": reverse("admin:bookings_bookingrequest_changelist")},
             {"label": "Review Enquiries", "url": reverse("admin:enquiries_enquirysubmission_changelist")},
+            {"label": "Review Artist Enquiries", "url": reverse("admin:enquiries_artistenquiry_changelist") + "?status__exact=new"},
             {"label": "Add New Event", "url": reverse("admin:events_event_add")},
             {"label": "Add News Post", "url": reverse("admin:news_newspost_add")},
             {"label": "Add Merch Item", "url": reverse("admin:merch_merchitem_add")},
@@ -213,6 +220,11 @@ class CeroAdminSite(AdminSite):
                         "label": "Enquiries",
                         "url": reverse("admin:enquiries_enquirysubmission_changelist"),
                         "hint": "Review general, merch, and payment enquiries",
+                    },
+                    {
+                        "label": "Artist Enquiries",
+                        "url": reverse("admin:enquiries_artistenquiry_changelist"),
+                        "hint": "Review artist contact requests and call/WhatsApp users",
                     },
                 ],
             },

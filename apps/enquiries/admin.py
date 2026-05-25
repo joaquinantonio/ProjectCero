@@ -208,6 +208,7 @@ class ArtistEnquiryAdmin(
     list_display = (
         "reference_code",
         "name",
+        "phone",
         "related_artist",
         "preferred_date_display",
         "time_range_display",
