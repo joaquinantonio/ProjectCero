@@ -139,10 +139,10 @@
           </p>
 
           <div class="cero-content-actions">
-            <a class="btn btn-primary" href="{% url 'bookings:studio_request' %}">
+            <a class="btn btn-primary" href="{% url 'bookings:request' %}?type=studio">
               Book the Studio
             </a>
-            <a class="btn btn-secondary" href="{% url 'bookings:venue_request' %}">
+            <a class="btn btn-secondary" href="{% url 'bookings:request' %}?type=venue">
               Venue Request
             </a>
             <a class="btn btn-secondary" href="{% url 'enquiries:general' %}">
