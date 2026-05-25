@@ -80,7 +80,7 @@ class EnquirySubmission(TimeStampedModel):
 
 
 class ArtistEnquiry(TimeStampedModel):
-    """Contact form for enquiring about/booking artists."""
+    """Contact form for enquiring about artists."""
 
     class Status(models.TextChoices):
         NEW = "new", "New"
@@ -92,10 +92,6 @@ class ArtistEnquiry(TimeStampedModel):
     name = models.CharField(max_length=150)
     email = models.EmailField()
     phone = models.CharField(max_length=50)
-
-    preferred_date = models.DateField(blank=True, null=True, help_text="Date when you would like to meet")
-    time_start = models.TimeField(help_text="E.g., 2:00 PM")
-    time_end = models.TimeField(help_text="E.g., 4:00 PM")
 
     related_artist = models.ForeignKey(
         "artists.Artist",
@@ -122,12 +118,6 @@ class ArtistEnquiry(TimeStampedModel):
     def __str__(self):
         return f"{self.reference_code} - {self.name} ({self.related_artist.name})"
 
-    def clean(self):
-        from django.core.exceptions import ValidationError
-        if self.time_end <= self.time_start:
-            raise ValidationError(
-                {"time_end": "End time must be after start time."}
-            )
 
     def save(self, *args, **kwargs):
         if not self.reference_code:

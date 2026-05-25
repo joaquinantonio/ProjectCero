@@ -67,8 +67,6 @@ Artist: {artist_enquiry.related_artist.name}
 Name: {artist_enquiry.name}
 Email: {artist_enquiry.email}
 Phone: {artist_enquiry.phone}
-Preferred date: {artist_enquiry.preferred_date}
-Time range: {artist_enquiry.time_start.strftime('%I:%M %p')} – {artist_enquiry.time_end.strftime('%I:%M %p')}
 Status: {artist_enquiry.get_status_display()}
 Created at: {artist_enquiry.created_at}
 

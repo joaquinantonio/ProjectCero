@@ -210,12 +210,10 @@ class ArtistEnquiryAdmin(
         "name",
         "phone",
         "related_artist",
-        "preferred_date_display",
-        "time_range_display",
         "status_badge",
         "created_at",
     )
-    list_filter = ("status", "related_artist", "preferred_date", "created_at")
+    list_filter = ("status", "related_artist", "created_at")
     search_fields = (
         "reference_code",
         "name",
@@ -231,27 +229,16 @@ class ArtistEnquiryAdmin(
     autocomplete_fields = ("related_artist",)
     list_select_related = ("related_artist",)
 
-    readonly_fields = ("reference_code", "created_at", "updated_at", "contact_display", "availability_display")
+    readonly_fields = ("reference_code", "created_at", "updated_at")
     readonly_on_change = (
         "name",
         "email",
         "phone",
-        "preferred_date",
-        "time_start",
-        "time_end",
         "related_artist",
     )
 
     def has_add_permission(self, request):
         return request.user.is_superuser
-
-    @admin.display(description="Date")
-    def preferred_date_display(self, obj):
-        return obj.preferred_date.strftime('%a, %b %d, %Y') if obj.preferred_date else "-"
-
-    @admin.display(description="Time Range")
-    def time_range_display(self, obj):
-        return f"{obj.time_start.strftime('%I:%M %p')} – {obj.time_end.strftime('%I:%M %p')}"
 
     @admin.display(ordering="status", description="Status")
     def status_badge(self, obj):
@@ -264,18 +251,6 @@ class ArtistEnquiryAdmin(
             obj.get_status_display(),
             tone_map.get(obj.status, "neutral"),
         )
-
-    @admin.display(description="Contact Info")
-    def contact_display(self, obj):
-        """Display contact information in a clear, scannable format."""
-        return f"{obj.name} | {obj.email} | {obj.phone}"
-
-    @admin.display(description="Availability")
-    def availability_display(self, obj):
-        """Display date and time availability in a clear format."""
-        date_str = obj.preferred_date.strftime('%a, %b %d, %Y') if obj.preferred_date else "No date"
-        time_str = f"{obj.time_start.strftime('%I:%M %p')} – {obj.time_end.strftime('%I:%M %p')}"
-        return f"{date_str} | {time_str}"
 
     def get_fieldsets(self, request, obj=None):
         workflow_fields = ("status", "admin_notes")
@@ -294,14 +269,15 @@ class ArtistEnquiryAdmin(
             (
                 "Contact Information",
                 {
-                    "fields": (("name", "email"), "phone", "contact_display") if obj else (("name", "email"), "phone"),
+                    "fields": (("name", "email"), "phone"),
+                    "description": "Sender contact details.",
                 },
             ),
             (
-                "Artist & Availability",
+                "Artist Reference",
                 {
-                    "fields": ("related_artist", ("preferred_date", "time_start", "time_end"), "availability_display") if obj else ("related_artist", ("preferred_date", "time_start", "time_end")),
-                    "description": "Date and time range provided by the enquirer. 30-minute increments selected from 8am–midnight.",
+                    "fields": ("related_artist",),
+                    "description": "The artist this enquiry is about.",
                 },
             ),
             (
@@ -324,15 +300,5 @@ class ArtistEnquiryAdmin(
             form.base_fields["admin_notes"].help_text = "Visible only in admin. Record outcomes of contact attempts."
             form.base_fields["admin_notes"].widget.attrs["rows"] = 6
 
-        if "preferred_date" in form.base_fields:
-            form.base_fields["preferred_date"].help_text = "Date the enquirer is available."
-
-        if "time_start" in form.base_fields:
-            form.base_fields["time_start"].label = "Available from"
-            form.base_fields["time_start"].help_text = "Selected from 30-minute increments."
-
-        if "time_end" in form.base_fields:
-            form.base_fields["time_end"].label = "Available until"
-            form.base_fields["time_end"].help_text = "Selected from 30-minute increments."
 
         return form

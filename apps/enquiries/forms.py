@@ -1,24 +1,9 @@
 from django import forms
-from datetime import time, timedelta
 
 from apps.events.models import Event
 from apps.merch.models import MerchItem
 from .models import EnquirySubmission, ArtistEnquiry
 
-
-def get_time_choices():
-    """Generate time choices in 30-minute increments (business hours: 8am-midnight)."""
-    choices = [("", "Select a time")]
-    start_hour = 8
-    end_hour = 24
-
-    for hour in range(start_hour, end_hour):
-        for minute in [0, 30]:
-            t = time(hour % 24, minute)
-            formatted = t.strftime("%I:%M %p")
-            choices.append((t.isoformat(), formatted))
-
-    return choices
 
 
 class BaseEnquiryForm(forms.ModelForm):
@@ -153,7 +138,7 @@ class ArtistEnquiryForm(forms.ModelForm):
 
     class Meta:
         model = ArtistEnquiry
-        fields = ["name", "email", "phone", "preferred_date", "time_start", "time_end"]
+        fields = ["name", "email", "phone"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -164,33 +149,12 @@ class ArtistEnquiryForm(forms.ModelForm):
         self.fields["email"].label = "Email address"
         self.fields["email"].widget.attrs.update({"placeholder": "you@example.com"})
 
-        self.fields["phone"].label = "Phone / WhatsApp"
+        self.fields["phone"].label = "WhatsApp / Phone"
         self.fields["phone"].widget.attrs.update({"placeholder": "+60..."})
-
-        self.fields["preferred_date"].label = "Preferred date"
-        self.fields["preferred_date"].widget = forms.DateInput(attrs={"type": "date"})
-        self.fields["preferred_date"].help_text = "When would you like to meet?"
-        self.fields["preferred_date"].required = True
-
-        time_choices = get_time_choices()
-
-        self.fields["time_start"].label = "Available from"
-        self.fields["time_start"].widget = forms.Select(choices=time_choices)
-        self.fields["time_start"].help_text = "30-minute increments, 8am–midnight"
-
-        self.fields["time_end"].label = "Available until"
-        self.fields["time_end"].widget = forms.Select(choices=time_choices)
-        self.fields["time_end"].help_text = "30-minute increments, 8am–midnight"
+        self.fields["phone"].help_text = "So we can reach you directly"
 
     def clean(self):
         cleaned_data = super().clean()
         if cleaned_data.get("website"):
             raise forms.ValidationError("Spam detected.")
-        
-        time_start = cleaned_data.get("time_start")
-        time_end = cleaned_data.get("time_end")
-        if time_start and time_end and time_end <= time_start:
-            raise forms.ValidationError(
-                "End time must be after start time (e.g., 2pm to 4pm)."
-            )
         return cleaned_data
