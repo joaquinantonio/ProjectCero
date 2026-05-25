@@ -270,7 +270,7 @@ class CombinedBookingRequestForm(BaseBookingRequestForm):
         self.fields["request_type"].label = "Booking type"
         self.fields["request_type"].choices = [
             (BookingRequest.RequestType.STUDIO, "Studio session"),
-            (BookingRequest.RequestType.VENUE, "Venue / event space"),
+            (BookingRequest.RequestType.VENUE, "Venue"),
         ]
         self.fields["request_type"].required = True
         self.fields["request_type"].help_text = (

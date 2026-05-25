@@ -1,8 +1,12 @@
+from datetime import date, time, timedelta
+
 from django.core import mail
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from .models import BookingRequest
+from .availability import get_unavailable_blocks
+from .calendar_workflow import create_calendar_booking_from_request
+from .models import Booking, BookingRequest, BookingResource
 
 
 @override_settings(
@@ -78,3 +82,84 @@ class BookingRequestTests(TestCase):
 
         self.assertRedirects(response, reverse("bookings:success"))
         self.assertEqual(BookingRequest.objects.count(), 0)
+
+
+class CalendarBookingWorkflowTests(TestCase):
+    def setUp(self):
+        self.resource = BookingResource.objects.create(
+            name="CeroPJ Venue",
+            slug="ceropj-venue",
+            is_active=True,
+            display_order=0,
+        )
+
+    def test_confirmed_studio_request_can_create_calendar_booking(self):
+        booking_request = BookingRequest.objects.create(
+            request_type=BookingRequest.RequestType.STUDIO,
+            name="Studio Customer",
+            email="studio@example.com",
+            preferred_date=date(2026, 6, 15),
+            preferred_time=time(13, 0),
+            message="Need a studio session",
+            status=BookingRequest.Status.CONFIRMED,
+        )
+
+        booking, message = create_calendar_booking_from_request(
+            booking_request,
+            status=Booking.Status.CONFIRMED,
+        )
+
+        self.assertIsNotNone(booking)
+        self.assertEqual(booking.booking_type, Booking.BookingType.STUDIO)
+        self.assertEqual(booking.resource, self.resource)
+        self.assertEqual(booking.status, Booking.Status.CONFIRMED)
+        self.assertEqual(booking.request, booking_request)
+        self.assertIn("Calendar booking created", message)
+
+    def test_calendar_booking_blocks_public_unavailable_feed_source(self):
+        booking_request = BookingRequest.objects.create(
+            request_type=BookingRequest.RequestType.STUDIO,
+            name="Studio Customer",
+            email="studio@example.com",
+            preferred_date=date(2026, 6, 15),
+            preferred_time=time(13, 0),
+            message="Need a studio session",
+            status=BookingRequest.Status.CONFIRMED,
+        )
+
+        booking, _ = create_calendar_booking_from_request(
+            booking_request,
+            status=Booking.Status.CONFIRMED,
+        )
+
+        blocks = get_unavailable_blocks(
+            start_dt=booking.scheduled_start_at - timedelta(minutes=30),
+            end_dt=booking.scheduled_end_at + timedelta(minutes=30),
+        )
+
+        self.assertTrue(
+            any(
+                block["type"] == "booking"
+                and block["object"].pk == booking.pk
+                for block in blocks
+            )
+        )
+
+    def test_request_without_preferred_time_does_not_create_booking(self):
+        booking_request = BookingRequest.objects.create(
+            request_type=BookingRequest.RequestType.STUDIO,
+            name="Studio Customer",
+            email="studio@example.com",
+            preferred_date=date(2026, 6, 15),
+            message="Need a studio session",
+            status=BookingRequest.Status.CONFIRMED,
+        )
+
+        booking, message = create_calendar_booking_from_request(
+            booking_request,
+            status=Booking.Status.CONFIRMED,
+        )
+
+        self.assertIsNone(booking)
+        self.assertIn("Preferred date and preferred time are required", message)
+        self.assertEqual(Booking.objects.count(), 0)
