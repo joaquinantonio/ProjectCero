@@ -126,174 +126,135 @@ class CeroAdminSite(AdminSite):
         else:
             site_settings_url = reverse("admin:pages_sitesettings_add")
 
+        # Booking workflow focused metrics
         dashboard_cards = [
             {
-                "title": "New Bookings",
+                "title": "🔴 New Bookings",
                 "value": BookingRequest.objects.filter(status=BookingRequest.Status.NEW).count(),
                 "url": reverse("admin:bookings_bookingrequest_changelist") + "?status__exact=new",
-                "hint": "Booking requests waiting for review",
+                "hint": "Awaiting your initial review",
             },
             {
-                "title": "New Enquiries",
-                "value": EnquirySubmission.objects.filter(status=EnquirySubmission.Status.NEW).count(),
-                "url": reverse("admin:enquiries_enquirysubmission_changelist") + "?status__exact=new",
-                "hint": "General, merch, and payment enquiries",
+                "title": "🟡 In Review",
+                "value": BookingRequest.objects.filter(status=BookingRequest.Status.IN_REVIEW).count(),
+                "url": reverse("admin:bookings_bookingrequest_changelist") + "?status__exact=in_review",
+                "hint": "You're actively reviewing these",
             },
             {
-                "title": "New Artist Enquiries",
-                "value": ArtistEnquiry.objects.filter(status=ArtistEnquiry.Status.NEW).count(),
-                "url": reverse("admin:enquiries_artistenquiry_changelist") + "?status__exact=new",
-                "hint": "Artist contact requests waiting for follow-up",
+                "title": "🟠 Contacted",
+                "value": BookingRequest.objects.filter(status=BookingRequest.Status.CONTACTED).count(),
+                "url": reverse("admin:bookings_bookingrequest_changelist") + "?status__exact=contacted",
+                "hint": "Waiting for customer response",
             },
             {
-                "title": "Draft News",
-                "value": NewsPost.objects.filter(status=NewsPost.Status.DRAFT).count(),
-                "url": reverse("admin:news_newspost_changelist") + "?status__exact=draft",
-                "hint": "News posts not yet published",
-            },
-            {
-                "title": "Active Merchandise",
-                "value": MerchItem.objects.filter(is_active=True).count(),
-                "url": reverse("admin:merch_merchitem_changelist") + "?is_active__exact=1",
-                "hint": "Catalog items currently visible",
-            },
-            {
-                "title": "Published Events",
-                "value": Event.objects.filter(status=Event.Status.PUBLISHED).count(),
-                "url": reverse("admin:events_event_changelist") + "?status__exact=published",
-                "hint": "Live event records",
-            },
-            {
-                "title": "Featured Artists",
-                "value": Artist.objects.filter(is_featured=True, is_active=True).count(),
-                "url": reverse("admin:artists_artist_changelist") + "?is_featured__exact=1",
-                "hint": "Artists shown publicly",
+                "title": "✓ Confirmed",
+                "value": BookingRequest.objects.filter(status=BookingRequest.Status.CONFIRMED).count(),
+                "url": reverse("admin:bookings_bookingrequest_changelist") + "?status__exact=confirmed",
+                "hint": "Calendar bookings created",
             },
         ]
 
-        quick_links = [
-            {"label": "Edit Website Settings", "url": site_settings_url},
-            {"label": "Admin Calendar", "url": reverse("admin:schedule_calendar")},
-            {"label": "Review Booking Requests", "url": reverse("admin:bookings_bookingrequest_changelist")},
-            {"label": "Review Enquiries", "url": reverse("admin:enquiries_enquirysubmission_changelist")},
-            {"label": "Review Artist Enquiries", "url": reverse("admin:enquiries_artistenquiry_changelist") + "?status__exact=new"},
-            {"label": "Add New Event", "url": reverse("admin:events_event_add")},
-            {"label": "Add News Post", "url": reverse("admin:news_newspost_add")},
-            {"label": "Add Merch Item", "url": reverse("admin:merch_merchitem_add")},
-        ]
+        # Highlight primary action prominently if new bookings exist
+        new_booking_count = BookingRequest.objects.filter(status=BookingRequest.Status.NEW).count()
 
+        # Quick actions - primary focus on "Review New Bookings" when urgent
+        quick_links = []
+        if new_booking_count > 0:
+            quick_links.append({
+                "label": f"🔴 Review {new_booking_count} New Booking{'s' if new_booking_count != 1 else ''}",
+                "url": reverse("admin:bookings_bookingrequest_changelist") + "?status__exact=new",
+                "is_primary": True,
+            })
+
+        quick_links.extend([
+            {"label": "📅 Calendar", "url": reverse("admin:schedule_calendar"), "is_primary": False},
+            {"label": "🟡 In Review", "url": reverse("admin:bookings_bookingrequest_changelist") + "?status__exact=in_review", "is_primary": False},
+            {"label": "🟠 Follow Up", "url": reverse("admin:bookings_bookingrequest_changelist") + "?status__exact=contacted", "is_primary": False},
+        ])
+
+        # Consolidated dashboard sections (2-3 primary categories)
         dashboard_sections = [
             {
-                "title": "Website",
-                "items": [
-                    {
-                        "label": "Website Settings",
-                        "url": site_settings_url,
-                        "hint": "Brand, contact details, social links",
-                    },
-                    {
-                        "label": "Page Sections",
-                        "url": reverse("admin:pages_pagesection_changelist"),
-                        "hint": "Homepage, about, and contact content blocks",
-                    },
-                ],
-            },
-            {
-                "title": "Bookings",
+                "title": "📅 Booking Workflow",
                 "items": [
                     {
                         "label": "Booking Requests",
                         "url": reverse("admin:bookings_bookingrequest_changelist"),
-                        "hint": "Review and update booking requests",
+                        "hint": "Manage all booking requests through workflow stages",
                     },
                     {
                         "label": "Calendar",
                         "url": reverse("admin:schedule_calendar"),
-                        "hint": "View events, studio service bookings, and venue / private event bookings by time",
+                        "hint": "View blocked time, events, and confirmed bookings",
+                    },
+                    {
+                        "label": "Calendar Bookings",
+                        "url": reverse("admin:bookings_booking_changelist"),
+                        "hint": "Manage created bookings and blocks",
                     },
                 ],
             },
             {
-                "title": "Enquiries",
+                "title": "📋 Support & Content",
                 "items": [
                     {
-                        "label": "Enquiries",
+                        "label": "General Inquiries",
                         "url": reverse("admin:enquiries_enquirysubmission_changelist"),
-                        "hint": "Review general, merch, and payment enquiries",
+                        "hint": "Merch, payment, and general enquiries",
                     },
                     {
-                        "label": "Artist Enquiries",
+                        "label": "Artist Inquiries",
                         "url": reverse("admin:enquiries_artistenquiry_changelist"),
-                        "hint": "Review artist contact requests and call/WhatsApp users",
+                        "hint": "Artist collaboration requests",
                     },
-                ],
-            },
-            {
-                "title": "News",
-                "items": [
-                    {
-                        "label": "Articles",
-                        "url": reverse("admin:news_newspost_changelist"),
-                        "hint": "Manage public updates and announcements",
-                    },
-                ],
-            },
-            {
-                "title": "Events & Artists",
-                "items": [
                     {
                         "label": "Events",
                         "url": reverse("admin:events_event_changelist"),
-                        "hint": "Create and publish event listings",
+                        "hint": "Event listings",
                     },
                     {
-                        "label": "Event Categories",
-                        "url": reverse("admin:events_eventcategory_changelist"),
-                        "hint": "Manage event grouping options",
-                    },
-                    {
-                        "label": "Artists",
-                        "url": reverse("admin:artists_artist_changelist"),
-                        "hint": "Manage featured artist profiles",
+                        "label": "News",
+                        "url": reverse("admin:news_newspost_changelist"),
+                        "hint": "Updates and announcements",
                     },
                 ],
             },
             {
-                "title": "Studio",
+                "title": "⚙️ Settings",
                 "items": [
+                    {
+                        "label": "Website",
+                        "url": site_settings_url,
+                        "hint": "Brand, contact, social links",
+                    },
                     {
                         "label": "Studio Services",
                         "url": reverse("admin:studio_studioservice_changelist"),
-                        "hint": "Manage studio offerings, pricing, duration, images, and display order",
+                        "hint": "Services and pricing",
                     },
-                ],
-            },
-            {
-                "title": "Merchandise",
-                "items": [
                     {
                         "label": "Merchandise",
                         "url": reverse("admin:merch_merchitem_changelist"),
-                        "hint": "Manage the merchandise catalog",
+                        "hint": "Merch catalog",
                     },
                 ],
-            }
+            },
         ]
 
         if request.user.is_superuser:
             dashboard_sections.append(
                 {
-                    "title": "Admin & Permissions",
+                    "title": "🔐 Admin",
                     "items": [
                         {
                             "label": "Users",
                             "url": reverse("admin:auth_user_changelist"),
-                            "hint": "Manage admin users",
+                            "hint": "Admin users",
                         },
                         {
-                            "label": "Groups",
+                            "label": "Permissions",
                             "url": reverse("admin:auth_group_changelist"),
-                            "hint": "Manage roles and permissions",
+                            "hint": "Roles and permissions",
                         },
                     ],
                 }

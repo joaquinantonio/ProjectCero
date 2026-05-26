@@ -10,7 +10,7 @@ from apps.core.admin import (
     render_admin_badge,
 )
 
-from .models import Order, OrderHistory, OrderItem
+from .models import Order, OrderHistory, OrderItem, PaymentProof
 from .services import send_order_status_update
 from .workflow import change_order_status
 
@@ -121,6 +121,36 @@ class OrderHistoryInline(admin.TabularInline):
 
     def has_add_permission(self, request, obj=None):
         return False
+
+
+class PaymentProofInline(admin.StackedInline):
+    model = PaymentProof
+    extra = 0
+    fields = (
+        "file",
+        "file_type",
+        "original_filename",
+        "notes",
+        "verified",
+        "verified_by",
+        "verified_at",
+        "created_at",
+        "updated_at",
+    )
+    readonly_fields = (
+        "file_type",
+        "original_filename",
+        "verified_by",
+        "verified_at",
+        "created_at",
+        "updated_at",
+    )
+    can_delete = True
+    max_num = 1
+
+    def has_add_permission(self, request, obj=None):
+        # Only allow one payment proof per order
+        return obj is not None and not hasattr(obj, 'payment_proof')
 
 
 def update_orders_status(modeladmin, request, queryset, status_value, label):
@@ -255,7 +285,7 @@ class OrderAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
     ordering = ("-created_at",)
     date_hierarchy = "created_at"
     list_select_related = ()
-    inlines = [OrderItemInline, OrderHistoryInline]
+    inlines = [OrderItemInline, OrderHistoryInline, PaymentProofInline]
     actions = [
         mark_pending_payment,
         mark_paid,
@@ -640,3 +670,96 @@ class OrderHistoryAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return request.user.is_superuser
+
+
+@admin.register(PaymentProof)
+class PaymentProofAdmin(SuperuserDeleteOnlyAdminMixin, TimestampedAdmin):
+    """Admin interface for managing uploaded payment proofs."""
+
+    list_display = (
+        "order",
+        "file_type",
+        "verified_badge",
+        "created_at",
+        "verified_at",
+    )
+    list_filter = (
+        "file_type",
+        "verified",
+        "created_at",
+    )
+    search_fields = (
+        "order__reference_code",
+        "order__customer_name",
+        "order__customer_email",
+        "original_filename",
+        "notes",
+    )
+    readonly_fields = (
+        "order",
+        "file_type",
+        "original_filename",
+        "created_at",
+        "updated_at",
+    )
+    ordering = ("-created_at",)
+    list_select_related = ("order", "verified_by")
+
+    fieldsets = (
+        (
+            "Order & File",
+            {
+                "fields": (
+                    "order",
+                    "file",
+                    "file_type",
+                    "original_filename",
+                ),
+            },
+        ),
+        (
+            "Verification",
+            {
+                "fields": (
+                    "verified",
+                    "verified_by",
+                    "verified_at",
+                ),
+            },
+        ),
+        (
+            "Notes",
+            {
+                "fields": ("notes",),
+                "description": "Optional notes about this payment proof.",
+            },
+        ),
+        (
+            "System",
+            {
+                "fields": (
+                    "created_at",
+                    "updated_at",
+                ),
+                "classes": ("collapse",),
+            },
+        ),
+    )
+
+    @admin.display(description="Verified", boolean=True)
+    def verified_badge(self, obj):
+        return obj.verified
+
+    def save_model(self, request, obj, form, change):
+        """Set verified_by and verified_at when marking as verified."""
+        if "verified" in form.changed_data:
+            if obj.verified and not obj.verified_by:
+                obj.verified_by = request.user
+                from django.utils import timezone
+                obj.verified_at = timezone.now()
+            elif not obj.verified:
+                obj.verified_by = None
+                obj.verified_at = None
+
+        super().save_model(request, obj, form, change)
+

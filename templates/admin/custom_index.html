@@ -5,28 +5,34 @@
   <div id="content-main" class="cero-admin-dashboard">
     <section class="cero-dashboard-hero">
       <div>
-        <p class="cero-admin-kicker">Control room</p>
+        <p class="cero-admin-kicker">👋 Welcome Back</p>
         <h1>{{ index_title|default:"Site Control Panel" }}</h1>
         <p>
-          Manage bookings, calendar blocks, events, artists, news, merchandise, enquiries, and public website settings from one place.
+          Manage the booking workflow from one place.
         </p>
       </div>
 
       <div class="cero-dashboard-hero__actions">
-        {% for item in quick_links|slice:":4" %}
-          <a href="{{ item.url }}">{{ item.label }}</a>
+        {% for item in quick_links %}
+          {% if item.is_primary %}
+            <a href="{{ item.url }}" style="font-weight: 600; background: #e74c3c; color: white;">{{ item.label }}</a>
+          {% else %}
+            <a href="{{ item.url }}">{{ item.label }}</a>
+          {% endif %}
         {% endfor %}
       </div>
     </section>
 
-    <section class="cero-dashboard-metrics" aria-label="Admin summary">
-      {% for card in dashboard_cards %}
-        <a class="cero-dashboard-metric" href="{{ card.url }}">
-          <span>{{ card.title }}</span>
-          <strong>{{ card.value }}</strong>
-          <small>{{ card.hint }}</small>
-        </a>
-      {% endfor %}
+    <section class="cero-dashboard-metrics" aria-label="Booking workflow status">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; width: 100%;">
+        {% for card in dashboard_cards %}
+          <a class="cero-dashboard-metric" href="{{ card.url }}" title="{{ card.hint }}">
+            <span>{{ card.title }}</span>
+            <strong style="font-size: 28px;">{{ card.value }}</strong>
+            <small>{{ card.hint }}</small>
+          </a>
+        {% endfor %}
+      </div>
     </section>
 
     <section class="cero-dashboard-layout">
@@ -34,26 +40,8 @@
         <section class="cero-dashboard-panel">
           <div class="cero-dashboard-panel__heading">
             <div>
-              <p class="cero-admin-kicker">Shortcuts</p>
-              <h2>Common admin tasks</h2>
-            </div>
-          </div>
-
-          <div class="cero-dashboard-quick-grid">
-            {% for item in quick_links %}
-              <a class="cero-dashboard-quick-card" href="{{ item.url }}">
-                <strong>{{ item.label }}</strong>
-                <span>Open</span>
-              </a>
-            {% endfor %}
-          </div>
-        </section>
-
-        <section class="cero-dashboard-panel">
-          <div class="cero-dashboard-panel__heading">
-            <div>
-              <p class="cero-admin-kicker">Content management</p>
-              <h2>Work areas</h2>
+              <p class="cero-admin-kicker">📊 Management</p>
+              <h2>Organized by function</h2>
             </div>
           </div>
 
@@ -63,7 +51,7 @@
                 <h3>{{ section.title }}</h3>
                 <div class="cero-dashboard-section-items">
                   {% for item in section.items %}
-                    <a href="{{ item.url }}">
+                    <a href="{{ item.url }}" title="{{ item.hint }}">
                       <strong>{{ item.label }}</strong>
                       <span>{{ item.hint }}</span>
                     </a>
@@ -74,48 +62,6 @@
           </div>
         </section>
       </div>
-
-      <aside class="cero-dashboard-sidebar">
-        <section class="cero-dashboard-panel">
-          <div class="cero-dashboard-panel__heading">
-            <div>
-              <p class="cero-admin-kicker">Activity</p>
-              <h2>{% translate "Recent actions" %}</h2>
-            </div>
-          </div>
-
-          {% get_admin_log 10 as admin_log for_user user %}
-          {% if not admin_log %}
-            <p class="cero-admin-muted">{% translate "None available" %}</p>
-          {% else %}
-            <ol class="cero-recent-actions">
-              {% for entry in admin_log %}
-                <li>
-                  <span class="cero-recent-actions__type">
-                    {% if entry.is_addition %}
-                      {% translate "Added" %}
-                    {% elif entry.is_change %}
-                      {% translate "Changed" %}
-                    {% elif entry.is_deletion %}
-                      {% translate "Deleted" %}
-                    {% endif %}
-                  </span>
-
-                  {% if entry.is_deletion or not entry.get_admin_url %}
-                    <strong>{{ entry.object_repr }}</strong>
-                  {% else %}
-                    <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
-                  {% endif %}
-
-                  <small>{{ entry.content_type }}</small>
-                </li>
-              {% endfor %}
-            </ol>
-          {% endif %}
-        </section>
-
-        
-      </aside>
     </section>
   </div>
 {% endblock %}

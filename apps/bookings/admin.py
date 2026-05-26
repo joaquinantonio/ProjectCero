@@ -321,6 +321,8 @@ class BookingRequestAdmin(
         create_confirmed_bookings_from_requests,
     ]
     list_select_related = ("event",)
+    
+    change_form_template = "admin/bookings/bookingrequest_change_form.html"
 
     readonly_fields = (
         "reference_code",
@@ -334,7 +336,8 @@ class BookingRequestAdmin(
         "email",
         "phone",
         "preferred_date",
-        "preferred_time",
+        "preferred_start_time",
+        "preferred_end_time",
         "guest_count",
         "message",
     )
@@ -509,6 +512,7 @@ class BookingRequestAdmin(
                 "Requester Details",
                 {
                     "fields": (("name", "email"), "phone"),
+                    "description": "Customer contact information submitted with the request.",
                 },
             ),
             (
@@ -517,12 +521,12 @@ class BookingRequestAdmin(
                     "fields": (
                         "request_type",
                         "event",
-                        ("preferred_date", "preferred_time"),
+                        ("preferred_date", "preferred_start_time", "preferred_end_time"),
                         "guest_count",
                     ),
                     "description": (
-                        "Submitted customer request details. Create or confirm a Booking "
-                        "record when the date/time is confirmed internally."
+                        "Customer's preferred timing and type. These are locked after initial submission. "
+                        "Create a calendar booking once you confirm the details."
                     ),
                 },
             ),
@@ -530,6 +534,7 @@ class BookingRequestAdmin(
                 "Submitted Message",
                 {
                     "fields": ("message",),
+                    "classes": ("wide",),
                 },
             ),
             (

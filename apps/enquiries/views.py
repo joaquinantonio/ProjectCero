@@ -1,11 +1,17 @@
-from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, TemplateView
 
+from apps.artists.models import Artist
 from apps.events.models import Event
 from apps.merch.models import MerchItem
-from apps.artists.models import Artist
-from .forms import GeneralEnquiryForm, MerchEnquiryForm, PaymentEnquiryForm, ArtistEnquiryForm
+
+from .forms import (
+    ArtistEnquiryForm,
+    GeneralEnquiryForm,
+    StudioEnquiryForm,
+    VenueEnquiryForm,
+)
 from .models import EnquirySubmission, ArtistEnquiry
 from .services import send_enquiry_notification, send_artist_enquiry_notification
 
@@ -61,51 +67,30 @@ class GeneralEnquiryCreateView(BaseEnquiryCreateView):
     enquiry_type = EnquirySubmission.EnquiryType.GENERAL
     eyebrow = "General Enquiry"
     page_title = "General Enquiry"
-    page_lead = "Use this form for general questions, collaborations, updates, or custom requests."
+    page_lead = "Use this form for general questions, collaborations, updates, merch questions, or payment follow-up."
     sidebar_title = "General enquiries"
-    sidebar_body = "Share the details of what you need and any dates or event context if relevant."
+    sidebar_body = "Share the details of what you need and add any merch or event context if relevant."
     button_label = "Send General Enquiry"
 
-
-class MerchEnquiryCreateView(BaseEnquiryCreateView):
-    form_class = MerchEnquiryForm
-    enquiry_type = EnquirySubmission.EnquiryType.MERCH
-    eyebrow = "Merchandise Enquiry"
-    page_title = "Merchandise Enquiry"
-    page_lead = "Use this form to ask about merchandise, availability, or pre-order interest."
-    sidebar_title = "Merchandise enquiries"
-    sidebar_body = "If you are asking about a specific item, select it below or tell us clearly in your message."
-    button_label = "Send merchandise Enquiry"
-
     def get_initial(self):
         initial = super().get_initial()
-        slug = self.request.GET.get("item")
-        if slug:
-            item = MerchItem.objects.filter(slug=slug, is_active=True).first()
+        item_slug = self.request.GET.get("item")
+        if item_slug:
+            item = MerchItem.objects.filter(slug=item_slug, is_active=True).first()
             if item:
                 initial["related_merch"] = item.pk
-                initial["subject"] = f"Merch enquiry: {item.name}"
-        return initial
+                initial["subject"] = f"General enquiry: {item.name}"
 
-
-class PaymentEnquiryCreateView(BaseEnquiryCreateView):
-    form_class = PaymentEnquiryForm
-    enquiry_type = EnquirySubmission.EnquiryType.PAYMENT
-    eyebrow = "Payment Enquiry"
-    page_title = "Payment Enquiry"
-    page_lead = "Use this form for payment-related questions, package discussions, or manual payment follow-up."
-    sidebar_title = "Payment details"
-    sidebar_body = "Add the amount, package, event, or any other useful payment context so the team can respond clearly."
-    button_label = "Send Payment Enquiry"
-
-    def get_initial(self):
-        initial = super().get_initial()
-        slug = self.request.GET.get("event")
-        if slug:
-            event = Event.objects.filter(slug=slug, status=Event.Status.PUBLISHED).first()
+        event_slug = self.request.GET.get("event")
+        if event_slug:
+            event = Event.objects.filter(slug=event_slug, status=Event.Status.PUBLISHED).first()
             if event:
                 initial["related_event"] = event.pk
-                initial["subject"] = f"Payment enquiry: {event.title}"
+                initial["subject"] = f"General enquiry: {event.title}"
+
+        if self.request.GET.get("amount"):
+            initial["amount_text"] = self.request.GET.get("amount")
+
         return initial
 
 
@@ -134,3 +119,25 @@ class ArtistEnquiryCreateView(CreateView):
 
         self.request.session["last_enquiry_reference"] = self.object.reference_code
         return redirect(self.get_success_url())
+
+
+class StudioEnquiryCreateView(BaseEnquiryCreateView):
+    form_class = StudioEnquiryForm
+    enquiry_type = EnquirySubmission.EnquiryType.STUDIO
+    eyebrow = "Studio Enquiry"
+    page_title = "Studio Enquiry"
+    page_lead = "Use this form to enquire about studio sessions, book your preferred date and time, or ask about equipment and services."
+    sidebar_title = "Studio enquiries"
+    sidebar_body = "Tell us about your project, your preferred date and time, and any specific equipment or service needs."
+    button_label = "Send Studio Enquiry"
+
+
+class VenueEnquiryCreateView(BaseEnquiryCreateView):
+    form_class = VenueEnquiryForm
+    enquiry_type = EnquirySubmission.EnquiryType.VENUE
+    eyebrow = "Venue Enquiry"
+    page_title = "Venue Enquiry"
+    page_lead = "Use this form to enquire about venue hire, book your preferred date and time, or ask about capacity and facilities."
+    sidebar_title = "Venue enquiries"
+    sidebar_body = "Tell us about your event, preferred date and time, guest count, and any special requirements you may have."
+    button_label = "Send Venue Enquiry"

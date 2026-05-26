@@ -2,7 +2,7 @@ from uuid import uuid4
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.validators import MinValueValidator
+from django.core.validators import FileExtensionValidator, MinValueValidator
 from django.db import models
 
 from apps.core.models import TimeStampedModel
@@ -308,3 +308,94 @@ class OrderHistory(TimeStampedModel):
 
     def __str__(self):
         return f"{self.order.reference_code} - {self.get_event_type_display()}"
+
+
+class PaymentProof(TimeStampedModel):
+    """
+    Proof of payment uploaded by customer for manual payment verification.
+    Supports images (JPG, PNG) and PDFs.
+    """
+    class FileType(models.TextChoices):
+        IMAGE = "image", "Image (JPG, PNG)"
+        PDF = "pdf", "PDF Document"
+
+    order = models.OneToOneField(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="payment_proof",
+    )
+
+    file = models.FileField(
+        upload_to="payment_proofs/%Y/%m/%d/",
+        validators=[
+            FileExtensionValidator(
+                allowed_extensions=["pdf", "jpg", "jpeg", "png"],
+                message="Only PDF, JPG, and PNG files are allowed.",
+            )
+        ],
+        help_text="Upload a proof of payment (receipt, screenshot, etc.)",
+    )
+
+    file_type = models.CharField(
+        max_length=20,
+        choices=FileType.choices,
+    )
+
+    original_filename = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Original filename for reference",
+    )
+
+    notes = models.TextField(
+        blank=True,
+        help_text="Optional notes about the payment proof",
+    )
+
+    verified = models.BooleanField(
+        default=False,
+        help_text="Whether admin has verified this payment proof",
+    )
+
+    verified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="verified_payment_proofs",
+    )
+
+    verified_at = models.DateTimeField(
+        blank=True,
+        null=True,
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Payment Proof"
+        verbose_name_plural = "Payment Proofs"
+        indexes = [
+            models.Index(fields=["order"]),
+            models.Index(fields=["verified", "created_at"]),
+        ]
+
+    def clean(self):
+        super().clean()
+        if self.file:
+            # Determine file type based on extension
+            ext = self.file.name.split(".")[-1].lower()
+            if ext == "pdf":
+                if self.file_type != self.FileType.PDF:
+                    self.file_type = self.FileType.PDF
+            elif ext in ["jpg", "jpeg", "png"]:
+                if self.file_type != self.FileType.IMAGE:
+                    self.file_type = self.FileType.IMAGE
+
+    def save(self, *args, **kwargs):
+        if self.file and not self.original_filename:
+            self.original_filename = self.file.name
+        self.clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Payment Proof for {self.order.reference_code}"

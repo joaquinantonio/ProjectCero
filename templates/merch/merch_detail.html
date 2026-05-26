@@ -38,8 +38,8 @@
               Buy Now
             </a>
           {% endif %}
-          <a class="btn btn-secondary" href="{% url 'enquiries:merch' %}?item={{ item.slug }}">
-            Enquire About This Item
+          <a class="btn btn-secondary" href="{% url 'enquiries:general' %}?item={{ item.slug }}">
+            General Enquiry About This Item
           </a>
           <a class="btn btn-secondary" href="{% url 'merch:merch_list' %}">
             Back to Merch
@@ -105,8 +105,8 @@
               </a>
             {% endif %}
 
-            <a class="btn btn-secondary" href="{% url 'enquiries:merch' %}?item={{ item.slug }}">
-              Enquire About This Item
+            <a class="btn btn-secondary" href="{% url 'enquiries:general' %}?item={{ item.slug }}">
+              General Enquiry About This Item
             </a>
 
             <a class="btn btn-secondary" href="{% url 'merch:merch_list' %}">

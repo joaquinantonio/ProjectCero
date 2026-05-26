@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}Enquire · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
-{% block meta_description %}Send general, merch, payment, collaboration, or booking-related enquiries to {{ site_settings.site_name|default:"CeroPJ" }}.{% endblock %}
+{% block meta_description %}Send general, collaboration, or booking-related enquiries to {{ site_settings.site_name|default:"CeroPJ" }}.{% endblock %}
 
 {% block content %}
 <div class="cero-conversion-page cero-enquiries-page">
@@ -11,7 +11,7 @@
         <p class="cero-kicker">Enquiries</p>
         <h1>Send the right message to the right place.</h1>
         <p>
-          Choose the enquiry type that best matches what you need. For studio sessions and venue hire, use the booking flow instead.
+          Choose the enquiry type that best matches what you need. General enquiries can cover merch questions, payment follow-up, collaborations, and custom requests. For studio sessions and venue hire, use the booking flow instead.
         </p>
       </div>
 
@@ -31,22 +31,22 @@
         <article class="cero-card cero-enquiry-choice-card">
           <p class="cero-card__label">General</p>
           <h2>General enquiry</h2>
-          <p>Questions, collaborations, updates, partnerships, or general requests.</p>
+          <p>Questions, collaborations, updates, merch questions, payment follow-up, partnerships, or general requests.</p>
           <a class="btn btn-secondary" href="{% url 'enquiries:general' %}">Open Form</a>
         </article>
 
         <article class="cero-card cero-enquiry-choice-card">
-          <p class="cero-card__label">Merch</p>
-          <h2>Merch enquiry</h2>
-          <p>Ask about items, stock, pre-order interest, or item details.</p>
-          <a class="btn btn-secondary" href="{% url 'enquiries:merch' %}">Open Form</a>
+          <p class="cero-card__label">Studio</p>
+          <h2>Studio enquiry</h2>
+          <p>Enquire about studio sessions, book your preferred date and time, or ask about equipment.</p>
+          <a class="btn btn-secondary" href="{% url 'enquiries:studio' %}">Open Form</a>
         </article>
 
         <article class="cero-card cero-enquiry-choice-card">
-          <p class="cero-card__label">Payment</p>
-          <h2>Payment enquiry</h2>
-          <p>Payment-related questions, package discussions, or manual payment follow-up.</p>
-          <a class="btn btn-secondary" href="{% url 'enquiries:payment' %}">Open Form</a>
+          <p class="cero-card__label">Venue</p>
+          <h2>Venue enquiry</h2>
+          <p>Enquire about venue hire, book your preferred date and time, or ask about capacity and facilities.</p>
+          <a class="btn btn-secondary" href="{% url 'enquiries:venue' %}">Open Form</a>
         </article>
 
         <article class="cero-card cero-enquiry-choice-card cero-enquiry-choice-card--primary">

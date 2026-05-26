@@ -38,12 +38,12 @@ def request_type_to_booking_type(request_type):
 
 
 def build_request_start_at(booking_request):
-    if not booking_request.preferred_date or not booking_request.preferred_time:
+    if not booking_request.preferred_date or not booking_request.preferred_start_time:
         return None
 
     naive_start = datetime.combine(
         booking_request.preferred_date,
-        booking_request.preferred_time,
+        booking_request.preferred_start_time,
     )
 
     current_timezone = timezone.get_current_timezone()

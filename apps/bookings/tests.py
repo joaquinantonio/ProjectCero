@@ -6,6 +6,7 @@ from django.urls import reverse
 
 from .availability import get_unavailable_blocks
 from .calendar_workflow import create_calendar_booking_from_request
+from .forms import CombinedBookingRequestForm
 from .models import Booking, BookingRequest, BookingResource
 
 
@@ -15,6 +16,13 @@ from .models import Booking, BookingRequest, BookingResource
     DEFAULT_FROM_EMAIL="no-reply@example.com",
 )
 class BookingRequestTests(TestCase):
+    def test_preferred_start_time_dropdown_includes_midnight_next_day_option(self):
+        form = CombinedBookingRequestForm()
+
+        # Check the widget choices, not the field choices
+        widget_choices = form.fields["preferred_start_time"].widget.choices
+        self.assertIn(("23:59", "11:59 PM (midnight next day)"), widget_choices)
+
     def test_general_booking_redirects_to_general_enquiry(self):
         response = self.client.get(reverse("bookings:general_request"))
 
@@ -31,7 +39,7 @@ class BookingRequestTests(TestCase):
                 "phone_country_code": "+60",
                 "phone": "123456789",
                 "preferred_date": "2026-06-15",
-                "preferred_time": "11:00",
+                "preferred_start_time": "11:00",
                 "message": "Need a studio session",
             },
         )
@@ -41,9 +49,50 @@ class BookingRequestTests(TestCase):
 
         booking_request = BookingRequest.objects.first()
         self.assertEqual(booking_request.request_type, BookingRequest.RequestType.STUDIO)
+        self.assertEqual(booking_request.preferred_start_time.strftime("%H:%M"), "11:00")
 
         self.assertEqual(len(mail.outbox), 2)
         self.assertEqual(mail.outbox[1].to, ["test@example.com"])
+
+    def test_studio_booking_accepts_midnight_next_day_time(self):
+        response = self.client.post(
+            reverse("bookings:request"),
+            {
+                "request_type": BookingRequest.RequestType.STUDIO,
+                "name": "Late Studio User",
+                "email": "late@example.com",
+                "phone_country_code": "+60",
+                "phone": "123456789",
+                "preferred_date": "2026-06-15",
+                "preferred_start_time": "23:59",
+                "message": "Need a late studio session",
+            },
+        )
+
+        self.assertRedirects(response, reverse("bookings:success"))
+        booking_request = BookingRequest.objects.get(email="late@example.com")
+        self.assertEqual(booking_request.preferred_start_time.strftime("%H:%M"), "23:59")
+
+    def test_venue_booking_accepts_midnight_next_day_time(self):
+        response = self.client.post(
+            reverse("bookings:request"),
+            {
+                "request_type": BookingRequest.RequestType.VENUE,
+                "name": "Late Venue User",
+                "email": "venue-late@example.com",
+                "phone_country_code": "+60",
+                "phone": "123456789",
+                "preferred_date": "2026-06-15",
+                "preferred_start_time": "23:59",
+                "guest_count": "40",
+                "message": "Need a late venue request",
+            },
+        )
+
+        self.assertRedirects(response, reverse("bookings:success"))
+        booking_request = BookingRequest.objects.get(email="venue-late@example.com")
+        self.assertEqual(booking_request.request_type, BookingRequest.RequestType.VENUE)
+        self.assertEqual(booking_request.preferred_start_time.strftime("%H:%M"), "23:59")
 
     def test_invalid_venue_booking_does_not_submit_without_guest_count(self):
         response = self.client.post(
@@ -55,7 +104,7 @@ class BookingRequestTests(TestCase):
                 "phone_country_code": "+60",
                 "phone": "123456789",
                 "preferred_date": "2026-06-15",
-                "preferred_time": "12:00",
+                "preferred_start_time": "12:00",
                 "message": "Need the venue",
             },
         )
@@ -74,7 +123,7 @@ class BookingRequestTests(TestCase):
                 "phone_country_code": "+60",
                 "phone": "0000000000",
                 "preferred_date": "2026-06-15",
-                "preferred_time": "11:00",
+                "preferred_start_time": "11:00",
                 "message": "Spam message",
                 "website": "http://spam.example.com",
             },
@@ -99,7 +148,7 @@ class CalendarBookingWorkflowTests(TestCase):
             name="Studio Customer",
             email="studio@example.com",
             preferred_date=date(2026, 6, 15),
-            preferred_time=time(13, 0),
+            preferred_start_time=time(13, 0),
             message="Need a studio session",
             status=BookingRequest.Status.CONFIRMED,
         )
@@ -122,7 +171,7 @@ class CalendarBookingWorkflowTests(TestCase):
             name="Studio Customer",
             email="studio@example.com",
             preferred_date=date(2026, 6, 15),
-            preferred_time=time(13, 0),
+            preferred_start_time=time(13, 0),
             message="Need a studio session",
             status=BookingRequest.Status.CONFIRMED,
         )
@@ -145,7 +194,7 @@ class CalendarBookingWorkflowTests(TestCase):
             )
         )
 
-    def test_request_without_preferred_time_does_not_create_booking(self):
+    def test_request_without_preferred_start_time_does_not_create_booking(self):
         booking_request = BookingRequest.objects.create(
             request_type=BookingRequest.RequestType.STUDIO,
             name="Studio Customer",

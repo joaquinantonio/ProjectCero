@@ -10,6 +10,8 @@ class EnquirySubmission(TimeStampedModel):
         GENERAL = "general", "General"
         MERCH = "merch", "Merch"
         PAYMENT = "payment", "Payment"
+        STUDIO = "studio", "Studio"
+        VENUE = "venue", "Venue"
 
     class Status(models.TextChoices):
         NEW = "new", "New"
@@ -26,6 +28,7 @@ class EnquirySubmission(TimeStampedModel):
 
     subject = models.CharField(max_length=200)
     preferred_date = models.DateField(blank=True, null=True)
+    preferred_start_time = models.TimeField(blank=True, null=True)
 
     related_event = models.ForeignKey(
         "events.Event",

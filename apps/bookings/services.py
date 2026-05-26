@@ -24,7 +24,8 @@ Name: {booking.name}
 Email: {booking.email}
 Phone: {booking.phone or "-"}
 Preferred date: {booking.preferred_date or "-"}
-Preferred time: {booking.preferred_time or "-"}
+Preferred start time: {booking.preferred_start_time or "-"}
+Preferred end time: {booking.preferred_end_time or "-"}
 Guest count: {booking.guest_count or "-"}
 Created at: {booking.created_at}
 
@@ -47,16 +48,17 @@ def send_booking_confirmation(booking):
     body = f"""
 Hi {booking.name},
 
-Thanks for getting in touch. We’ve received your {booking.get_request_type_display().lower()} request.
+Thanks for getting in touch. We've received your {booking.get_request_type_display().lower()} request.
 
 Reference: {booking.reference_code}
 Type: {booking.get_request_type_display()}
 {get_booking_service_line(booking)}
 Preferred date: {booking.preferred_date or "-"}
-Preferred time: {booking.preferred_time or "-"}
+Preferred start time: {booking.preferred_start_time or "-"}
+Preferred end time: {booking.preferred_end_time or "-"}
 Guest count: {booking.guest_count or "-"}
 
-We’ll review your request and get back to you soon.
+We'll review your request and get back to you soon.
 
 Message received:
 {booking.message}

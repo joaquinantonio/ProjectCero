@@ -41,7 +41,8 @@ class BookingRequest(TimeStampedModel):
     email = models.EmailField()
     phone = models.CharField(max_length=50, blank=True)
     preferred_date = models.DateField(blank=True, null=True)
-    preferred_time = models.TimeField(blank=True, null=True)
+    preferred_start_time = models.TimeField(blank=True, null=True)
+    preferred_end_time = models.TimeField(blank=True, null=True)
 
     guest_count = models.PositiveIntegerField(
         blank=True,

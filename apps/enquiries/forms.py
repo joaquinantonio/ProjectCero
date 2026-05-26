@@ -1,8 +1,11 @@
+from typing import cast
+
 from django import forms
 
 from apps.events.models import Event
 from apps.merch.models import MerchItem
 from .models import EnquirySubmission, ArtistEnquiry
+from .time_utils import get_time_choices
 
 
 
@@ -36,17 +39,21 @@ class BaseEnquiryForm(forms.ModelForm):
         if "preferred_date" in self.fields:
             self.fields["preferred_date"].widget = forms.DateInput(attrs={"type": "date"})
 
+        if "preferred_start_time" in self.fields:
+            self.fields["preferred_start_time"].widget = forms.Select(choices=get_time_choices())
+            self.fields["preferred_start_time"].label = "Preferred time"
+
         if "message" in self.fields:
             self.fields["message"].widget = forms.Textarea(attrs={"rows": 5})
 
         if "related_event" in self.fields:
-            self.fields["related_event"].queryset = Event.objects.filter(
+            cast(forms.ModelChoiceField, self.fields["related_event"]).queryset = Event.objects.filter(
                 status=Event.Status.PUBLISHED
             ).order_by("start_at", "title")
             self.fields["related_event"].required = False
 
         if "related_merch" in self.fields:
-            self.fields["related_merch"].queryset = MerchItem.objects.filter(
+            cast(forms.ModelChoiceField, self.fields["related_merch"]).queryset = MerchItem.objects.filter(
                 is_active=True
             ).order_by("display_order", "name")
             self.fields["related_merch"].required = False
@@ -68,6 +75,8 @@ class GeneralEnquiryForm(BaseEnquiryForm):
             "subject",
             "preferred_date",
             "related_event",
+            "related_merch",
+            "amount_text",
             "message",
         ]
 
@@ -77,57 +86,13 @@ class GeneralEnquiryForm(BaseEnquiryForm):
         self.fields["preferred_date"].help_text = "Optional."
         self.fields["related_event"].label = "Related event"
         self.fields["related_event"].help_text = "Optional."
+        self.fields["related_merch"].label = "Related merch"
+        self.fields["related_merch"].help_text = "Optional."
+        self.fields["amount_text"].label = "Amount / package"
+        self.fields["amount_text"].help_text = "Optional. Useful for payment follow-up or package discussions."
         self.fields["message"].help_text = "Tell us what you need."
         self.fields["message"].widget.attrs.update(
-            {"placeholder": "Share your question, collaboration idea, or request"}
-        )
-
-
-class MerchEnquiryForm(BaseEnquiryForm):
-    class Meta(BaseEnquiryForm.Meta):
-        model = EnquirySubmission
-        fields = [
-            "name",
-            "email",
-            "phone",
-            "subject",
-            "related_merch",
-            "message",
-        ]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["related_merch"].label = "Merchandise"
-        self.fields["related_merch"].help_text = "Optional."
-        self.fields["message"].help_text = "Tell us which item you are asking about and what you need."
-        self.fields["message"].widget.attrs.update(
-            {"placeholder": "Example: interested in availability, size, pre-order, or collection details"}
-        )
-
-
-class PaymentEnquiryForm(BaseEnquiryForm):
-    class Meta(BaseEnquiryForm.Meta):
-        model = EnquirySubmission
-        fields = [
-            "name",
-            "email",
-            "phone",
-            "subject",
-            "related_event",
-            "amount_text",
-            "message",
-        ]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["related_event"].label = "Related event"
-        self.fields["related_event"].help_text = "Optional."
-        self.fields["amount_text"].label = "Amount / package"
-        self.fields["amount_text"].help_text = "Optional. Example: RM50 deposit, RM120 package, or leave blank."
-        self.fields["amount_text"].widget.attrs.update({"placeholder": "Optional"})
-        self.fields["message"].help_text = "Add any payment details, proof notes, or questions."
-        self.fields["message"].widget.attrs.update(
-            {"placeholder": "Example: asking about deposit, balance payment, package pricing, or proof of transfer"}
+            {"placeholder": "Share your question, merch details, payment context, collaboration idea, or request"}
         )
 
 
@@ -158,3 +123,53 @@ class ArtistEnquiryForm(forms.ModelForm):
         if cleaned_data.get("website"):
             raise forms.ValidationError("Spam detected.")
         return cleaned_data
+
+
+class StudioEnquiryForm(BaseEnquiryForm):
+    class Meta(BaseEnquiryForm.Meta):
+        model = EnquirySubmission
+        fields = [
+            "name",
+            "email",
+            "phone",
+            "subject",
+            "preferred_date",
+            "preferred_start_time",
+            "message",
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["subject"].help_text = "A short summary of your studio session request."
+        self.fields["preferred_date"].help_text = "Preferred date for your session."
+        self.fields["preferred_start_time"].help_text = "Preferred time for your session (30-minute increments)."
+        self.fields["message"].help_text = "Tell us about your studio needs and project details."
+        self.fields["message"].widget.attrs.update(
+            {"placeholder": "Example: duration, equipment needs, type of project"}
+        )
+
+
+class VenueEnquiryForm(BaseEnquiryForm):
+    class Meta(BaseEnquiryForm.Meta):
+        model = EnquirySubmission
+        fields = [
+            "name",
+            "email",
+            "phone",
+            "subject",
+            "preferred_date",
+            "preferred_start_time",
+            "message",
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["subject"].help_text = "A short summary of your venue hire request."
+        self.fields["preferred_date"].help_text = "Preferred date for your event."
+        self.fields["preferred_start_time"].help_text = "Preferred time for your event (30-minute increments)."
+        self.fields["message"].help_text = "Tell us about your venue needs and event details."
+        self.fields["message"].widget.attrs.update(
+            {"placeholder": "Example: event type, guest count, duration, special requirements"}
+        )
+
+

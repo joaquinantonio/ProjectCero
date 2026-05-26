@@ -1,6 +1,7 @@
 from django import forms
 
 from .models import BookingRequest
+from apps.enquiries.time_utils import get_time_choices
 
 COUNTRY_CODE_CHOICES = [
     # Malaysia first
@@ -149,6 +150,8 @@ def build_preferred_time_choices():
             label = f"{display_hour}:{minute:02d} {suffix}"
             choices.append((value, label))
 
+    choices.append(("23:59", "11:59 PM (midnight next day)"))
+
     return choices
 
 
@@ -165,13 +168,15 @@ class BaseBookingRequestForm(forms.ModelForm):
             "email",
             "phone",
             "preferred_date",
-            "preferred_time",
+            "preferred_start_time",
+            "preferred_end_time",
             "guest_count",
             "message",
         ]
         widgets = {
             "preferred_date": forms.DateInput(attrs={"type": "date"}),
-            "preferred_time": forms.TimeInput(attrs={"type": "time"}),
+            "preferred_start_time": forms.TimeInput(attrs={"type": "time"}),
+            "preferred_end_time": forms.TimeInput(attrs={"type": "time"}),
             "message": forms.Textarea(attrs={"rows": 5}),
         }
 
@@ -196,10 +201,15 @@ class BaseBookingRequestForm(forms.ModelForm):
             self.fields["preferred_date"].label = "Preferred date"
             self.fields["preferred_date"].required = False
 
-        if "preferred_time" in self.fields:
-            self.fields["preferred_time"].label = "Preferred time"
-            self.fields["preferred_time"].required = False
-            self.fields["preferred_time"].help_text = "Optional."
+        if "preferred_start_time" in self.fields:
+            self.fields["preferred_start_time"].label = "Preferred start time"
+            self.fields["preferred_start_time"].required = False
+            self.fields["preferred_start_time"].help_text = "Optional."
+
+        if "preferred_end_time" in self.fields:
+            self.fields["preferred_end_time"].label = "Preferred end time"
+            self.fields["preferred_end_time"].required = False
+            self.fields["preferred_end_time"].help_text = "Optional."
 
         if "guest_count" in self.fields:
             self.fields["guest_count"].label = "Estimated guest count"
@@ -232,8 +242,19 @@ class CombinedBookingRequestForm(BaseBookingRequestForm):
         ),
     )
 
-    preferred_time = forms.TimeField(
-        required=False,
+    preferred_start_time = forms.TimeField(
+        required=True,
+        widget=forms.Select(
+            choices=build_preferred_time_choices(),
+            attrs={
+                "class": "js-compact-select",
+            },
+        ),
+        input_formats=["%H:%M"],
+    )
+
+    preferred_end_time = forms.TimeField(
+        required=True,
         widget=forms.Select(
             choices=build_preferred_time_choices(),
             attrs={
@@ -251,7 +272,8 @@ class CombinedBookingRequestForm(BaseBookingRequestForm):
             "phone_country_code",
             "phone",
             "preferred_date",
-            "preferred_time",
+            "preferred_start_time",
+            "preferred_end_time",
             "guest_count",
             "message",
         ]
@@ -297,11 +319,13 @@ class CombinedBookingRequestForm(BaseBookingRequestForm):
         self.fields["preferred_date"].required = True
         self.fields["preferred_date"].help_text = "Required."
 
-        self.fields["preferred_time"].label = "Preferred time"
-        self.fields["preferred_time"].required = False
-        self.fields["preferred_time"].help_text = (
-            "Optional. Choose a preferred time from the dropdown."
-        )
+        self.fields["preferred_start_time"].label = "Preferred start time"
+        self.fields["preferred_start_time"].required = True
+        self.fields["preferred_start_time"].help_text = ""
+
+        self.fields["preferred_end_time"].label = "Preferred end time"
+        self.fields["preferred_end_time"].required = True
+        self.fields["preferred_end_time"].help_text = ""
 
         self.fields["guest_count"].required = False
         self.fields["guest_count"].help_text = "Required for venue bookings."
@@ -325,6 +349,8 @@ class CombinedBookingRequestForm(BaseBookingRequestForm):
 
         request_type = cleaned_data.get("request_type")
         preferred_date = cleaned_data.get("preferred_date")
+        preferred_start_time = cleaned_data.get("preferred_start_time")
+        preferred_end_time = cleaned_data.get("preferred_end_time")
         guest_count = cleaned_data.get("guest_count")
 
         country_code = cleaned_data.get("phone_country_code")
@@ -346,6 +372,44 @@ class CombinedBookingRequestForm(BaseBookingRequestForm):
                 "guest_count",
                 "Please provide an estimated guest count for venue bookings.",
             )
+
+        # Validate time range if both times are provided
+        if preferred_start_time and preferred_end_time:
+            if preferred_end_time <= preferred_start_time:
+                self.add_error(
+                    "preferred_end_time",
+                    "End time must be after start time.",
+                )
+
+        # Check for calendar conflicts
+        if preferred_date and preferred_start_time and preferred_end_time:
+            from datetime import datetime
+            from django.utils import timezone
+            from .availability import find_conflicting_block
+
+            # Build datetime objects for conflict checking
+            naive_start = datetime.combine(preferred_date, preferred_start_time)
+            naive_end = datetime.combine(preferred_date, preferred_end_time)
+
+            current_timezone = timezone.get_current_timezone()
+            if timezone.is_naive(naive_start):
+                aware_start = timezone.make_aware(naive_start, current_timezone)
+                aware_end = timezone.make_aware(naive_end, current_timezone)
+            else:
+                aware_start = naive_start
+                aware_end = naive_end
+
+            # Check for conflicts
+            conflict = find_conflicting_block(
+                start_at=aware_start,
+                end_at=aware_end,
+            )
+
+            if conflict:
+                self.add_error(
+                    "preferred_start_time",
+                    "This time slot is not available. Please choose another time.",
+                )
 
         if phone:
             normalized_phone = (

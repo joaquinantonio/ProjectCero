@@ -91,6 +91,7 @@ class EnquirySubmissionAdmin(
         "phone",
         "subject",
         "preferred_date",
+        "preferred_start_time",
         "amount_text",
         "message",
     )
@@ -104,6 +105,8 @@ class EnquirySubmissionAdmin(
             EnquirySubmission.EnquiryType.GENERAL: "neutral",
             EnquirySubmission.EnquiryType.MERCH: "accent",
             EnquirySubmission.EnquiryType.PAYMENT: "info",
+            EnquirySubmission.EnquiryType.STUDIO: "success",
+            EnquirySubmission.EnquiryType.VENUE: "success",
         }
         return render_admin_badge(
             obj.get_enquiry_type_display(),
@@ -150,7 +153,8 @@ class EnquirySubmissionAdmin(
                         "enquiry_type",
                         "subject",
                         ("related_event", "related_merch"),
-                        ("preferred_date", "amount_text"),
+                        ("preferred_date", "preferred_start_time"),
+                        "amount_text",
                     ),
                     "description": "Submitted enquiry details. Related event or merch item can be linked internally if needed.",
                 },
@@ -188,6 +192,14 @@ class EnquirySubmissionAdmin(
         if "related_merch" in form.base_fields:
             form.base_fields["related_merch"].label = "Related merch item"
             form.base_fields["related_merch"].help_text = "Optional."
+
+        if "preferred_date" in form.base_fields:
+            form.base_fields["preferred_date"].label = "Preferred date"
+            form.base_fields["preferred_date"].help_text = "Optional."
+
+        if "preferred_start_time" in form.base_fields:
+            form.base_fields["preferred_start_time"].label = "Preferred start time"
+            form.base_fields["preferred_start_time"].help_text = "Optional. In 30-minute increments."
 
         if "amount_text" in form.base_fields:
             form.base_fields["amount_text"].label = "Amount / package"

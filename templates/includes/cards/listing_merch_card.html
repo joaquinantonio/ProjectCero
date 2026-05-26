@@ -41,8 +41,8 @@
           Buy Now
         </a>
       {% else %}
-        <a class="cero-text-link" href="{% url 'enquiries:merch' %}?item={{ item.slug }}">
-          Enquire →
+        <a class="cero-text-link" href="{% url 'enquiries:general' %}?item={{ item.slug }}">
+          General Enquiry →
         </a>
       {% endif %}
     </div>

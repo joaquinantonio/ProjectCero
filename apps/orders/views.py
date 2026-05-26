@@ -7,7 +7,7 @@ from apps.events.models import Event, TicketType
 from apps.merch.models import MerchItem
 
 from .audit import record_order_created
-from .forms import PublicOrderForm
+from .forms import PublicOrderForm, PaymentProofForm
 from .models import Order, OrderItem
 from .services import (
     send_order_admin_notification,
@@ -166,10 +166,44 @@ def order_success_view(request, reference_code):
         reference_code=reference_code,
     )
 
+    # Check if a payment proof already exists
+    payment_proof = getattr(order, 'payment_proof', None)
+
+    if request.method == "POST":
+        # Handle payment proof upload
+        form = PaymentProofForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            # If a proof already exists, update it; otherwise create new
+            if payment_proof:
+                payment_proof_obj = form.save(commit=False)
+                payment_proof_obj.order = order
+                payment_proof_obj.save()
+            else:
+                payment_proof_obj = form.save(commit=False)
+                payment_proof_obj.order = order
+                payment_proof_obj.save()
+
+            messages.success(
+                request,
+                "Thank you! Your payment proof has been uploaded and will be reviewed shortly.",
+            )
+            # Refresh the proof after save
+            payment_proof = payment_proof_obj
+        else:
+            messages.error(
+                request,
+                "There was an error uploading your payment proof. Please try again.",
+            )
+    else:
+        form = PaymentProofForm()
+
     return render(
         request,
         "orders/order_success.html",
         {
             "order": order,
+            "payment_proof": payment_proof,
+            "form": form,
         },
     )

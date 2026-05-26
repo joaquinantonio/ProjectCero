@@ -67,20 +67,21 @@
 
       <div class="cero-artist-listing-grid">
         {% for artist in artists %}
-          <article class="cero-card">
+          <article class="cero-card cero-listing-artist-card">
             {% if artist.image %}
-              <a href="{% url 'artists:artist_detail' artist.slug %}">
-                <img class="service-image" src="{{ artist.image.url }}" alt="{{ artist.name }}">
-              </a>
+              <div class="cero-listing-artist-card__media">
+                <a href="{% url 'artists:artist_detail' artist.slug %}">
+                  <img src="{{ artist.image.url }}" alt="{{ artist.name }}">
+                </a>
+              </div>
             {% else %}
-              <div class="cero-detail-hero__placeholder" style="min-height: 280px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 8px;">
-                <div style="text-align: center;">
-                  <strong style="font-size: 2rem;">{{ artist.name|slice:":1" }}</strong>
-                  <p style="margin-top: 0.5rem; color: #999;">Artist</p>
-                </div>
+              <div class="cero-listing-artist-card__media cero-listing-artist-card__media--placeholder">
+                <span>{{ artist.name|slice:":1" }}</span>
               </div>
             {% endif %}
-            <h3><a href="{% url 'artists:artist_detail' artist.slug %}">{{ artist.name }}</a></h3>
+            <div class="cero-listing-artist-card__body">
+              <h3><a href="{% url 'artists:artist_detail' artist.slug %}">{{ artist.name }}</a></h3>
+            </div>
           </article>
         {% empty %}
           <article class="cero-card cero-listing-empty">

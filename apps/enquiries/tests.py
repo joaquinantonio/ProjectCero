@@ -78,11 +78,11 @@ class EnquiryFlowTests(TestCase):
         self.assertEqual(EnquirySubmission.objects.count(), 0)
         self.assertEqual(len(mail.outbox), 0)
 
-    def test_merch_enquiry_prefills_related_merch_from_query_string(self):
+    def test_general_enquiry_prefills_related_merch_from_query_string(self):
         item = self.create_merch_item()
 
         response = self.client.get(
-            reverse("enquiries:merch"),
+            reverse("enquiries:general"),
             {"item": item.slug},
         )
 
@@ -90,14 +90,14 @@ class EnquiryFlowTests(TestCase):
         self.assertEqual(response.context["form"].initial["related_merch"], item.pk)
         self.assertEqual(
             response.context["form"].initial["subject"],
-            f"Merch enquiry: {item.name}",
+            f"General enquiry: {item.name}",
         )
 
-    def test_payment_enquiry_prefills_related_event_from_query_string(self):
+    def test_general_enquiry_prefills_related_event_from_query_string(self):
         event = self.create_event()
 
         response = self.client.get(
-            reverse("enquiries:payment"),
+            reverse("enquiries:general"),
             {"event": event.slug},
         )
 
@@ -105,14 +105,14 @@ class EnquiryFlowTests(TestCase):
         self.assertEqual(response.context["form"].initial["related_event"], event.pk)
         self.assertEqual(
             response.context["form"].initial["subject"],
-            f"Payment enquiry: {event.title}",
+            f"General enquiry: {event.title}",
         )
 
-    def test_payment_enquiry_creates_payment_type_record(self):
+    def test_general_enquiry_can_capture_amount_context(self):
         event = self.create_event()
 
         response = self.client.post(
-            reverse("enquiries:payment"),
+            reverse("enquiries:general"),
             {
                 "name": "Payment User",
                 "email": "payment@example.com",
@@ -120,13 +120,13 @@ class EnquiryFlowTests(TestCase):
                 "subject": "Payment question",
                 "related_event": event.pk,
                 "amount_text": "RM100",
-                "message": "I want to ask about payment.",
+                "message": "I want to ask about payment follow-up.",
             },
         )
 
         self.assertRedirects(response, reverse("enquiries:success"))
 
         enquiry = EnquirySubmission.objects.get()
-        self.assertEqual(enquiry.enquiry_type, EnquirySubmission.EnquiryType.PAYMENT)
+        self.assertEqual(enquiry.enquiry_type, EnquirySubmission.EnquiryType.GENERAL)
         self.assertEqual(enquiry.related_event, event)
         self.assertEqual(enquiry.amount_text, "RM100")
