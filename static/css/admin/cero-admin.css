@@ -416,9 +416,9 @@ th {
 
 .cero-dashboard-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.5fr);
+  grid-template-columns: 1fr;
   gap: 1.25rem;
-  align-items: end;
+  align-items: start;
   margin-bottom: 1.25rem;
   padding: clamp(1.3rem, 3vw, 2.2rem);
   border: 1px solid var(--cero-admin-line);
@@ -456,7 +456,12 @@ th {
   line-height: 1.6;
 }
 
-.cero-dashboard-hero__actions,
+.cero-dashboard-hero__actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.6rem;
+}
+
 .cero-calendar-legend {
   display: flex;
   gap: 0.6rem;
@@ -792,7 +797,10 @@ th {
     padding-top: 1rem;
   }
 
-  .cero-dashboard-hero,
+  .cero-dashboard-hero {
+    grid-template-columns: 1fr;
+  }
+
   .cero-dashboard-section-grid {
     grid-template-columns: 1fr;
   }
@@ -801,9 +809,12 @@ th {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .cero-calendar-legend,
-  .cero-dashboard-hero__actions {
+  .cero-calendar-legend {
     justify-content: flex-start;
+  }
+
+  .cero-dashboard-hero__actions {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   }
 }
 
