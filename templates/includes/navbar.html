@@ -90,22 +90,30 @@
       </div>
 
       <div class="cero-nav-actions">
-        <a
-          class="cero-nav-calendar {% if request.resolver_match.namespace == 'events' and request.resolver_match.url_name == 'calendar' %}is-active{% endif %}"
-          href="{% url 'events:calendar' %}"
-          {% if request.resolver_match.namespace == 'events' and request.resolver_match.url_name == 'calendar' %}aria-current="page"{% endif %}
-        >
-          Calendar
-        </a>
+         <a
+           class="cero-nav-calendar {% if request.resolver_match.namespace == 'events' and request.resolver_match.url_name == 'calendar' %}is-active{% endif %}"
+           href="{% url 'events:calendar' %}"
+           {% if request.resolver_match.namespace == 'events' and request.resolver_match.url_name == 'calendar' %}aria-current="page"{% endif %}
+         >
+           Calendar
+         </a>
 
-        <a
-          class="cero-nav-cta {% if request.resolver_match.namespace == 'bookings' %}is-active{% endif %}"
-          href="{% url 'bookings:landing' %}"
-          {% if request.resolver_match.namespace == 'bookings' %}aria-current="page"{% endif %}
-        >
-          Book
-        </a>
-      </div>
+         <a
+           class="cero-nav-cta {% if request.resolver_match.namespace == 'bookings' %}is-active{% endif %}"
+           href="{% url 'bookings:landing' %}"
+           {% if request.resolver_match.namespace == 'bookings' %}aria-current="page"{% endif %}
+         >
+           Book
+         </a>
+
+         <a
+           class="cero-nav-admin"
+           href="/admin/"
+           aria-label="Admin Login"
+         >
+           Admin
+         </a>
+       </div>
     </nav>
   </div>
 </header>
