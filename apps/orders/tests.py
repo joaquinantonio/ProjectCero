@@ -15,11 +15,61 @@ from .audit import record_order_created
 from .models import Order, OrderHistory, OrderItem, PaymentProof
 from .workflow import change_order_status
 
+@override_settings(
+    EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+    ORDER_NOTIFICATION_EMAIL="orders@example.com",
+    DEFAULT_FROM_EMAIL="CeroPJ <no-reply@example.com>",
+    PUBLIC_ORDERS_ENABLED=False,
+)
+class PublicOrdersDisabledTests(TestCase):
+    def test_public_merch_order_route_returns_404_when_disabled(self):
+        item = MerchItem.objects.create(
+            name="Cero Tee",
+            price_amount="50.00",
+            currency="MYR",
+            is_active=True,
+        )
+
+        response = self.client.get(
+            reverse("orders:create_merch_order", args=[item.slug])
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_public_ticket_order_route_returns_404_when_disabled(self):
+        category = EventCategory.objects.create(
+            name="Music",
+            is_active=True,
+        )
+
+        event = Event.objects.create(
+            category=category,
+            title="Live Night",
+            start_at=timezone.now() + timedelta(days=7),
+            status=Event.Status.PUBLISHED,
+        )
+
+        ticket_type = TicketType.objects.create(
+            event=event,
+            name="General Admission",
+            price_amount="30.00",
+            currency="MYR",
+            quantity_total=10,
+            quantity_sold=0,
+            is_active=True,
+        )
+
+        response = self.client.get(
+            reverse("orders:create_ticket_order", args=[ticket_type.pk])
+        )
+
+        self.assertEqual(response.status_code, 404)
 
 @override_settings(
     EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
     ORDER_NOTIFICATION_EMAIL="orders@example.com",
     DEFAULT_FROM_EMAIL="CeroPJ <no-reply@example.com>",
+    PUBLIC_ORDERS_ENABLED=True,
 )
 class OrderWorkflowTests(TestCase):
     def create_merch_item(

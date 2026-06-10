@@ -157,9 +157,16 @@
                     <p>{{ ticket.quantity_available }} available</p>
                   </div>
                   <strong>{{ ticket.currency }} {{ ticket.price_amount }}</strong>
-                  <a class="btn btn-primary" href="{% url 'orders:create_ticket_order' ticket.id %}">
-                    Buy {{ ticket.name }}
-                  </a>
+
+                  {% if event.ticket_url %}
+                    <a class="btn btn-primary" href="{{ event.ticket_url }}">
+                      Tickets / RSVP
+                    </a>
+                  {% else %}
+                    <a class="btn btn-secondary" href="{% url 'enquiries:general' %}?event={{ event.slug }}">
+                      Enquire About Tickets
+                    </a>
+                  {% endif %}
                 </article>
               {% endfor %}
             </div>
