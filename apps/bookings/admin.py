@@ -1,6 +1,4 @@
-from django.contrib import admin, messages
-from django.core.exceptions import ValidationError
-from django.db import models
+from django.contrib import admin
 from django.db.models import Count
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -12,229 +10,29 @@ from apps.core.admin import (
     ReadonlyOnChangeAdminMixin,
     SuperuserDeleteOnlyAdminMixin,
     TimestampedAdmin,
-    make_bulk_update_action,
     render_admin_badge,
 )
 
+from .admin_actions import (
+    mark_bookings_cancelled,
+    mark_bookings_completed,
+    mark_bookings_confirmed,
+    mark_bookings_no_show,
+    mark_bookings_tentative,
+    mark_cancelled,
+    mark_closed,
+    mark_contacted,
+    mark_in_review,
+)
+from .admin_filters import (
+    BookingRequestCalendarStatusFilter,
+    BookingScheduleFilter,
+)
 from .calendar_workflow import (
     get_booking_initial_from_request,
     get_default_booking_resource,
 )
 from .models import Booking, BookingRequest, BookingResource, ScheduleCalendar
-
-
-mark_in_review = make_bulk_update_action(
-    action_name="mark_in_review",
-    field_name="status",
-    value=BookingRequest.Status.IN_REVIEW,
-    description="Mark selected requests as In Review",
-    success_message="{updated} request(s) marked as In Review.",
-)
-
-mark_contacted = make_bulk_update_action(
-    action_name="mark_contacted",
-    field_name="status",
-    value=BookingRequest.Status.CONTACTED,
-    description="Mark selected requests as Contacted",
-    success_message="{updated} request(s) marked as Contacted.",
-)
-
-mark_closed = make_bulk_update_action(
-    action_name="mark_closed",
-    field_name="status",
-    value=BookingRequest.Status.CLOSED,
-    description="Mark selected requests as Closed",
-    success_message="{updated} request(s) marked as Closed.",
-)
-
-mark_cancelled = make_bulk_update_action(
-    action_name="mark_cancelled",
-    field_name="status",
-    value=BookingRequest.Status.CANCELLED,
-    description="Mark selected requests as Cancelled",
-    success_message="{updated} request(s) marked as Cancelled.",
-)
-
-
-def set_booking_status_with_validation(modeladmin, request, queryset, target_status):
-    updated = 0
-    skipped = 0
-    errors = []
-
-    for booking in queryset:
-        booking.status = target_status
-
-        try:
-            if target_status in Booking.BLOCKING_STATUSES:
-                booking.full_clean()
-
-            booking.save(update_fields=["status", "updated_at"])
-            updated += 1
-
-        except ValidationError as exc:
-            skipped += 1
-            error_text = exc.messages[0] if exc.messages else str(exc)
-            errors.append(f"{booking.reference_code}: {error_text}")
-
-    if updated:
-        modeladmin.message_user(
-            request,
-            f"{updated} booking(s) updated to {Booking.Status(target_status).label}.",
-            messages.SUCCESS,
-        )
-
-    if skipped:
-        modeladmin.message_user(
-            request,
-            f"{skipped} booking(s) could not be updated because of validation errors.",
-            messages.WARNING,
-        )
-
-    for error in errors[:5]:
-        modeladmin.message_user(request, error, messages.ERROR)
-
-    if len(errors) > 5:
-        modeladmin.message_user(
-            request,
-            f"{len(errors) - 5} additional validation error(s) hidden.",
-            messages.ERROR,
-        )
-
-
-@admin.action(description="Mark selected bookings as Tentative")
-def mark_bookings_tentative(modeladmin, request, queryset):
-    set_booking_status_with_validation(
-        modeladmin,
-        request,
-        queryset,
-        Booking.Status.TENTATIVE,
-    )
-
-
-@admin.action(description="Mark selected bookings as Confirmed")
-def mark_bookings_confirmed(modeladmin, request, queryset):
-    set_booking_status_with_validation(
-        modeladmin,
-        request,
-        queryset,
-        Booking.Status.CONFIRMED,
-    )
-
-
-@admin.action(description="Mark selected bookings as Cancelled")
-def mark_bookings_cancelled(modeladmin, request, queryset):
-    set_booking_status_with_validation(
-        modeladmin,
-        request,
-        queryset,
-        Booking.Status.CANCELLED,
-    )
-
-
-@admin.action(description="Mark selected bookings as Completed")
-def mark_bookings_completed(modeladmin, request, queryset):
-    set_booking_status_with_validation(
-        modeladmin,
-        request,
-        queryset,
-        Booking.Status.COMPLETED,
-    )
-
-
-@admin.action(description="Mark selected bookings as No Show")
-def mark_bookings_no_show(modeladmin, request, queryset):
-    set_booking_status_with_validation(
-        modeladmin,
-        request,
-        queryset,
-        Booking.Status.NO_SHOW,
-    )
-
-
-class BookingRequestCalendarStatusFilter(admin.SimpleListFilter):
-    title = "calendar status"
-    parameter_name = "calendar_status"
-
-    def lookups(self, request, model_admin):
-        return (
-            ("has_booking", "Has calendar booking"),
-            ("needs_booking", "Needs calendar booking"),
-            ("missing_time", "Missing preferred date/time"),
-        )
-
-    def queryset(self, request, queryset):
-        value = self.value()
-
-        if value == "has_booking":
-            return queryset.filter(bookings__isnull=False).distinct()
-
-        if value == "needs_booking":
-            return queryset.filter(
-                request_type__in=[
-                    BookingRequest.RequestType.STUDIO,
-                    BookingRequest.RequestType.VENUE,
-                ],
-                bookings__isnull=True,
-                preferred_date__isnull=False,
-                preferred_start_time__isnull=False,
-                preferred_end_time__isnull=False,
-            ).distinct()
-
-        if value == "missing_time":
-            return queryset.filter(
-                request_type__in=[
-                    BookingRequest.RequestType.STUDIO,
-                    BookingRequest.RequestType.VENUE,
-                ],
-                bookings__isnull=True,
-            ).filter(
-                models.Q(preferred_date__isnull=True)
-                | models.Q(preferred_start_time__isnull=True)
-                | models.Q(preferred_end_time__isnull=True)
-            ).distinct()
-
-        return queryset
-
-
-class BookingScheduleFilter(admin.SimpleListFilter):
-    title = "schedule timing"
-    parameter_name = "schedule_timing"
-
-    def lookups(self, request, model_admin):
-        return (
-            ("upcoming", "Upcoming"),
-            ("past", "Past"),
-            ("today", "Today"),
-            ("this_week", "This week"),
-            ("blocking", "Blocking availability"),
-        )
-
-    def queryset(self, request, queryset):
-        value = self.value()
-        now = timezone.localtime()
-        today = now.date()
-
-        if value == "upcoming":
-            return queryset.filter(scheduled_end_at__gte=now)
-
-        if value == "past":
-            return queryset.filter(scheduled_end_at__lt=now)
-
-        if value == "today":
-            return queryset.filter(scheduled_start_at__date=today)
-
-        if value == "this_week":
-            start_of_week = today - timezone.timedelta(days=today.weekday())
-            end_of_week = start_of_week + timezone.timedelta(days=7)
-            return queryset.filter(
-                scheduled_start_at__date__gte=start_of_week,
-                scheduled_start_at__date__lt=end_of_week,
-            )
-
-        if value == "blocking":
-            return queryset.filter(status__in=Booking.BLOCKING_STATUSES)
-
-        return queryset
 
 
 @admin.register(BookingResource)
@@ -408,7 +206,6 @@ class BookingAdmin(
 
         super().save_model(request, obj, form, change)
 
-        # when an admin creates/saves a Booking linked to a request, the request automatically becomes: Converted to Booking
         if obj.request_id and obj.request.status != BookingRequest.Status.CONVERTED:
             obj.request.status = BookingRequest.Status.CONVERTED
             obj.request.save(update_fields=["status", "updated_at"])
@@ -658,9 +455,9 @@ class BookingRequestAdmin(
             return render_admin_badge(label, "success")
 
         if obj.status == BookingRequest.Status.CONVERTED:
-            return render_admin_badge("Booking Missing", "danger")
+            return render_admin_badge("Booking missing", "danger")
 
-        return render_admin_badge("No Booking", "neutral")
+        return render_admin_badge("No booking", "neutral")
 
     @admin.display(description="Calendar Action")
     def create_booking_link(self, obj):

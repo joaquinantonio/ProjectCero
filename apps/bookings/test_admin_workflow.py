@@ -6,7 +6,8 @@ from django.contrib.messages.storage.fallback import FallbackStorage
 from django.test import RequestFactory, TestCase
 from django.utils import timezone
 
-from .admin import BookingAdmin, set_booking_status_with_validation
+from .admin import BookingAdmin
+from .admin_actions import set_booking_status_with_validation
 from .availability import get_unavailable_blocks
 from .models import Booking, BookingRequest, BookingResource
 
