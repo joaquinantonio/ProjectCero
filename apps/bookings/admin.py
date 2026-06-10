@@ -1,6 +1,5 @@
 from django.contrib import admin
 from django.db.models import Count
-from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html, format_html_join
@@ -13,6 +12,7 @@ from apps.core.admin import (
     render_admin_badge,
 )
 
+from . import admin_resource, admin_schedule  # noqa: F401
 from .admin_actions import (
     mark_bookings_cancelled,
     mark_bookings_completed,
@@ -32,24 +32,7 @@ from .calendar_workflow import (
     get_booking_initial_from_request,
     get_default_booking_resource,
 )
-from .models import Booking, BookingRequest, BookingResource, ScheduleCalendar
-
-
-@admin.register(BookingResource)
-class BookingResourceAdmin(
-    SuperuserDeleteOnlyAdminMixin,
-    TimestampedAdmin,
-):
-    list_display = (
-        "name",
-        "is_active",
-        "display_order",
-        "updated_at",
-    )
-    list_filter = ("is_active",)
-    search_fields = ("name", "description")
-    prepopulated_fields = {"slug": ("name",)}
-    ordering = ("display_order", "name")
+from .models import Booking, BookingRequest
 
 
 @admin.register(Booking)
@@ -643,31 +626,3 @@ class BookingRequestAdmin(
             form.base_fields["message"].widget.attrs["rows"] = 6
 
         return form
-
-
-@admin.register(ScheduleCalendar)
-class ScheduleCalendarAdmin(admin.ModelAdmin):
-    def changelist_view(self, request, extra_context=None):
-        return redirect("admin:schedule_calendar")
-
-    def has_add_permission(self, request):
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        return (
-            request.user.is_superuser
-            or request.user.has_perm("bookings.view_bookingrequest")
-            or request.user.has_perm("bookings.view_booking")
-            or request.user.has_perm("events.view_event")
-        )
-
-    def has_delete_permission(self, request, obj=None):
-        return False
-
-    def has_view_permission(self, request, obj=None):
-        return (
-            request.user.is_superuser
-            or request.user.has_perm("bookings.view_bookingrequest")
-            or request.user.has_perm("bookings.view_booking")
-            or request.user.has_perm("events.view_event")
-        )
