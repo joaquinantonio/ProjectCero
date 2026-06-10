@@ -1,0 +1,39 @@
+{% extends "admin/base.html" %}
+{% load i18n static %}
+
+{% block title %}
+  {% if title %}{{ title }} | {% endif %}{{ site_title|default:_("CeroPJ Admin") }}
+{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'css/admin/cero-admin.css' %}">
+  <link rel="stylesheet" href="{% static 'css/admin/cero-admin-theme-modes.css' %}">
+  <link rel="stylesheet" href="{% static 'css/admin/cero-admin-background-cleanup.css' %}">
+{% endblock %}
+
+{% block branding %}
+  <div class="cero-admin-brand">
+    <a href="{% url 'admin:index' %}" class="cero-admin-brand__link" aria-label="{{ site_header|default:'CeroPJ Admin' }}">
+      <img src="{% static 'images/projectcero-admin-mark.svg' %}" alt="" class="cero-admin-brand__mark">
+      <span class="cero-admin-brand__copy">
+        <strong>{{ site_header|default:_("CeroPJ Admin") }}</strong>
+        <small>Website operations · bookings · content</small>
+      </span>
+    </a>
+  </div>
+  {% if user.is_anonymous %}
+    {% include "admin/color_theme_toggle.html" %}
+  {% endif %}
+{% endblock %}
+
+{% block nav-global %}
+  <nav class="cero-admin-toplinks" aria-label="Admin shortcuts">
+    <a href="{% url 'admin:index' %}">Dashboard</a>
+    <a href="{% url 'admin:schedule_calendar' %}">Calendar</a>
+    <a href="{% url 'admin:bookings_bookingrequest_changelist' %}">Bookings</a>
+    <a href="{% url 'admin:events_event_changelist' %}">Events</a>
+    <a href="{% url 'admin:news_newspost_changelist' %}">News</a>
+    <a href="/" target="_blank" rel="noopener">View site</a>
+  </nav>
+{% endblock %}

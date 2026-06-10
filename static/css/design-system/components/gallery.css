@@ -1,0 +1,68 @@
+/* Future-ready image gallery placeholder */
+.cero-gallery-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr 0.75fr;
+  grid-auto-rows: minmax(190px, 22vw);
+  gap: 1rem;
+}
+
+.cero-gallery-tile {
+  position: relative;
+  display: flex;
+  align-items: end;
+  min-height: 190px;
+  padding: 1rem;
+  border: 1px solid rgba(255,255,255,0.13);
+  border-radius: 26px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(142, 240, 199, 0.13), transparent 32%),
+    linear-gradient(145deg, #1a2027, #080a0d);
+  box-shadow: 0 20px 55px rgba(0,0,0,0.24);
+}
+
+.cero-gallery-tile::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, transparent 20%, rgba(0,0,0,0.75)),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255,255,255,0.035) 0,
+      rgba(255,255,255,0.035) 1px,
+      transparent 1px,
+      transparent 58px
+    );
+  opacity: 0.82;
+}
+
+.cero-gallery-tile--large {
+  grid-row: span 2;
+}
+
+.cero-gallery-tile--studio {
+  background:
+    radial-gradient(circle at 75% 18%, rgba(142, 240, 199, 0.16), transparent 30%),
+    linear-gradient(145deg, #151b22, #080a0d);
+}
+
+.cero-gallery-tile--community {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,0.12), transparent 28%),
+    linear-gradient(145deg, #1f252d, #080a0d);
+}
+
+.cero-gallery-tile--backstage {
+  background:
+    radial-gradient(circle at 45% 10%, rgba(142, 240, 199, 0.1), transparent 30%),
+    linear-gradient(145deg, #111820, #080a0d);
+}
+
+.cero-gallery-tile span {
+  position: relative;
+  color: var(--text);
+  font-size: clamp(1.05rem, 2vw, 1.5rem);
+  font-weight: 850;
+  letter-spacing: -0.035em;
+}

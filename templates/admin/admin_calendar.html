@@ -1,0 +1,117 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.css">
+{% endblock %}
+
+{% block content %}
+  <div class="cero-admin-calendar-page">
+    <section class="cero-dashboard-hero cero-dashboard-hero--compact">
+      <div>
+        <p class="cero-admin-kicker">Schedule</p>
+        <h1>{{ title }}</h1>
+        <p>
+          Internal view for events, studio bookings, and venue bookings.
+          Business hours: {{ business_hours_text }}.
+        </p>
+      </div>
+
+      <div class="cero-calendar-legend">
+        <span><i class="cero-dot cero-dot--event"></i> Events</span>
+        <span><i class="cero-dot cero-dot--studio"></i> Studio bookings</span>
+        <span><i class="cero-dot cero-dot--venue"></i> Venue bookings</span>
+      </div>
+    </section>
+
+    <section class="cero-admin-calendar-card">
+      <div id="admin-calendar"></div>
+    </section>
+  </div>
+{% endblock %}
+
+{% block footer %}
+  {{ block.super }}
+
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const calendarEl = document.getElementById("admin-calendar");
+
+      if (!calendarEl) {
+        console.error("Admin calendar element not found.");
+        return;
+      }
+
+      if (typeof FullCalendar === "undefined") {
+        console.error("FullCalendar did not load.");
+        return;
+      }
+
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: "timeGridWeek",
+        height: "auto",
+        nowIndicator: true,
+        allDaySlot: false,
+
+        slotMinTime: "11:00:00",
+        slotMaxTime: "24:00:00",
+        slotDuration: "00:30:00",
+
+        businessHours: {
+          daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+          startTime: "11:00",
+          endTime: "24:00"
+        },
+
+        headerToolbar: {
+          left: "prev,next today",
+          center: "title",
+          right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek"
+        },
+
+        buttonText: {
+          today: "Today",
+          month: "Month",
+          week: "Week",
+          day: "Day",
+          list: "List"
+        },
+
+        dayMaxEventRows: 4,
+        eventDisplay: "block",
+        displayEventEnd: true,
+
+        eventTimeFormat: {
+          hour: "numeric",
+          minute: "2-digit",
+          meridiem: "short"
+        },
+
+        events: "{% url 'admin:schedule_calendar_feed' %}"
+      });
+
+      calendar.render();
+
+      function refreshCalendarSize() {
+        window.setTimeout(function () {
+          calendar.updateSize();
+        }, 150);
+      }
+
+      window.addEventListener("resize", refreshCalendarSize);
+
+      const navToggle = document.getElementById("toggle-nav-sidebar");
+      if (navToggle) {
+        navToggle.addEventListener("click", refreshCalendarSize);
+      }
+
+      const mainEl = document.getElementById("main");
+      if (mainEl && "ResizeObserver" in window) {
+        const resizeObserver = new ResizeObserver(refreshCalendarSize);
+        resizeObserver.observe(mainEl);
+      }
+    });
+  </script>
+{% endblock %}

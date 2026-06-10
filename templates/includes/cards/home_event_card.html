@@ -1,0 +1,37 @@
+<article class="cero-card cero-event-card">
+  {% if event.poster %}
+    <a class="cero-event-card__media" href="{% url 'events:event_detail' event.slug %}">
+      <img src="{{ event.poster.url }}" alt="{{ event.title }}">
+    </a>
+  {% else %}
+    <a class="cero-event-card__media cero-event-card__media--date" href="{% url 'events:event_detail' event.slug %}">
+      <strong>{{ event.start_at|date:"d" }}</strong>
+      <span>{{ event.start_at|date:"M Y" }}</span>
+    </a>
+  {% endif %}
+
+  <div class="cero-event-card__body">
+    <p class="cero-card__label">
+      {{ event.start_at|date:"d M Y" }}
+      {% if event.time_note %}
+        · {{ event.time_note }}
+      {% else %}
+        · {{ event.start_at|time:"g:i A" }}
+      {% endif %}
+    </p>
+
+    <h3>
+      <a href="{% url 'events:event_detail' event.slug %}">{{ event.title }}</a>
+    </h3>
+
+    {% if event.location_text %}
+      <p class="cero-muted">{{ event.location_text }}</p>
+    {% endif %}
+
+    {% if event.short_description %}
+      <p class="cero-card__copy">{{ event.short_description }}</p>
+    {% endif %}
+
+    <a class="cero-text-link" href="{% url 'events:event_detail' event.slug %}">View event →</a>
+  </div>
+</article>

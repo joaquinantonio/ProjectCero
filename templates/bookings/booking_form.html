@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+
+{% block extra_head %}
+  {{ block.super }}
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+
+  {% if show_availability_calendar %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.css">
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="cero-conversion-page cero-booking-request-page">
+  <section class="cero-conversion-hero">
+    <div class="container cero-conversion-hero__grid">
+      <div>
+        <p class="cero-kicker">Bookings</p>
+        <h1>{{ page_title }}</h1>
+        <p>{{ intro_text }}</p>
+      </div>
+
+      <aside class="cero-conversion-hero__panel">
+        <p class="cero-card__label">Request details</p>
+        <h2>Share enough context for a clear response.</h2>
+        <p>
+          Include the date, time, purpose, expected setup, and any practical notes. This is a request form, not an automatic confirmed booking.
+        </p>
+      </aside>
+    </div>
+  </section>
+
+  <section class="cero-section cero-section--tight">
+    <div class="container cero-booking-form-layout">
+
+      {% if show_availability_calendar %}
+        <section class="cero-card cero-calendar-card">
+          <div class="cero-calendar-card__header">
+            <div>
+              <p class="cero-card__label">Availability</p>
+              <h2>{{ availability_title }}</h2>
+              <p>{{ availability_note }}</p>
+            </div>
+
+            <div class="cero-calendar-legend">
+              <span class="cero-calendar-dot"></span>
+              <span>Unavailable</span>
+            </div>
+          </div>
+
+          <div id="booking-availability-calendar"></div>
+        </section>
+      {% endif %}
+
+      <div class="cero-booking-form-grid">
+        <main class="cero-booking-form-main">
+          {% if selected_service %}
+            <section class="cero-card cero-selected-service-card">
+              <p class="cero-card__label">Selected studio service</p>
+              <h2>{{ selected_service.name }}</h2>
+
+              {% if selected_service.short_description %}
+                <p>{{ selected_service.short_description }}</p>
+              {% endif %}
+
+              <div class="cero-pill-row">
+                {% if selected_service.price_text %}
+                  <span class="cero-pill">{{ selected_service.price_text }}</span>
+                {% endif %}
+                {% if selected_service.duration_text %}
+                  <span class="cero-pill">{{ selected_service.duration_text }}</span>
+                {% endif %}
+              </div>
+            </section>
+          {% endif %}
+
+          <section class="cero-card cero-form-card">
+            <p class="cero-card__label">Request form</p>
+            <h2>Send your booking request</h2>
+
+            <form method="post" class="styled-form cero-styled-form" novalidate>
+              {% csrf_token %}
+
+              {% for hidden_field in form.hidden_fields %}
+                {{ hidden_field }}
+                {% if hidden_field.errors %}
+                  <div class="field-error">{{ hidden_field.errors }}</div>
+                {% endif %}
+              {% endfor %}
+
+              {% if form.non_field_errors %}
+                <div class="alert">
+                  {{ form.non_field_errors }}
+                </div>
+              {% endif %}
+
+              {% for field in form.visible_fields %}
+                <div class="form-field">
+                  <label for="{{ field.id_for_label }}">
+                    {{ field.label }}
+                    {% if field.field.required %}<span aria-hidden="true">*</span>{% endif %}
+                  </label>
+                  {{ field }}
+
+                  {% if field.help_text %}
+                    <p class="field-help">{{ field.help_text }}</p>
+                  {% endif %}
+
+                  {% if field.errors %}
+                    <div class="field-error">
+                      {{ field.errors }}
+                    </div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+
+              <div class="cero-form-actions">
+                <button class="btn btn-primary" type="submit">Submit Request</button>
+                <a class="btn btn-secondary" href="{% url 'bookings:landing' %}">Back to Booking Options</a>
+              </div>
+            </form>
+          </section>
+        </main>
+
+        <aside class="cero-booking-form-side">
+          <section class="cero-card cero-form-help-card">
+            <p class="cero-card__label">Helpful details</p>
+            <h2>What to include</h2>
+            <ul class="cero-conversion-list">
+              <li>Preferred date and time</li>
+              <li>Purpose of the session or event</li>
+              <li>Estimated number of people</li>
+              <li>Setup, equipment, or room needs</li>
+              <li>Any flexibility in your schedule</li>
+            </ul>
+          </section>
+
+          <section class="cero-card cero-form-help-card">
+            <p class="cero-card__label">After submission</p>
+            <h2>What happens next?</h2>
+            <p>
+              The team reviews your request and follows up with availability, questions, and next steps before anything is confirmed.
+            </p>
+          </section>
+        </aside>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+  {{ block.super }}
+
+  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const compactSelects = document.querySelectorAll(".js-compact-select");
+
+      compactSelects.forEach(function (selectEl) {
+        new Choices(selectEl, {
+          searchEnabled: selectEl.id === "id_phone_country_code",
+          shouldSort: false,
+          itemSelectText: "",
+          searchPlaceholderValue: "Search country code",
+        });
+      });
+    });
+  </script>
+
+  {% if show_availability_calendar %}
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const calendarEl = document.getElementById("booking-availability-calendar");
+
+        if (!calendarEl) return;
+
+        if (typeof FullCalendar === "undefined") {
+          console.error("FullCalendar did not load.");
+          return;
+        }
+
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: "dayGridMonth",
+          height: 560,
+          expandRows: true,
+          nowIndicator: true,
+          allDaySlot: false,
+
+          slotMinTime: "11:00:00",
+          slotMaxTime: "24:00:00",
+          slotDuration: "00:30:00",
+
+          businessHours: {
+            daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+            startTime: "11:00",
+            endTime: "24:00"
+          },
+
+          headerToolbar: {
+            left: "prev,next today",
+            center: "title",
+            right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek"
+          },
+
+          buttonText: {
+            today: "Today",
+            month: "Month",
+            week: "Week",
+            day: "Day",
+            list: "List"
+          },
+
+          eventDisplay: "block",
+          displayEventEnd: true,
+
+          eventTimeFormat: {
+            hour: "numeric",
+            minute: "2-digit",
+            meridiem: "short"
+          },
+
+          events: "{{ availability_feed_url }}"
+        });
+
+        calendar.render();
+      });
+    </script>
+  {% endif %}
+{% endblock %}

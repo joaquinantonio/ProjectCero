@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ item.name }} · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+{% block meta_description %}{{ item.short_description|default:item.name }}{% endblock %}
+{% block og_title %}{{ item.name }}{% endblock %}
+{% block og_description %}{{ item.short_description|default:item.name }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_image %}
+  {% if item.image %}
+    {{ item.image.url }}
+  {% else %}
+    {% static 'images/og-default.jpg' %}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="cero-content-page cero-merch-detail-page">
+  <section class="cero-content-detail-hero">
+    <div class="container cero-content-detail-hero__grid">
+      <div>
+        <p class="cero-kicker">Merch</p>
+        <h1>{{ item.name }}</h1>
+
+        {% if item.short_description %}
+          <p>{{ item.short_description }}</p>
+        {% endif %}
+
+        <div class="cero-content-meta-strip">
+          {% if item.price_text %}
+            <span>{{ item.price_text }}</span>
+          {% endif %}
+
+          {% if item.availability_text %}
+            <span>{{ item.availability_text }}</span>
+          {% endif %}
+
+          <span>CeroPJ item</span>
+        </div>
+
+        <div class="cero-actions">
+          <a class="btn btn-primary" href="{% url 'merch:merch_enquire' item.slug %}">
+            Enquire to Purchase
+          </a>
+
+          <a class="btn btn-secondary" href="{% url 'enquiries:general' %}?item={{ item.slug }}">
+            Ask a General Question
+          </a>
+
+          <a class="btn btn-secondary" href="{% url 'merch:merch_list' %}">
+            Back to Merch
+          </a>
+        </div>
+      </div>
+
+      <aside class="cero-content-detail-hero__media">
+        {% if item.image %}
+          <img src="{{ item.image.url }}" alt="{{ item.name }}">
+        {% else %}
+          <div class="cero-content-placeholder">
+            <strong>Merch</strong>
+            <span>Item</span>
+          </div>
+        {% endif %}
+      </aside>
+    </div>
+  </section>
+
+  <section class="cero-section cero-section--tight">
+    <div class="container cero-content-detail-layout">
+      <main class="cero-content-main">
+        <article class="cero-content-card">
+          <p class="cero-kicker">About</p>
+          <h2>About this item</h2>
+
+          <div class="cero-content-richtext">
+            {% if item.description %}
+              {{ item.description|linebreaks }}
+            {% else %}
+              <p>No further details added yet.</p>
+            {% endif %}
+          </div>
+        </article>
+      </main>
+
+      <aside class="cero-content-sidebar">
+        <section class="cero-content-card cero-content-summary-card">
+          <p class="cero-kicker">Item details</p>
+          <h2>Availability</h2>
+
+          <ul class="cero-content-meta-list">
+            {% if item.price_text %}
+              <li>
+                <span>Price</span>
+                <strong>{{ item.price_text }}</strong>
+              </li>
+            {% endif %}
+
+            {% if item.availability_text %}
+              <li>
+                <span>Availability</span>
+                <strong>{{ item.availability_text }}</strong>
+              </li>
+            {% endif %}
+          </ul>
+
+          <div class="cero-content-actions">
+            <a class="btn btn-primary" href="{% url 'merch:merch_enquire' item.slug %}">
+              Enquire to Purchase
+            </a>
+
+            <a class="btn btn-secondary" href="{% url 'enquiries:general' %}?item={{ item.slug }}">
+              Ask a General Question
+            </a>
+
+            <a class="btn btn-secondary" href="{% url 'merch:merch_list' %}">
+              Back to Merch
+            </a>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </section>
+
+  {% if related_items %}
+    <section class="cero-section cero-section--tight">
+      <div class="container">
+        <div class="cero-section-header cero-section-header--split">
+          <div>
+            <p class="cero-kicker">More merch</p>
+            <h2>Related items</h2>
+          </div>
+
+          <a class="cero-text-link" href="{% url 'merch:merch_list' %}">
+            View all merch →
+          </a>
+        </div>
+
+        <div class="cero-merch-grid">
+          {% for related in related_items %}
+            {% include "includes/cards/listing_merch_card.html" with item=related %}
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+</div>
+{% endblock %}

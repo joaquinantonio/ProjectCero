@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+{% block meta_description %}Create an order request for {{ item_name }}{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container narrow">
+    <p class="eyebrow">Order Request</p>
+    <h1>{{ title }}</h1>
+    <p class="lead">
+      Submit your details to create an order request. Payment is not collected online yet.
+      Our team will follow up with payment or collection details.
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container narrow">
+    <div class="order-form-wrapper">
+      <div class="order-summary">
+        <p class="cero-card__label">Order Information</p>
+        <h3>Order Details</h3>
+
+        <div class="order-info-display">
+          <div class="order-info-item">
+            <span class="order-info-label">Item</span>
+            <span class="order-info-value">{{ item_name }}</span>
+          </div>
+          <div class="order-info-item">
+            <span class="order-info-label">Unit Price</span>
+            <span class="order-info-value">{{ currency }} {{ unit_price }}</span>
+          </div>
+        </div>
+      </div>
+
+      <form method="post" class="styled-form cero-styled-form" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="field-error">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+
+        <div class="form-field">
+          <label for="{{ form.customer_name.id_for_label }}">
+            {{ form.customer_name.label }}
+            <span aria-hidden="true">*</span>
+          </label>
+          {{ form.customer_name }}
+          {% if form.customer_name.errors %}
+            <div class="field-error">
+              {{ form.customer_name.errors }}
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="form-field">
+          <label for="{{ form.customer_email.id_for_label }}">
+            {{ form.customer_email.label }}
+            <span aria-hidden="true">*</span>
+          </label>
+          {{ form.customer_email }}
+          {% if form.customer_email.errors %}
+            <div class="field-error">
+              {{ form.customer_email.errors }}
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="form-field">
+          <label for="{{ form.customer_phone.id_for_label }}">
+            {{ form.customer_phone.label }}
+          </label>
+          {{ form.customer_phone }}
+          {% if form.customer_phone.help_text %}
+            <p class="field-help">{{ form.customer_phone.help_text }}</p>
+          {% endif %}
+          {% if form.customer_phone.errors %}
+            <div class="field-error">
+              {{ form.customer_phone.errors }}
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="form-field">
+          <label for="{{ form.quantity.id_for_label }}">
+            {{ form.quantity.label }}
+            <span aria-hidden="true">*</span>
+          </label>
+          {{ form.quantity }}
+          {% if form.quantity.help_text %}
+            <p class="field-help">{{ form.quantity.help_text }}</p>
+          {% endif %}
+          {% if form.quantity.errors %}
+            <div class="field-error">
+              {{ form.quantity.errors }}
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="cero-form-actions">
+          <button class="btn btn-primary" type="submit">
+            Submit Order Request
+          </button>
+
+          {% if back_url %}
+            <a class="btn btn-secondary" href="{{ back_url }}">Back to Item</a>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

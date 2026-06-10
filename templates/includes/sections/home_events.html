@@ -1,0 +1,25 @@
+<section class="cero-section">
+  <div class="container">
+    <div class="cero-section-header">
+      <p class="cero-kicker">Coming up</p>
+      <h2>Upcoming events</h2>
+    </div>
+
+    <div class="cero-event-rail">
+      {% for event in upcoming_events %}
+        {% include "includes/cards/home_event_card.html" with event=event %}
+      {% empty %}
+        <article class="cero-card cero-empty-card">
+          <p class="cero-card__label">No events yet</p>
+          <h3>Upcoming nights will appear here.</h3>
+          <p>Add published events in admin to populate this section.</p>
+        </article>
+      {% endfor %}
+    </div>
+
+    <div class="cero-actions cero-actions--section">
+      <a class="btn btn-primary" href="{% url 'events:event_list' %}">View All Events</a>
+      <a class="btn btn-secondary" href="{% url 'events:calendar' %}">Open Calendar</a>
+    </div>
+  </div>
+</section>

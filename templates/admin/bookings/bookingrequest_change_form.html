@@ -1,0 +1,358 @@
+{% extends "admin/change_form.html" %}
+{% load static admin_urls %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <style>
+    /* Workflow Progress Panel */
+    .workflow-progress-panel {
+      background: linear-gradient(135deg, rgba(142, 240, 199, 0.05) 0%, rgba(214, 168, 92, 0.05) 100%);
+      border: 1px solid rgba(142, 240, 199, 0.2);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .workflow-progress-steps {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .workflow-progress-steps::before {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: rgba(142, 240, 199, 0.1);
+      z-index: 0;
+    }
+
+    .workflow-step {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .workflow-step-indicator {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin-bottom: 8px;
+      border: 2px solid #b8aea0;
+      background: #151310;
+      color: #b8aea0;
+      transition: all 0.3s ease;
+    }
+
+    .workflow-step.active .workflow-step-indicator {
+      border-color: #8ef0c7;
+      background: rgba(142, 240, 199, 0.15);
+      color: #8ef0c7;
+      box-shadow: 0 0 12px rgba(142, 240, 199, 0.3);
+    }
+
+    .workflow-step.completed .workflow-step-indicator {
+      border-color: #8ef0c7;
+      background: #8ef0c7;
+      color: #0b0d10;
+    }
+
+    .workflow-step-label {
+      font-size: 12px;
+      color: #b8aea0;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .workflow-step.active .workflow-step-label,
+    .workflow-step.completed .workflow-step-label {
+      color: #8ef0c7;
+    }
+
+    /* Status info box */
+    .workflow-status-info {
+      background: rgba(96, 165, 250, 0.08);
+      border-left: 3px solid #60a5fa;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-top: 16px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .workflow-action-recommendations {
+      margin-top: 12px;
+      padding: 12px;
+      background: rgba(214, 168, 92, 0.05);
+      border-radius: 4px;
+      border-left: 3px solid #d6a85c;
+    }
+
+    .workflow-action-recommendations h4 {
+      margin: 0 0 8px 0;
+      font-size: 12px;
+      color: #d6a85c;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .workflow-action-recommendations ul {
+      margin: 0;
+      padding-left: 20px;
+      font-size: 13px;
+      color: #b8aea0;
+    }
+
+    .workflow-action-recommendations li {
+      margin-bottom: 6px;
+    }
+
+    /* Quick actions row */
+    .quick-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .quick-action-btn {
+      display: inline-block;
+      padding: 8px 16px;
+      background: rgba(214, 168, 92, 0.15);
+      border: 1px solid rgba(214, 168, 92, 0.4);
+      border-radius: 4px;
+      color: #d6a85c;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 500;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .quick-action-btn:hover {
+      background: rgba(214, 168, 92, 0.25);
+      border-color: #d6a85c;
+    }
+
+    .quick-action-btn.primary {
+      background: #d6a85c;
+      color: #0b0d10;
+      border-color: #d6a85c;
+    }
+
+    .quick-action-btn.primary:hover {
+      background: #f0b75e;
+    }
+
+    .quick-action-btn.success {
+      background: rgba(142, 240, 199, 0.15);
+      border-color: rgba(142, 240, 199, 0.4);
+      color: #8ef0c7;
+    }
+
+    .quick-action-btn.success:hover {
+      background: rgba(142, 240, 199, 0.25);
+      border-color: #8ef0c7;
+    }
+
+    .quick-action-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Better fieldset organization */
+    .form-row {
+      display: flex;
+      gap: 16px;
+    }
+
+    .field-column {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .section-header {
+      margin-top: 24px;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(214, 168, 92, 0.2);
+    }
+
+    .section-header h3 {
+      margin: 0;
+      font-size: 14px;
+      color: #d6a85c;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Calendar availability preview */
+    .calendar-check-panel {
+      background: rgba(248, 113, 113, 0.05);
+      border: 1px solid rgba(248, 113, 113, 0.2);
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin-top: 12px;
+      font-size: 13px;
+    }
+
+    .calendar-check-panel.available {
+      background: rgba(142, 240, 199, 0.05);
+      border-color: rgba(142, 240, 199, 0.2);
+      color: #8ef0c7;
+    }
+
+    .calendar-check-panel.conflict {
+      background: rgba(248, 113, 113, 0.05);
+      border-color: rgba(248, 113, 113, 0.2);
+      color: #f87171;
+    }
+
+    /* Visual status indicator in header */
+    .object-tools {
+      margin-top: 16px;
+    }
+  </style>
+{% endblock %}
+
+{% block form_top %}
+  {% if original %}
+    <div class="workflow-progress-panel">
+      <div>
+        <p style="margin: 0 0 12px 0; font-size: 11px; color: #b8aea0; text-transform: uppercase; letter-spacing: 0.5px;">Workflow Progress</p>
+      </div>
+
+      <div class="workflow-progress-steps">
+        <div class="workflow-step {% if original.status == 'new' %}active{% elif original.status != 'new' %}completed{% endif %}">
+          <div class="workflow-step-indicator">1</div>
+          <div class="workflow-step-label">New Request</div>
+        </div>
+
+        <div class="workflow-step {% if original.status == 'in_review' %}active{% elif original.status in 'contacted,confirmed,closed' %}completed{% endif %}">
+          <div class="workflow-step-indicator">2</div>
+          <div class="workflow-step-label">In Review</div>
+        </div>
+
+        <div class="workflow-step {% if original.status == 'contacted' %}active{% elif original.status in 'confirmed,closed' %}completed{% endif %}">
+          <div class="workflow-step-indicator">3</div>
+          <div class="workflow-step-label">Contacted</div>
+        </div>
+
+        <div class="workflow-step {% if original.status == 'confirmed' %}active{% elif original.status == 'closed' %}completed{% endif %}">
+          <div class="workflow-step-indicator">4</div>
+          <div class="workflow-step-label">Confirmed</div>
+        </div>
+
+        <div class="workflow-step {% if original.status == 'closed' %}active{% endif %}">
+          <div class="workflow-step-indicator">5</div>
+          <div class="workflow-step-label">Closed</div>
+        </div>
+      </div>
+
+      <div class="workflow-status-info">
+        <strong>Status:</strong> {{ original.get_status_display }}
+        | <strong>Type:</strong> {{ original.get_request_type_display }}
+        | <strong>Reference:</strong> {{ original.reference_code }}
+      </div>
+
+      {% if original.status == 'new' %}
+        <div class="workflow-action-recommendations">
+          <h4>Recommended Next Steps</h4>
+          <ul>
+            <li>Review customer message and request details</li>
+            <li>Mark as "In Review" to acknowledge receipt</li>
+            <li>Verify calendar availability for requested date/time</li>
+          </ul>
+        </div>
+      {% elif original.status == 'in_review' %}
+        <div class="workflow-action-recommendations">
+          <h4>Next Steps</h4>
+          <ul>
+            <li>Contact customer to confirm details or propose alternatives</li>
+            <li>Mark as "Contacted" once communication is sent</li>
+            <li>Check calendar for conflicts before confirming</li>
+          </ul>
+        </div>
+      {% elif original.status == 'contacted' %}
+        <div class="workflow-action-recommendations">
+          <h4>Next Steps</h4>
+          <ul>
+            <li>Mark as "Confirmed" once customer confirms details</li>
+            <li>When confirmed: system will automatically create calendar booking if date/time have been set</li>
+            <li>If issues arise, mark as "Closed" to end this request</li>
+          </ul>
+        </div>
+      {% elif original.status == 'confirmed' %}
+        <div class="workflow-action-recommendations">
+          <h4>Confirmation Complete</h4>
+          <ul>
+            <li>✓ Calendar booking has been automatically created</li>
+            <li>✓ Customer can now see this time as unavailable</li>
+            <li>Mark as "Closed" once the booking is complete or cancelled</li>
+          </ul>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block field_sets %}
+  {% for fieldset in adminform %}
+    {% if fieldset.name == "Workflow" %}
+      <fieldset class="module aligned">
+        <h2>{{ fieldset.name }}</h2>
+        {% include "admin/includes/fieldset.html" with inline_admin_formsets=inline_admin_formsets %}
+
+        {% if original and original.pk %}
+          <div class="form-row quick-actions">
+              {% if original.bookings.exists %}
+                <a href="{% url 'admin:bookings_booking_change' original.bookings.first.pk %}" class="quick-action-btn success">
+                  Open Calendar Booking
+                </a>
+              {% elif original.request_type != 'general' and original.preferred_date and original.preferred_start_time and original.preferred_end_time %}
+                <a href="{% url 'admin:bookings_booking_add' %}?request={{ original.pk }}" class="quick-action-btn primary">
+                  Create Calendar Booking
+                </a>
+              {% elif original.request_type != 'general' %}
+                <span class="quick-action-btn" style="opacity: 0.7; pointer-events: none;">
+                  Need preferred date, start time, and end time before creating booking
+                </span>
+              {% endif %}
+            </div>
+        {% endif %}
+      </fieldset>
+    {% elif fieldset.name == "Request Details" %}
+      <fieldset class="module aligned">
+        <h2>{{ fieldset.name }}</h2>
+        {% include "admin/includes/fieldset.html" with inline_admin_formsets=inline_admin_formsets %}
+
+        {% if original and original.preferred_date and original.preferred_start_time %}
+          <div class="calendar-check-panel available">
+            ✓ Customer provided preferred date & time. Ready to create calendar booking.
+          </div>
+        {% elif original %}
+          <div class="calendar-check-panel conflict">
+            ⓘ Customer needs to provide preferred date and time before booking can be created.
+          </div>
+        {% endif %}
+      </fieldset>
+    {% else %}
+      <fieldset class="module aligned">
+        <h2>{{ fieldset.name }}</h2>
+        {% include "admin/includes/fieldset.html" with inline_admin_formsets=inline_admin_formsets %}
+      </fieldset>
+    {% endif %}
+  {% endfor %}
+{% endblock %}
+

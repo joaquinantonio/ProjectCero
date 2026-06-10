@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container narrow">
+    <div class="card text-center">
+      <h1>Page not found</h1>
+      <p>We couldn't find the page you were looking for.</p>
+      <a class="btn btn-primary" href="{% url 'pages:home' %}">Back to Home</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

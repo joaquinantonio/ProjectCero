@@ -1,0 +1,639 @@
+{% extends "base.html" %}
+
+{% block title %}Order Request Submitted · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+{% block meta_description %}Your order request has been submitted. Upload proof of payment to complete the process.{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container narrow">
+    <p class="eyebrow">Order Confirmed</p>
+    <h1>Thank you, {{ order.customer_name }}!</h1>
+    <p class="lead">
+      Your order request has been received. Now upload your payment proof to complete the process.
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container narrow">
+    <!-- Order Summary -->
+    <div class="card order-summary-card">
+      <div class="order-summary-header">
+        <div>
+          <p class="card-label">Order Details</p>
+          <h2>Order Summary</h2>
+        </div>
+        <div class="order-status" data-status="{{ order.status }}">
+          <span class="status-badge status-{{ order.status }}">
+            {{ order.get_status_display }}
+          </span>
+        </div>
+      </div>
+
+      <div class="order-details-grid">
+        <div class="order-detail-item">
+          <span class="detail-label">Reference Code</span>
+          <span class="detail-value detail-code">{{ order.reference_code }}</span>
+        </div>
+        <div class="order-detail-item">
+          <span class="detail-label">Total Amount</span>
+          <span class="detail-value detail-amount">{{ order.currency }} {{ order.total_amount|floatformat:2 }}</span>
+        </div>
+        <div class="order-detail-item">
+          <span class="detail-label">Email</span>
+          <span class="detail-value">{{ order.customer_email }}</span>
+        </div>
+        <div class="order-detail-item">
+          <span class="detail-label">Date</span>
+          <span class="detail-value">{{ order.created_at|date:"M d, Y" }}</span>
+        </div>
+      </div>
+
+      <div class="order-items-section">
+        <h3>Items Ordered</h3>
+        <ul class="order-items-list">
+          {% for item in order.items.all %}
+            <li class="order-item">
+              <span class="item-name">{{ item.description }}</span>
+              <span class="item-qty">× {{ item.quantity }}</span>
+              <span class="item-price">{{ order.currency }} {{ item.total_amount|floatformat:2 }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <!-- Payment Proof Section -->
+    <div class="card payment-proof-card">
+      <div class="payment-proof-header">
+        <div>
+          <p class="card-label">Next Step</p>
+          <h2>Upload Payment Proof</h2>
+          <p class="payment-proof-description">
+            To complete your order, please upload a receipt or proof of payment. This helps us verify and process your order quickly.
+          </p>
+        </div>
+        {% if payment_proof %}
+          <div class="proof-status proof-uploaded">
+            <span class="status-icon">✓</span>
+            <span class="status-text">Proof Uploaded</span>
+          </div>
+        {% endif %}
+      </div>
+
+      {% if not payment_proof %}
+        <form method="post" enctype="multipart/form-data" class="payment-proof-form">
+          {% csrf_token %}
+
+          <div class="form-section">
+            <label for="{{ form.file.id_for_label }}" class="form-label">
+              {{ form.file.label }}
+              <span class="required-asterisk">*</span>
+            </label>
+
+            <div class="file-upload-wrapper">
+              <input
+                type="file"
+                id="{{ form.file.id_for_label }}"
+                name="{{ form.file.name }}"
+                accept=".pdf,.jpg,.jpeg,.png"
+                class="file-input"
+                required
+              >
+              <div class="file-upload-area">
+                <div class="upload-icon">📎</div>
+                <p class="upload-text">
+                  Drag and drop your file here, or click to browse
+                </p>
+                <p class="upload-hint">
+                  PDF, JPG, or PNG (max 10MB)
+                </p>
+              </div>
+              <div class="file-preview">
+                <span class="preview-text">No file selected</span>
+              </div>
+            </div>
+
+            {% if form.file.errors %}
+              <div class="form-error">
+                {{ form.file.errors }}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="form-section">
+            <label for="{{ form.notes.id_for_label }}" class="form-label">
+              {{ form.notes.label }}
+            </label>
+            {{ form.notes }}
+            <p class="form-help-text">
+              Include any relevant details like payment method, transaction ID, or bank reference number.
+            </p>
+            {% if form.notes.errors %}
+              <div class="form-error">
+                {{ form.notes.errors }}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-large">
+              Upload Payment Proof
+            </button>
+            <p class="form-info-text">
+              We'll review your proof and confirm payment within 24 hours.
+            </p>
+          </div>
+        </form>
+      {% else %}
+        <div class="proof-confirmedblock">
+          <div class="proof-confirmed-content">
+            <div class="proof-confirmed-icon">✓</div>
+            <h3>Payment Proof Received</h3>
+            <p>
+              Thank you for uploading your payment proof. We'll review it and confirm your order shortly.
+            </p>
+            {% if payment_proof.verified %}
+              <div class="proof-verified-badge">
+                <strong>✓ Verified</strong> — Your payment has been verified
+              </div>
+            {% else %}
+              <div class="proof-pending-badge">
+                <strong>⏳ Pending Review</strong> — We're reviewing your payment proof
+              </div>
+            {% endif %}
+            <div class="proof-details">
+              <p><strong>Uploaded:</strong> {{ payment_proof.created_at|date:"M d, Y \a\t g:i A" }}</p>
+              {% if payment_proof.original_filename %}
+                <p><strong>File:</strong> {{ payment_proof.original_filename }}</p>
+              {% endif %}
+              {% if payment_proof.notes %}
+                <p><strong>Notes:</strong> {{ payment_proof.notes }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Info Section -->
+    <div class="info-cards">
+      <div class="info-card">
+        <h3>📋 What happens next?</h3>
+        <ul>
+          <li>We'll review your payment proof within 24 hours</li>
+          <li>You'll receive a confirmation email once verified</li>
+          <li>Your order will be processed and shipped</li>
+        </ul>
+      </div>
+
+      <div class="info-card">
+        <h3>📧 Questions?</h3>
+        <p>
+          If you have any issues uploading your proof, please contact us at:
+        </p>
+        <p class="contact-email">
+          <strong>orders@example.com</strong>
+        </p>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="order-actions">
+      <a class="btn btn-secondary" href="{% url 'pages:home' %}">
+        Back to Home
+      </a>
+      <a class="btn btn-secondary" href="{% url 'merch:merch_list' %}">
+        Browse More Merch
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .order-summary-card {
+    margin-bottom: 2rem;
+  }
+
+  .order-summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-border, #e0e0e0);
+  }
+
+  .order-summary-header h2 {
+    margin: 0.5rem 0 0 0;
+  }
+
+  .order-status {
+    text-align: right;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 0.375rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .status-badge.status-pending_payment {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+
+  .status-badge.status-paid {
+    background-color: #d4edda;
+    color: #155724;
+  }
+
+  .order-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .order-detail-item {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .detail-label {
+    display: block;
+    font-size: 0.875rem;
+    color: #666;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .detail-value {
+    display: block;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .detail-code {
+    font-family: 'Monaco', 'Courier New', monospace;
+    background-color: #f5f5f5;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+  }
+
+  .detail-amount {
+    color: #27ae60;
+  }
+
+  .order-items-section {
+    margin-top: 2rem;
+  }
+
+  .order-items-section h3 {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .order-items-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .order-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f0f0f0;
+    align-items: center;
+  }
+
+  .order-item:last-child {
+    border-bottom: none;
+  }
+
+  .item-name {
+    font-weight: 500;
+  }
+
+  .item-qty {
+    color: #999;
+    font-size: 0.9rem;
+  }
+
+  .item-price {
+    font-weight: 600;
+    text-align: right;
+  }
+
+  /* Payment Proof Card */
+  .payment-proof-card {
+    margin-bottom: 2rem;
+  }
+
+  .payment-proof-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-border, #e0e0e0);
+  }
+
+  .payment-proof-header h2 {
+    margin: 0.5rem 0 0.75rem 0;
+  }
+
+  .payment-proof-description {
+    color: #666;
+    margin: 0;
+  }
+
+  .proof-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+  }
+
+  .proof-status.proof-uploaded {
+    background-color: #d4edda;
+    color: #155724;
+  }
+
+  /* File Upload Area */
+  .file-upload-wrapper {
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
+
+  .file-input {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .file-upload-area {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    background-color: #fafafa;
+    transition: all 0.3s ease;
+  }
+
+  .file-upload-wrapper:hover .file-upload-area {
+    border-color: #27ae60;
+    background-color: #f0f8f4;
+  }
+
+  .upload-icon {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .upload-text {
+    font-weight: 600;
+    margin: 0.5rem 0;
+    color: #333;
+  }
+
+  .upload-hint {
+    font-size: 0.875rem;
+    color: #999;
+    margin: 0;
+  }
+
+  .file-preview {
+    display: none;
+    padding-top: 1rem;
+    border-top: 1px solid #ddd;
+  }
+
+  .preview-text {
+    font-size: 0.875rem;
+    color: #666;
+  }
+
+  /* Form Section */
+  .form-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #333;
+  }
+
+  .required-asterisk {
+    color: #e74c3c;
+  }
+
+  .form-help-text {
+    font-size: 0.875rem;
+    color: #999;
+    margin-top: 0.5rem;
+  }
+
+  .form-error {
+    color: #e74c3c;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+  }
+
+  textarea[name="notes"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: inherit;
+    resize: vertical;
+  }
+
+  /* Form Actions */
+  .form-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .btn-large {
+    padding: 1rem 2rem;
+    font-size: 1.125rem;
+  }
+
+  .form-info-text {
+    font-size: 0.875rem;
+    color: #666;
+    margin: 0;
+  }
+
+  /* Proof Confirmed Block */
+  .proof-confirmedblock {
+    background-color: #f0f8f4;
+    border: 1px solid #b3e5b3;
+    border-radius: 8px;
+    padding: 2rem;
+  }
+
+  .proof-confirmed-content {
+    text-align: center;
+  }
+
+  .proof-confirmed-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #27ae60;
+  }
+
+  .proof-confirmed-content h3 {
+    margin: 0 0 0.5rem 0;
+    color: #155724;
+  }
+
+  .proof-confirmed-content p {
+    color: #666;
+    margin: 0 0 1rem 0;
+  }
+
+  .proof-verified-badge,
+  .proof-pending-badge {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+  }
+
+  .proof-verified-badge {
+    background-color: #d4edda;
+    color: #155724;
+  }
+
+  .proof-pending-badge {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+
+  .proof-details {
+    text-align: left;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 1rem;
+    margin-top: 1rem;
+  }
+
+  .proof-details p {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+  }
+
+  /* Info Cards */
+  .info-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  .info-card {
+    background-color: #fafafa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.5rem;
+  }
+
+  .info-card h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+  }
+
+  .info-card ul {
+    margin: 0;
+    padding-left: 1.25rem;
+  }
+
+  .info-card li {
+    margin-bottom: 0.5rem;
+  }
+
+  .contact-email {
+    font-size: 1.1rem;
+    margin: 1rem 0 0 0;
+  }
+
+  /* Order Actions */
+  .order-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e0e0e0;
+  }
+
+  .order-actions .btn {
+    flex: 1;
+    max-width: 200px;
+  }
+
+  @media (max-width: 640px) {
+    .order-summary-header {
+      flex-direction: column;
+    }
+
+    .order-status {
+      margin-top: 1rem;
+      text-align: left;
+    }
+
+    .order-details-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .order-item {
+      grid-template-columns: 1fr;
+    }
+
+    .item-qty,
+    .item-price {
+      display: none;
+    }
+
+    .payment-proof-header {
+      flex-direction: column;
+    }
+
+    .proof-status {
+      margin-top: 1rem;
+    }
+
+    .file-upload-area {
+      padding: 1rem;
+    }
+
+    .order-actions {
+      flex-direction: column;
+    }
+
+    .order-actions .btn {
+      max-width: 100%;
+    }
+  }
+</style>
+{% endblock %}

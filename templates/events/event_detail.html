@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ event.title }} · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+{% block meta_description %}{{ event.short_description|default:event.title }}{% endblock %}
+{% block og_title %}{{ event.title }}{% endblock %}
+{% block og_description %}{{ event.short_description|default:event.title }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_image %}
+  {% if event.poster %}
+    {{ event.poster.url }}
+  {% else %}
+    {% static 'images/og-default.jpg' %}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="cero-detail-page cero-event-detail-page">
+  <section class="cero-detail-hero">
+    <div class="container cero-detail-hero__grid">
+      <div class="cero-detail-hero__copy">
+        <p class="cero-kicker">Event</p>
+        <h1>{{ event.title }}</h1>
+
+        {% if event.short_description %}
+          <p class="cero-detail-hero__lead">{{ event.short_description }}</p>
+        {% endif %}
+
+        <div class="cero-detail-meta-strip">
+          <span>{{ event.start_at|date:"d M Y" }}</span>
+          <span>
+            {% if event.time_note %}
+              {{ event.time_note }}
+            {% else %}
+              {{ event.start_at|time:"g:i A" }}
+              {% if event.end_at %} – {{ event.end_at|time:"g:i A" }}{% endif %}
+            {% endif %}
+          </span>
+          {% if event.location_text %}
+            <span>{{ event.location_text }}</span>
+          {% endif %}
+        </div>
+
+        <div class="cero-actions">
+          {% if event.ticket_url %}
+            <a class="btn btn-primary" href="{{ event.ticket_url }}">Tickets / RSVP</a>
+          {% endif %}
+          <a class="btn btn-secondary" href="{% url 'events:single_event_ics' event.slug %}">Add to Calendar</a>
+          <a class="btn btn-secondary" href="{% url 'events:event_list' %}">Back to Events</a>
+        </div>
+      </div>
+
+      <aside class="cero-detail-hero__media">
+        {% if event.poster %}
+          <img src="{{ event.poster.url }}" alt="{{ event.title }}">
+        {% else %}
+          <div class="cero-detail-hero__placeholder">
+            <strong>{{ event.start_at|date:"d" }}</strong>
+            <span>{{ event.start_at|date:"M Y" }}</span>
+          </div>
+        {% endif %}
+      </aside>
+    </div>
+  </section>
+
+  <section class="cero-section cero-section--tight">
+    <div class="container cero-detail-layout">
+      <main class="cero-detail-main">
+        <article class="cero-detail-card">
+          <p class="cero-kicker">About</p>
+          <h2>About this event</h2>
+          <div class="cero-detail-richtext">
+            {{ event.description|linebreaks }}
+          </div>
+        </article>
+
+        {% if ordered_event_artists %}
+          <article class="cero-detail-card">
+            <p class="cero-kicker">Lineup</p>
+            <h2>Featured artists</h2>
+
+            <div class="cero-detail-artist-list">
+              {% for item in ordered_event_artists %}
+                <a class="cero-detail-artist-row" href="{% url 'artists:artist_detail' item.artist.slug %}">
+                  <span>{{ item.artist.name }}</span>
+                  {% if item.role_name %}
+                    <small>{{ item.role_name }}</small>
+                  {% else %}
+                    <small>Artist</small>
+                  {% endif %}
+                </a>
+              {% endfor %}
+            </div>
+          </article>
+        {% endif %}
+      </main>
+
+      <aside class="cero-detail-sidebar">
+        <section class="cero-detail-card cero-detail-summary-card">
+          <p class="cero-kicker">Details</p>
+          <h2>Event details</h2>
+
+          <ul class="cero-detail-meta-list">
+            <li>
+              <span>Date</span>
+              <strong>{{ event.start_at|date:"d M Y" }}</strong>
+            </li>
+            <li>
+              <span>Time</span>
+              <strong>
+                {% if event.time_note %}
+                  {{ event.time_note }}
+                {% else %}
+                  {{ event.start_at|time:"g:i A" }}
+                  {% if event.end_at %} – {{ event.end_at|time:"g:i A" }}{% endif %}
+                {% endif %}
+              </strong>
+            </li>
+            {% if event.location_text %}
+              <li>
+                <span>Location</span>
+                <strong>{{ event.location_text }}</strong>
+              </li>
+            {% endif %}
+            {% if event.price_text %}
+              <li>
+                <span>Price</span>
+                <strong>{{ event.price_text }}</strong>
+              </li>
+            {% endif %}
+            {% if ticket_types %}
+              <li>
+                <span>Tickets</span>
+                <strong>{{ ticket_types|length }} option{{ ticket_types|length|pluralize }}</strong>
+              </li>
+            {% endif %}
+          </ul>
+
+          <div class="cero-detail-actions">
+            {% if event.ticket_url %}
+              <a class="btn btn-primary" href="{{ event.ticket_url }}">Tickets / RSVP</a>
+            {% endif %}
+            <a class="btn btn-secondary" href="{% url 'events:single_event_ics' event.slug %}">Add to Calendar</a>
+          </div>
+        </section>
+
+        {% if ticket_types %}
+          <section class="cero-detail-card cero-detail-ticket-card">
+            <p class="cero-kicker">Tickets</p>
+            <h2>Ticket options</h2>
+
+            <div class="cero-ticket-list">
+              {% for ticket in ticket_types %}
+                <article class="cero-ticket-option">
+                  <div>
+                    <h3>{{ ticket.name }}</h3>
+                    <p>{{ ticket.quantity_available }} available</p>
+                  </div>
+                  <strong>{{ ticket.currency }} {{ ticket.price_amount }}</strong>
+                  <a class="btn btn-primary" href="{% url 'orders:create_ticket_order' ticket.id %}">
+                    Buy {{ ticket.name }}
+                  </a>
+                </article>
+              {% endfor %}
+            </div>
+          </section>
+        {% endif %}
+      </aside>
+    </div>
+  </section>
+
+  <section class="cero-section cero-section--tight">
+    <div class="container">
+      <div class="cero-section-header cero-section-header--split">
+        <div>
+          <p class="cero-kicker">More events</p>
+          <h2>Related upcoming events</h2>
+        </div>
+        <a class="cero-text-link" href="{% url 'events:event_list' %}">View all events →</a>
+      </div>
+
+      <div class="cero-detail-related-grid">
+        {% for related in related_events %}
+          {% include "includes/cards/detail_event_teaser_card.html" with event=related %}
+        {% empty %}
+          <article class="cero-card cero-listing-empty">
+            <p class="cero-card__label">No related events</p>
+            <h3>Check back soon for more listings.</h3>
+            <p>Related upcoming events will appear here automatically.</p>
+          </article>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

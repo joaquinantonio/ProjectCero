@@ -1,0 +1,398 @@
+/* ProjectCero Phase 12B Admin Theme Modes
+   Purpose:
+   - Make Django admin light/dark/auto modes intentional
+   - Avoid default white light mode
+   - Make the theme toggle match the admin design
+   - Preserve the dark control-room admin feel
+*/
+
+/* Explicit dark mode / default control-room mode */
+html[data-theme="dark"],
+html[data-theme="auto"] {
+  --cero-admin-bg: #0b0d10;
+  --cero-admin-bg-soft: #100e0d;
+  --cero-admin-surface: #151310;
+  --cero-admin-surface-2: #1d1813;
+  --cero-admin-line: rgba(255, 232, 190, 0.14);
+  --cero-admin-text: #f3eee4;
+  --cero-admin-muted: #b8aea0;
+  --cero-admin-amber: #d6a85c;
+  --cero-admin-amber-strong: #f0b75e;
+  --cero-admin-mint: #8ef0c7;
+  --cero-admin-copper: #c2673a;
+  --cero-admin-red: #f87171;
+  --cero-admin-blue: #60a5fa;
+
+  --primary: #141210;
+  --secondary: #1c1814;
+  --accent: #d6a85c;
+  --primary-fg: #f3eee4;
+  --body-bg: #0b0d10;
+  --body-fg: #f3eee4;
+  --body-quiet-color: #b8aea0;
+  --body-loud-color: #ffffff;
+  --header-color: #f3eee4;
+  --header-branding-color: #f3eee4;
+  --header-bg: #0b0d10;
+  --header-link-color: #f3eee4;
+  --breadcrumbs-bg: #100e0d;
+  --breadcrumbs-fg: #b8aea0;
+  --breadcrumbs-link-fg: #f3eee4;
+  --link-fg: #d6a85c;
+  --link-hover-color: #f0b75e;
+  --link-selected-fg: #f0b75e;
+  --hairline-color: rgba(255, 232, 190, 0.12);
+  --border-color: rgba(255, 232, 190, 0.16);
+}
+
+/* Proper light mode: warm paper, not default white */
+html[data-theme="light"] {
+  --cero-admin-bg: #f3eadc;
+  --cero-admin-bg-soft: #eadcca;
+  --cero-admin-surface: #fff8ed;
+  --cero-admin-surface-2: #f6ebdc;
+  --cero-admin-line: rgba(105, 74, 38, 0.2);
+  --cero-admin-text: #23180f;
+  --cero-admin-muted: #6b5a47;
+  --cero-admin-amber: #9f6b1f;
+  --cero-admin-amber-strong: #bf7f25;
+  --cero-admin-mint: #0f766e;
+  --cero-admin-copper: #a85332;
+  --cero-admin-red: #b91c1c;
+  --cero-admin-blue: #1d4ed8;
+
+  --primary: #fff8ed;
+  --secondary: #f6ebdc;
+  --accent: #9f6b1f;
+  --primary-fg: #23180f;
+  --body-bg: #f3eadc;
+  --body-fg: #23180f;
+  --body-quiet-color: #6b5a47;
+  --body-loud-color: #120d06;
+  --header-color: #23180f;
+  --header-branding-color: #23180f;
+  --header-bg: #fff8ed;
+  --header-link-color: #23180f;
+  --breadcrumbs-bg: #eadcca;
+  --breadcrumbs-fg: #6b5a47;
+  --breadcrumbs-link-fg: #23180f;
+  --link-fg: #9f6b1f;
+  --link-hover-color: #7a4b12;
+  --link-selected-fg: #7a4b12;
+  --hairline-color: rgba(105, 74, 38, 0.14);
+  --border-color: rgba(105, 74, 38, 0.22);
+  --error-fg: #b91c1c;
+  --message-success-bg: rgba(15, 118, 110, 0.12);
+  --message-warning-bg: rgba(159, 107, 31, 0.14);
+  --message-error-bg: rgba(185, 28, 28, 0.1);
+}
+
+/* Auto should follow system preference properly */
+@media (prefers-color-scheme: light) {
+  html[data-theme="auto"] {
+    --cero-admin-bg: #f3eadc;
+    --cero-admin-bg-soft: #eadcca;
+    --cero-admin-surface: #fff8ed;
+    --cero-admin-surface-2: #f6ebdc;
+    --cero-admin-line: rgba(105, 74, 38, 0.2);
+    --cero-admin-text: #23180f;
+    --cero-admin-muted: #6b5a47;
+    --cero-admin-amber: #9f6b1f;
+    --cero-admin-amber-strong: #bf7f25;
+    --cero-admin-mint: #0f766e;
+    --cero-admin-copper: #a85332;
+    --cero-admin-red: #b91c1c;
+    --cero-admin-blue: #1d4ed8;
+
+    --primary: #fff8ed;
+    --secondary: #f6ebdc;
+    --accent: #9f6b1f;
+    --primary-fg: #23180f;
+    --body-bg: #f3eadc;
+    --body-fg: #23180f;
+    --body-quiet-color: #6b5a47;
+    --body-loud-color: #120d06;
+    --header-color: #23180f;
+    --header-branding-color: #23180f;
+    --header-bg: #fff8ed;
+    --header-link-color: #23180f;
+    --breadcrumbs-bg: #eadcca;
+    --breadcrumbs-fg: #6b5a47;
+    --breadcrumbs-link-fg: #23180f;
+    --link-fg: #9f6b1f;
+    --link-hover-color: #7a4b12;
+    --link-selected-fg: #7a4b12;
+    --hairline-color: rgba(105, 74, 38, 0.14);
+    --border-color: rgba(105, 74, 38, 0.22);
+  }
+}
+
+/* Theme-specific body backgrounds */
+html[data-theme="dark"] body,
+html[data-theme="auto"] body {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(111, 29, 47, 0.18), transparent 28rem),
+    radial-gradient(circle at 85% 0%, rgba(214, 168, 92, 0.11), transparent 28rem),
+    linear-gradient(180deg, #0b0d10 0%, #100e0d 56%, #07090c 100%);
+}
+
+html[data-theme="light"] body {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(214, 168, 92, 0.2), transparent 28rem),
+    radial-gradient(circle at 88% 2%, rgba(194, 103, 58, 0.12), transparent 26rem),
+    linear-gradient(180deg, #f7efe4 0%, #eadcca 58%, #dfcfb8 100%);
+}
+
+@media (prefers-color-scheme: light) {
+  html[data-theme="auto"] body {
+    background:
+      radial-gradient(circle at 12% 0%, rgba(214, 168, 92, 0.2), transparent 28rem),
+      radial-gradient(circle at 88% 2%, rgba(194, 103, 58, 0.12), transparent 26rem),
+      linear-gradient(180deg, #f7efe4 0%, #eadcca 58%, #dfcfb8 100%);
+  }
+}
+
+/* Light mode shell */
+html[data-theme="light"] #header {
+  background:
+    linear-gradient(180deg, rgba(255, 248, 237, 0.96), rgba(246, 235, 220, 0.94));
+  border-bottom-color: rgba(105, 74, 38, 0.2);
+  box-shadow: 0 16px 40px rgba(105, 74, 38, 0.12);
+}
+
+html[data-theme="light"] div.breadcrumbs {
+  background: rgba(234, 220, 202, 0.92);
+  border-bottom-color: rgba(105, 74, 38, 0.16);
+}
+
+html[data-theme="light"] .module,
+html[data-theme="light"] .inline-group,
+html[data-theme="light"] fieldset.module,
+html[data-theme="light"] .cero-dashboard-panel,
+html[data-theme="light"] .cero-admin-calendar-card,
+html[data-theme="light"] .cero-dashboard-hero,
+html[data-theme="light"] .cero-dashboard-metric,
+html[data-theme="light"] .cero-dashboard-section-card,
+html[data-theme="light"] .cero-dashboard-quick-card,
+html[data-theme="light"] .cero-app-list details {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.58), rgba(255, 248, 237, 0.28)),
+    rgba(255, 248, 237, 0.9);
+  border-color: rgba(105, 74, 38, 0.18);
+  box-shadow: 0 18px 48px rgba(105, 74, 38, 0.12);
+}
+
+html[data-theme="light"] .cero-dashboard-hero {
+  background:
+    radial-gradient(circle at 14% 10%, rgba(214, 168, 92, 0.24), transparent 26rem),
+    radial-gradient(circle at 90% 0%, rgba(194, 103, 58, 0.13), transparent 24rem),
+    rgba(255, 248, 237, 0.9);
+}
+
+html[data-theme="light"] .module h2,
+html[data-theme="light"] .inline-group h2,
+html[data-theme="light"] .module caption,
+html[data-theme="light"] .inline-group h3 {
+  background: linear-gradient(180deg, rgba(159, 107, 31, 0.12), rgba(159, 107, 31, 0.035));
+  color: var(--cero-admin-text);
+}
+
+html[data-theme="light"] table,
+html[data-theme="light"] #changelist #toolbar,
+html[data-theme="light"] #changelist-filter,
+html[data-theme="light"] .paginator,
+html[data-theme="light"] .submit-row {
+  background: rgba(255, 248, 237, 0.88);
+  border-color: rgba(105, 74, 38, 0.18);
+}
+
+html[data-theme="light"] thead th {
+  background: rgba(159, 107, 31, 0.09);
+}
+
+html[data-theme="light"] tbody tr:nth-child(odd),
+html[data-theme="light"] .row1 {
+  background: rgba(255, 255, 255, 0.42);
+}
+
+html[data-theme="light"] tbody tr:nth-child(even),
+html[data-theme="light"] .row2 {
+  background: rgba(246, 235, 220, 0.36);
+}
+
+html[data-theme="light"] tbody tr:hover {
+  background: rgba(159, 107, 31, 0.1);
+}
+
+html[data-theme="light"] input,
+html[data-theme="light"] textarea,
+html[data-theme="light"] select,
+html[data-theme="light"] .vTextField {
+  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(105, 74, 38, 0.22);
+  color: var(--cero-admin-text);
+}
+
+html[data-theme="light"] input:focus,
+html[data-theme="light"] textarea:focus,
+html[data-theme="light"] select:focus,
+html[data-theme="light"] .vTextField:focus {
+  border-color: rgba(159, 107, 31, 0.72);
+  box-shadow: 0 0 0 3px rgba(159, 107, 31, 0.13);
+}
+
+html[data-theme="light"] .cero-admin-toplinks a,
+html[data-theme="light"] #user-tools a,
+html[data-theme="light"] #logout-form button,
+html[data-theme="light"] .cero-dashboard-hero__actions a,
+html[data-theme="light"] .cero-calendar-legend span {
+  border-color: rgba(105, 74, 38, 0.18);
+  background: rgba(255, 255, 255, 0.55);
+  color: rgba(35, 24, 15, 0.8) !important;
+}
+
+html[data-theme="light"] .cero-admin-toplinks a:hover,
+html[data-theme="light"] #user-tools a:hover,
+html[data-theme="light"] #logout-form button:hover {
+  color: #fff8ed !important;
+  background: linear-gradient(180deg, #bf7f25, #9f6b1f);
+}
+
+/* Theme toggle styling */
+.theme-toggle,
+button.theme-toggle,
+#user-tools .theme-toggle {
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  display: inline-grid !important;
+  place-items: center;
+  border: 1px solid rgba(255, 232, 190, 0.18) !important;
+  border-radius: 999px !important;
+  padding: 0 !important;
+  background:
+    radial-gradient(circle at 35% 25%, rgba(214, 168, 92, 0.24), transparent 42%),
+    rgba(255, 232, 190, 0.06) !important;
+  color: var(--cero-admin-amber) !important;
+  box-shadow: none !important;
+}
+
+.theme-toggle:hover,
+button.theme-toggle:hover,
+#user-tools .theme-toggle:hover {
+  border-color: rgba(214, 168, 92, 0.58) !important;
+  background: rgba(214, 168, 92, 0.16) !important;
+  color: var(--cero-admin-amber-strong) !important;
+}
+
+html[data-theme="light"] .theme-toggle,
+html[data-theme="light"] button.theme-toggle,
+html[data-theme="light"] #user-tools .theme-toggle {
+  border-color: rgba(105, 74, 38, 0.22) !important;
+  background:
+    radial-gradient(circle at 35% 25%, rgba(159, 107, 31, 0.18), transparent 42%),
+    rgba(255, 255, 255, 0.62) !important;
+  color: var(--cero-admin-amber) !important;
+}
+
+.theme-toggle svg,
+button.theme-toggle svg,
+#user-tools .theme-toggle svg {
+  width: 18px;
+  height: 18px;
+  color: currentColor !important;
+  fill: currentColor !important;
+}
+
+/* Django can show multiple icon states; keep all inherited and non-blue */
+.theme-toggle svg path,
+.theme-toggle svg circle,
+button.theme-toggle svg path,
+button.theme-toggle svg circle {
+  fill: currentColor !important;
+  stroke: currentColor !important;
+}
+
+/* Light mode badges should stay readable */
+html[data-theme="light"] .status-badge {
+  border-color: rgba(105, 74, 38, 0.16);
+  color: var(--cero-admin-text);
+  background: rgba(105, 74, 38, 0.07);
+}
+
+html[data-theme="light"] .status-badge--success {
+  color: #166534;
+  background: rgba(34, 197, 94, 0.13);
+  border-color: rgba(22, 101, 52, 0.2);
+}
+
+html[data-theme="light"] .status-badge--warning {
+  color: #854d0e;
+  background: rgba(245, 158, 11, 0.16);
+  border-color: rgba(133, 77, 14, 0.2);
+}
+
+html[data-theme="light"] .status-badge--danger {
+  color: #991b1b;
+  background: rgba(248, 113, 113, 0.16);
+  border-color: rgba(153, 27, 27, 0.2);
+}
+
+html[data-theme="light"] .status-badge--info {
+  color: #1d4ed8;
+  background: rgba(96, 165, 250, 0.15);
+  border-color: rgba(29, 78, 216, 0.2);
+}
+
+html[data-theme="light"] .status-badge--accent {
+  color: #fff8ed;
+  background: var(--cero-admin-amber);
+  border-color: var(--cero-admin-amber);
+}
+
+/* Calendar light mode */
+html[data-theme="light"] .fc {
+  color: var(--cero-admin-text);
+}
+
+html[data-theme="light"] .fc-theme-standard td,
+html[data-theme="light"] .fc-theme-standard th,
+html[data-theme="light"] .fc-theme-standard .fc-scrollgrid {
+  border-color: rgba(105, 74, 38, 0.15) !important;
+}
+
+html[data-theme="light"] .fc .fc-col-header-cell,
+html[data-theme="light"] .fc .fc-list-day-cushion {
+  background: rgba(159, 107, 31, 0.09) !important;
+}
+
+html[data-theme="light"] .fc .fc-day-today {
+  background: rgba(159, 107, 31, 0.1) !important;
+}
+
+html[data-theme="light"] .fc .fc-button {
+  border-color: rgba(159, 107, 31, 0.46) !important;
+  background: rgba(159, 107, 31, 0.12) !important;
+  color: var(--cero-admin-text) !important;
+}
+
+html[data-theme="light"] .fc .fc-button:hover,
+html[data-theme="light"] .fc .fc-button-primary:not(:disabled).fc-button-active {
+  background: var(--cero-admin-amber) !important;
+  color: #fff8ed !important;
+}
+
+/* Avoid Django default blue showing through */
+html[data-theme="light"] .selector-chosen h2,
+html[data-theme="dark"] .selector-chosen h2,
+html[data-theme="auto"] .selector-chosen h2 {
+  background: var(--cero-admin-amber) !important;
+  color: #120d06 !important;
+}
+
+html[data-theme="light"] .calendar caption,
+html[data-theme="dark"] .calendar caption,
+html[data-theme="auto"] .calendar caption {
+  background: var(--cero-admin-amber) !important;
+  color: #120d06 !important;
+}

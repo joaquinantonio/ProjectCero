@@ -1,0 +1,39 @@
+<section class="cero-hero">
+  <div class="container cero-hero__grid">
+    <div class="cero-hero__copy">
+      <p class="cero-kicker">Studio by day · Events by night · Community always</p>
+      <h1>{{ site_settings.site_name|default:"CeroPJ" }}</h1>
+      <p class="cero-hero__text">
+        {{ site_settings.tagline|default:"A cinematic creative space for live nights, recording sessions, private gatherings, and artist community." }}
+      </p>
+
+      <div class="cero-actions cero-hero__actions">
+        <a class="btn btn-primary" href="{% url 'bookings:request' %}?type=venue">Book the Space</a>
+        <a class="btn btn-secondary" href="{% url 'events:event_list' %}">View Events</a>
+        <a class="btn btn-secondary" href="{% url 'studio:home' %}">Explore Studio</a>
+      </div>
+
+      <div class="cero-hero__signals" aria-label="CeroPJ highlights">
+        <span>Live nights</span>
+        <span>Studio sessions</span>
+        <span>Creative gatherings</span>
+      </div>
+    </div>
+
+    <aside class="cero-hero__media" aria-label="CeroPJ creative venue visual placeholder">
+      <div class="cero-hero__image-placeholder">
+        <span>CeroPJ</span>
+      </div>
+
+      <div class="cero-hero__floating cero-hero__floating--top">
+        <strong>Record</strong>
+        <span>studio-ready</span>
+      </div>
+
+      <div class="cero-hero__note">
+        <p class="cero-kicker">Creative house</p>
+        <p>Record, perform, gather, and build culture in one flexible black-box space.</p>
+      </div>
+    </aside>
+  </div>
+</section>

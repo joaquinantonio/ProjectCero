@@ -1,0 +1,119 @@
+{% load static %}
+<header class="site-header cero-site-header">
+  <div class="container nav-shell cero-nav-shell">
+    <div class="brand cero-brand">
+      <a href="{% url 'pages:home' %}" class="cero-brand-mark" aria-label="{{ site_settings.site_name|default:'CeroPJ' }} home">
+        <img src="{% static 'images/cero_logo.png' %}" alt="" class="cero-brand-logo">
+      </a>
+
+      <div class="cero-brand-copy">
+        <a href="{% url 'pages:home' %}" class="brand-link cero-brand-link">
+          {{ site_settings.site_name|default:"CeroPJ" }}
+        </a>
+        {% if site_settings.tagline %}
+          <p class="brand-tagline cero-brand-tagline">{{ site_settings.tagline }}</p>
+        {% else %}
+          <p class="brand-tagline cero-brand-tagline">Creative venue · Studio · Community</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <button
+      class="nav-toggle cero-nav-toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="main-nav"
+      aria-label="Toggle navigation"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <nav id="main-nav" class="main-nav cero-main-nav" aria-label="Primary navigation">
+      <div class="cero-nav-links">
+        <a
+          href="{% url 'pages:home' %}"
+          class="{% if request.resolver_match.namespace == 'pages' and request.resolver_match.url_name == 'home' %}is-active{% endif %}"
+          {% if request.resolver_match.namespace == 'pages' and request.resolver_match.url_name == 'home' %}aria-current="page"{% endif %}
+        >
+          Home
+        </a>
+
+        <a
+          href="{% url 'events:event_list' %}"
+          class="{% if request.resolver_match.namespace == 'events' and request.resolver_match.url_name != 'calendar' %}is-active{% endif %}"
+          {% if request.resolver_match.namespace == 'events' and request.resolver_match.url_name != 'calendar' %}aria-current="page"{% endif %}
+        >
+          Events
+        </a>
+
+        <a
+          href="{% url 'studio:home' %}"
+          class="{% if request.resolver_match.namespace == 'studio' %}is-active{% endif %}"
+          {% if request.resolver_match.namespace == 'studio' %}aria-current="page"{% endif %}
+        >
+          Studio
+        </a>
+
+        <a
+          href="{% url 'artists:artist_list' %}"
+          class="{% if request.resolver_match.namespace == 'artists' %}is-active{% endif %}"
+          {% if request.resolver_match.namespace == 'artists' %}aria-current="page"{% endif %}
+        >
+          Artists
+        </a>
+
+        <a
+          href="{% url 'merch:merch_list' %}"
+          class="{% if request.resolver_match.namespace == 'merch' %}is-active{% endif %}"
+          {% if request.resolver_match.namespace == 'merch' %}aria-current="page"{% endif %}
+        >
+          Merch
+        </a>
+
+        <a
+          href="{% url 'news:news_list' %}"
+          class="{% if request.resolver_match.namespace == 'news' %}is-active{% endif %}"
+          {% if request.resolver_match.namespace == 'news' %}aria-current="page"{% endif %}
+        >
+          News
+        </a>
+
+        <a
+          href="{% url 'pages:contact' %}"
+          class="{% if request.resolver_match.namespace == 'pages' and request.resolver_match.url_name == 'contact' %}is-active{% endif %}"
+          {% if request.resolver_match.namespace == 'pages' and request.resolver_match.url_name == 'contact' %}aria-current="page"{% endif %}
+        >
+          Contact
+        </a>
+      </div>
+
+      <div class="cero-nav-actions">
+         <a
+           class="cero-nav-calendar {% if request.resolver_match.namespace == 'events' and request.resolver_match.url_name == 'calendar' %}is-active{% endif %}"
+           href="{% url 'events:calendar' %}"
+           {% if request.resolver_match.namespace == 'events' and request.resolver_match.url_name == 'calendar' %}aria-current="page"{% endif %}
+         >
+           Calendar
+         </a>
+
+         <a
+           class="cero-nav-cta {% if request.resolver_match.namespace == 'bookings' %}is-active{% endif %}"
+           href="{% url 'bookings:landing' %}"
+           {% if request.resolver_match.namespace == 'bookings' %}aria-current="page"{% endif %}
+         >
+           Book
+         </a>
+
+         <a
+           class="cero-nav-admin"
+           href="/admin/"
+           aria-label="Admin Login"
+         >
+           Admin
+         </a>
+       </div>
+    </nav>
+  </div>
+</header>

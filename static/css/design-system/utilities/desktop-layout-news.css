@@ -1,0 +1,295 @@
+/* Phase 11G: Desktop Layout and News Journal Polish
+   Desktop-first refinement.
+*/
+
+@media (min-width: 901px) {
+  .cero-home .cero-hero {
+    padding-top: clamp(2.6rem, 4.4vw, 4.2rem);
+    padding-bottom: clamp(3.5rem, 6vw, 5.4rem);
+  }
+
+  .cero-home .cero-hero__grid {
+    grid-template-columns: minmax(0, 0.92fr) minmax(360px, 1.08fr);
+    gap: clamp(2rem, 4vw, 4.5rem);
+    transform: translateX(-1.2rem);
+  }
+
+  .cero-home .cero-hero__copy h1 {
+    max-width: 10ch;
+    font-size: clamp(3.05rem, 7.8vw, 6.8rem);
+    line-height: 0.88;
+    margin-bottom: 0.9rem;
+  }
+
+  .cero-home .cero-hero__text {
+    max-width: 560px;
+    font-size: clamp(0.98rem, 1.35vw, 1.15rem);
+    line-height: 1.55;
+  }
+
+  .cero-home .cero-kicker {
+    margin-bottom: 0.55rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.13em;
+  }
+
+  .cero-home .cero-hero__actions {
+    margin-top: 1.35rem;
+  }
+
+  .cero-home .cero-hero__signals {
+    margin-top: 1rem;
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1180px) {
+  .cero-home .cero-hero__grid {
+    transform: translateX(-0.45rem);
+  }
+}
+
+@media (min-width: 901px) {
+  .cero-events-page .cero-event-search {
+    padding: 1rem 1.1rem;
+  }
+
+  .cero-events-page .cero-event-search__grid {
+    grid-template-columns: minmax(0, 1.2fr) minmax(230px, 0.62fr) auto;
+    align-items: end;
+    gap: 0.9rem;
+  }
+
+  .cero-events-page .cero-event-search label {
+    min-height: 1.2rem;
+    margin-bottom: 0.4rem;
+    line-height: 1.2;
+  }
+
+  .cero-events-page .cero-event-search input,
+  .cero-events-page .cero-event-search select {
+    height: 52px;
+    min-height: 52px;
+    box-sizing: border-box;
+    line-height: 1.2;
+  }
+
+  .cero-events-page .cero-event-search__actions {
+    align-self: end;
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-height: 52px;
+  }
+
+  .cero-events-page .cero-event-search__actions .btn {
+    min-height: 52px;
+    margin-top: 0;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+}
+
+@media (min-width: 1100px) {
+  .cero-events-page .cero-event-listing-grid,
+  .cero-events-page .cero-past-event-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.1rem;
+  }
+
+  .cero-events-page .cero-event-listing-grid .cero-listing-event-card,
+  .cero-events-page .cero-past-event-grid .cero-listing-event-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+  }
+
+  .cero-events-page .cero-listing-event-card__media {
+    width: 100%;
+    min-height: 0;
+    aspect-ratio: 4 / 5;
+  }
+
+  .cero-events-page .cero-listing-event-card__body {
+    flex: 1;
+    padding: 1.1rem;
+  }
+
+  .cero-events-page .cero-listing-event-card h3 {
+    font-size: clamp(1.12rem, 1.35vw, 1.38rem);
+    line-height: 1.16;
+    letter-spacing: -0.035em;
+  }
+
+  .cero-events-page .cero-listing-event-card__copy {
+    -webkit-line-clamp: 3;
+  }
+
+  .cero-events-page .cero-listing-event-card__actions .btn {
+    width: 100%;
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1099px) {
+  .cero-events-page .cero-event-listing-grid,
+  .cero-events-page .cero-past-event-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cero-events-page .cero-listing-event-card {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .cero-events-page .cero-listing-event-card__media {
+    aspect-ratio: 4 / 5;
+  }
+}
+
+@media (min-width: 901px) {
+  .cero-news-journal-page .cero-content-hero {
+    padding-bottom: clamp(1.2rem, 2.5vw, 2rem);
+  }
+
+  .cero-news-feature-section {
+    padding-top: clamp(1rem, 2vw, 1.5rem);
+  }
+}
+
+.cero-news-journal-feature {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.72fr);
+  gap: clamp(1.5rem, 4vw, 3rem);
+  align-items: stretch;
+  padding: clamp(1.4rem, 3vw, 2.4rem);
+  border: 1px solid rgba(255, 232, 190, 0.13);
+  border-radius: clamp(26px, 4vw, 42px);
+  background:
+    linear-gradient(180deg, rgba(255, 232, 190, 0.05), rgba(255, 255, 255, 0.012)),
+    rgba(20, 18, 16, 0.86);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.27);
+}
+
+.cero-news-journal-feature__copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.cero-news-journal-feature h2 {
+  max-width: 760px;
+  margin-bottom: 0.85rem;
+  font-size: clamp(1.9rem, 3.4vw, 3.4rem);
+  line-height: 1.02;
+  letter-spacing: -0.055em;
+}
+
+.cero-news-journal-feature__lead,
+.cero-news-journal-item__summary {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.cero-news-journal-excerpt {
+  max-width: 760px;
+  margin-bottom: 1rem;
+  color: var(--muted);
+  line-height: 1.68;
+}
+
+.cero-news-journal-feature__media,
+.cero-news-journal-item__media {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(255, 232, 190, 0.12);
+  background:
+    radial-gradient(circle at 35% 22%, rgba(214, 168, 92, 0.18), transparent 38%),
+    linear-gradient(135deg, #17120f, #08090b);
+}
+
+.cero-news-journal-feature__media {
+  min-height: 360px;
+  border-radius: 30px;
+}
+
+.cero-news-journal-feature__media img,
+.cero-news-journal-item__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cero-news-journal-feature__media span,
+.cero-news-journal-item__media span {
+  color: rgba(243, 238, 228, 0.72);
+  font-size: clamp(2.4rem, 6vw, 4.8rem);
+  font-weight: 950;
+  letter-spacing: -0.1em;
+  text-transform: uppercase;
+}
+
+.cero-news-journal-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.cero-news-journal-item {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.34fr) minmax(0, 1fr);
+  gap: clamp(1rem, 2.5vw, 1.6rem);
+  padding: clamp(1rem, 2.3vw, 1.5rem);
+  border: 1px solid rgba(255, 232, 190, 0.12);
+  border-radius: 26px;
+  background:
+    linear-gradient(180deg, rgba(255, 232, 190, 0.04), rgba(255, 255, 255, 0.01)),
+    rgba(20, 18, 16, 0.78);
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.2);
+}
+
+.cero-news-journal-item__media {
+  min-height: 190px;
+  border-radius: 22px;
+}
+
+.cero-news-journal-item__body {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.cero-news-journal-item h3 {
+  margin-bottom: 0.65rem;
+  font-size: clamp(1.35rem, 2vw, 2rem);
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+}
+
+.cero-news-journal-item .cero-text-link {
+  align-self: flex-start;
+  margin-top: 0.25rem;
+}
+
+@media (max-width: 900px) {
+  .cero-news-journal-feature,
+  .cero-news-journal-item {
+    grid-template-columns: 1fr;
+  }
+
+  .cero-news-journal-feature__media {
+    min-height: 260px;
+    order: -1;
+  }
+
+  .cero-news-journal-item__media {
+    min-height: 220px;
+  }
+}
+
+@media (max-width: 640px) {
+  .cero-news-journal-feature,
+  .cero-news-journal-item {
+    border-radius: 24px;
+    padding: 1rem;
+  }
+}

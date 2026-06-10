@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-labelledby="title desc">
+  <title id="title">ProjectCero logo placeholder</title>
+  <desc id="desc">A simple circular C mark for ProjectCero. Replace with the official logo if available.</desc>
+  <defs>
+    <linearGradient id="g" x1="20" y1="8" x2="76" y2="88" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F0B75E"/>
+      <stop offset="0.58" stop-color="#D6A85C"/>
+      <stop offset="1" stop-color="#C2673A"/>
+    </linearGradient>
+  </defs>
+  <rect width="96" height="96" rx="24" fill="#100E0D"/>
+  <circle cx="48" cy="48" r="30" fill="none" stroke="url(#g)" stroke-width="10" stroke-linecap="round" stroke-dasharray="145 64" transform="rotate(-28 48 48)"/>
+  <circle cx="61" cy="30" r="5" fill="#8EF0C7"/>
+</svg>

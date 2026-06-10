@@ -1,0 +1,97 @@
+/* Phase 11D: Mobile Gutter Refinement
+   Purpose:
+   - Add comfortable margins between mobile screen edges and page content
+   - Prevent text/cards from feeling too close to the edge
+   - Keep desktop layout unchanged
+   - Preserve horizontal card rails while giving them breathing room
+*/
+
+@media (max-width: 700px) {
+  :root {
+    --cero-mobile-gutter: clamp(1rem, 4.6vw, 1.35rem);
+  }
+
+  .container,
+  .narrow,
+  .cero-home .container {
+    width: min(calc(100% - (var(--cero-mobile-gutter) * 2)), var(--max-width));
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .cero-home .container {
+    width: min(calc(100% - (var(--cero-mobile-gutter) * 2)), 1200px);
+  }
+
+  /* Hero/listing/content wrappers should breathe on mobile */
+  .cero-listing-hero,
+  .cero-studio-page .cero-listing-hero,
+  .cero-content-hero,
+  .cero-content-detail-hero,
+  .cero-conversion-hero {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  /* Keep large panels away from the screen edge */
+  .cero-feature-panel,
+  .cero-final-cta,
+  .cero-studio-intro-panel,
+  .cero-studio-cta,
+  .cero-conversion-note-panel,
+  .cero-content-hero__panel,
+  .cero-conversion-hero__panel,
+  .cero-studio-page .cero-listing-hero__panel,
+  .cero-listing-hero__panel {
+    max-width: 100%;
+  }
+
+  /* Give scrolling rails a small internal cushion without creating awkward overflow */
+  .cero-event-rail,
+  .cero-artist-rail {
+    margin-left: calc(var(--cero-mobile-gutter) * -0.18);
+    margin-right: calc(var(--cero-mobile-gutter) * -0.18);
+    padding-left: calc(var(--cero-mobile-gutter) * 0.18);
+    padding-right: calc(var(--cero-mobile-gutter) * 0.18);
+  }
+
+  /* Forms/search bars should not feel glued to the edge */
+  .cero-event-search,
+  .cero-studio-search,
+  .cero-content-search,
+  .search-bar,
+  .content-block,
+  .card,
+  .event-card {
+    max-width: 100%;
+  }
+
+  /* Reduce the chance of rounded cards looking like they bleed off-screen */
+  .cero-card,
+  .cero-content-card,
+  .cero-detail-card,
+  .cero-booking-choice-card,
+  .cero-enquiry-choice-card,
+  .cero-merch-card,
+  .cero-news-card,
+  .cero-listing-event-card,
+  .cero-listing-artist-card,
+  .cero-listing-studio-card {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 390px) {
+  :root {
+    --cero-mobile-gutter: clamp(0.9rem, 4.2vw, 1.05rem);
+  }
+
+  .cero-feature-panel,
+  .cero-final-cta,
+  .cero-studio-intro-panel,
+  .cero-studio-cta,
+  .cero-conversion-note-panel {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}

@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Contact · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+{% block meta_description %}Contact {{ site_settings.site_name|default:"CeroPJ" }} for studio work, venue bookings, events, merch, payments, collaborations, and general enquiries.{% endblock %}
+
+{% block content %}
+<div class="cero-content-page cero-contact-page">
+  <section class="cero-content-hero">
+    <div class="container cero-content-hero__grid">
+      <div>
+        <p class="cero-kicker">Contact</p>
+        <h1>Get in touch with the right context.</h1>
+        <p>
+          Reach out for studio work, venue bookings, merch, payments, collaborations, or general enquiries.
+        </p>
+      </div>
+
+      <aside class="cero-content-hero__panel">
+        <p class="cero-card__label">Best route</p>
+        <h2>Use booking forms for space use.</h2>
+        <p>
+          Studio sessions and venue hire work best through the booking request flow. General questions can go through enquiries.
+        </p>
+        <div class="cero-actions">
+          <a class="btn btn-primary" href="{% url 'bookings:landing' %}">Bookings</a>
+          <a class="btn btn-secondary" href="{% url 'enquiries:landing' %}">Enquiries</a>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="cero-section cero-section--tight">
+    <div class="container cero-content-detail-layout">
+      <main class="cero-content-main">
+        <article class="cero-content-card">
+          <p class="cero-kicker">Contact information</p>
+          <h2>Reach the venue</h2>
+
+          <ul class="cero-content-meta-list cero-contact-list">
+            {% if site_settings.contact_email %}
+              <li>
+                <span>Email</span>
+                <strong>
+                  <a href="mailto:{{ site_settings.contact_email }}">
+                    {{ site_settings.contact_email }}
+                  </a>
+                </strong>
+              </li>
+            {% endif %}
+
+            {% if site_settings.contact_phone %}
+              <li>
+                <span>Phone</span>
+                <strong>{{ site_settings.contact_phone }}</strong>
+              </li>
+            {% endif %}
+
+            {% if site_settings.whatsapp_url %}
+              <li>
+                <span>WhatsApp</span>
+                <strong>
+                  <a href="{{ site_settings.whatsapp_url }}" target="_blank" rel="noopener noreferrer">
+                    Message us on WhatsApp
+                  </a>
+                </strong>
+              </li>
+            {% endif %}
+
+            {% if site_settings.address_text %}
+              <li>
+                <span>Address</span>
+                <strong>{{ site_settings.address_text|linebreaksbr }}</strong>
+              </li>
+            {% endif %}
+          </ul>
+
+          {% if site_settings.google_maps_url %}
+            <div class="cero-content-actions">
+              <a class="btn btn-secondary" href="{{ site_settings.google_maps_url }}" target="_blank" rel="noopener noreferrer">
+                Open in Maps
+              </a>
+            </div>
+          {% endif %}
+        </article>
+
+        {% if site_settings.instagram_url or site_settings.facebook_url or site_settings.tiktok_url or site_settings.youtube_url %}
+          <article class="cero-content-card">
+            <p class="cero-kicker">Socials</p>
+            <h2>Follow for updates</h2>
+            <p>Follow CeroPJ for events, drops, studio updates, and announcements.</p>
+
+            <div class="cero-content-actions cero-content-actions--inline">
+              {% if site_settings.instagram_url %}
+                <a class="btn btn-secondary" href="{{ site_settings.instagram_url }}" target="_blank" rel="noopener noreferrer">
+                  Instagram
+                </a>
+              {% endif %}
+
+              {% if site_settings.facebook_url %}
+                <a class="btn btn-secondary" href="{{ site_settings.facebook_url }}" target="_blank" rel="noopener noreferrer">
+                  Facebook
+                </a>
+              {% endif %}
+
+              {% if site_settings.tiktok_url %}
+                <a class="btn btn-secondary" href="{{ site_settings.tiktok_url }}" target="_blank" rel="noopener noreferrer">
+                  TikTok
+                </a>
+              {% endif %}
+
+              {% if site_settings.youtube_url %}
+                <a class="btn btn-secondary" href="{{ site_settings.youtube_url }}" target="_blank" rel="noopener noreferrer">
+                  YouTube
+                </a>
+              {% endif %}
+            </div>
+          </article>
+        {% endif %}
+
+        {% for section in sections %}
+          <article class="cero-content-card">
+            {% if section.title %}
+              <p class="cero-kicker">Info</p>
+              <h2>{{ section.title }}</h2>
+            {% endif %}
+            <div class="cero-content-richtext">
+              {{ section.body|linebreaks }}
+            </div>
+          </article>
+        {% endfor %}
+      </main>
+
+      <aside class="cero-content-sidebar">
+        <section class="cero-content-card cero-content-summary-card">
+          <p class="cero-kicker">What do you need?</p>
+          <h2>Choose the right path</h2>
+          <p>
+            Pick the route that best matches your purpose so the team receives the right information.
+          </p>
+
+          <div class="cero-content-actions">
+            <a class="btn btn-primary" href="{% url 'bookings:request' %}?type=studio">
+              Book the Studio
+            </a>
+            <a class="btn btn-secondary" href="{% url 'bookings:request' %}?type=venue">
+              Venue Request
+            </a>
+            <a class="btn btn-secondary" href="{% url 'enquiries:general' %}">
+              General Enquiry
+            </a>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Past Events · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container narrow">
+    <p class="eyebrow">Archive</p>
+    <h1>Past Events</h1>
+    <p class="lead">A look back at previous nights and performances.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="card-grid card-grid-wide">
+      {% for event in past_events %}
+        <article class="event-card">
+          {% if event.poster %}
+            <a href="{% url 'events:event_detail' event.slug %}">
+              <img class="event-poster" src="{{ event.poster.url }}" alt="{{ event.title }}">
+            </a>
+          {% endif %}
+          <div class="event-card-body">
+            <p class="event-date">{{ event.start_at|date:"d M Y" }}</p>
+            <h2><a href="{% url 'events:event_detail' event.slug %}">{{ event.title }}</a></h2>
+            {% if event.short_description %}
+              <p>{{ event.short_description }}</p>
+            {% endif %}
+          </div>
+        </article>
+      {% empty %}
+        <article class="card">
+          <h3>No past events yet</h3>
+          <p>Past events will show up here automatically.</p>
+        </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

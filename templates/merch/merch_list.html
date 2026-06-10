@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Merch · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+{% block meta_description %}Merchandise, drops, and items from {{ site_settings.site_name|default:"ProjectCero" }}.{% endblock %}
+{% block og_title %}Merch{% endblock %}
+{% block og_description %}Merchandise, drops, and items from {{ site_settings.site_name|default:"ProjectCero" }}.{% endblock %}
+{% block og_type %}website{% endblock %}
+{% block og_image %}{% static 'images/og-default.jpg' %}{% endblock %}
+
+{% block content %}
+<div class="cero-content-page cero-merch-page">
+  <section class="cero-content-hero">
+    <div class="container cero-content-hero__grid">
+      <div>
+        <p class="cero-kicker">Merch</p>
+        <h1>Drops, items, and community pieces from the venue.</h1>
+        <p>
+          Browse highlighted items, available merch, and future drops connected to ProjectCero events, artists, and the creative community.
+        </p>
+      </div>
+
+      <aside class="cero-content-hero__panel">
+        <p class="cero-card__label">Merch enquiries</p>
+        <h2>Interested in an item?</h2>
+        <p>
+          Online checkout is not available yet. Select an item and send us a merch enquiry;
+          our team will confirm availability, payment, and collection or delivery details.
+        </p>
+        <div class="cero-actions">
+          <a class="btn btn-primary" href="#merch-catalogue">Browse Merch</a>
+          <a class="btn btn-secondary" href="{% url 'events:event_list' %}">View Events</a>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  {% if featured_items %}
+    <section class="cero-section cero-section--tight">
+      <div class="container">
+        <div class="cero-section-header cero-section-header--split">
+          <div>
+            <p class="cero-kicker">Featured</p>
+            <h2>Highlighted items</h2>
+          </div>
+          <p>Selected merch and drops that should stand out before the full catalogue.</p>
+        </div>
+
+        <div class="cero-merch-featured-grid">
+          {% for item in featured_items %}
+            {% include "includes/cards/listing_merch_card.html" with item=item %}
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+
+  <section id="merch-catalogue" class="cero-section cero-section--tight">
+    <div class="container">
+      <div class="cero-section-header cero-section-header--split">
+        <div>
+          <p class="cero-kicker">Catalogue</p>
+          <h2>All merch</h2>
+        </div>
+        <p>
+          Items, drops, and merch currently published by the venue. Use the item enquiry button
+          to check availability, quantity, payment, and collection or delivery details.
+        </p>
+      </div>
+
+      <div class="cero-merch-grid">
+        {% for item in items %}
+          {% include "includes/cards/listing_merch_card.html" with item=item %}
+        {% empty %}
+          <article class="cero-card cero-listing-empty">
+            <p class="cero-card__label">No merch yet</p>
+            <h3>Merch items will appear here.</h3>
+            <p>Add merch items in admin to populate this page.</p>
+          </article>
+        {% endfor %}
+      </div>
+
+      {% include "includes/pagination.html" with page_obj=page_obj %}
+    </div>
+  </section>
+</div>
+{% endblock %}

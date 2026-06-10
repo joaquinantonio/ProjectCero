@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ post.title }} · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+{% block meta_description %}{{ post.summary|default:post.title }}{% endblock %}
+{% block og_title %}{{ post.title }}{% endblock %}
+{% block og_description %}{{ post.summary|default:post.title }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_image %}
+  {% if post.cover_image %}
+    {{ post.cover_image.url }}
+  {% else %}
+    {% static 'images/og-default.jpg' %}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="cero-content-page cero-news-detail-page">
+  <section class="cero-content-detail-hero">
+    <div class="container cero-content-detail-hero__grid">
+      <div>
+        <p class="cero-kicker">News</p>
+        <h1>{{ post.title }}</h1>
+
+        <div class="cero-content-meta-strip">
+          <span>
+            {% if post.published_at %}
+              {{ post.published_at|date:"d M Y" }}
+            {% else %}
+              {{ post.created_at|date:"d M Y" }}
+            {% endif %}
+          </span>
+          <span>CeroPJ update</span>
+        </div>
+
+        {% if post.summary %}
+          <p>{{ post.summary }}</p>
+        {% endif %}
+
+        <div class="cero-actions">
+          <a class="btn btn-secondary" href="{% url 'news:news_list' %}">Back to News</a>
+        </div>
+      </div>
+
+      <aside class="cero-content-detail-hero__media">
+        {% if post.cover_image %}
+          <img src="{{ post.cover_image.url }}" alt="{{ post.title }}">
+        {% else %}
+          <div class="cero-content-placeholder">
+            <strong>News</strong>
+            <span>Update</span>
+          </div>
+        {% endif %}
+      </aside>
+    </div>
+  </section>
+
+  <section class="cero-section cero-section--tight">
+    <div class="container cero-content-detail-layout">
+      <main class="cero-content-main">
+        <article class="cero-content-card cero-news-article-card">
+          {% if post.summary %}
+            <p class="cero-news-article-summary">{{ post.summary }}</p>
+          {% endif %}
+
+          <div class="cero-content-richtext">
+            {{ post.body|linebreaks }}
+          </div>
+        </article>
+      </main>
+
+      <aside class="cero-content-sidebar">
+        <section class="cero-content-card cero-content-summary-card">
+          <p class="cero-kicker">Post details</p>
+          <h2>Published</h2>
+
+          <ul class="cero-content-meta-list">
+            <li>
+              <span>Date</span>
+              <strong>
+                {% if post.published_at %}
+                  {{ post.published_at|date:"d M Y" }}
+                {% else %}
+                  {{ post.created_at|date:"d M Y" }}
+                {% endif %}
+              </strong>
+            </li>
+          </ul>
+
+          <div class="cero-content-actions">
+            <a class="btn btn-secondary" href="{% url 'news:news_list' %}">Back to News</a>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </section>
+
+  {% if recent_posts %}
+    <section class="cero-section cero-section--tight">
+      <div class="container">
+        <div class="cero-section-header cero-section-header--split">
+          <div>
+            <p class="cero-kicker">More news</p>
+            <h2>Recent posts</h2>
+          </div>
+          <a class="cero-text-link" href="{% url 'news:news_list' %}">View all news →</a>
+        </div>
+
+        <div class="cero-news-grid">
+          {% for item in recent_posts %}
+            {% include "includes/cards/listing_news_card.html" with post=item %}
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+</div>
+{% endblock %}

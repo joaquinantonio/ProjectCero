@@ -1,0 +1,22 @@
+<article class="cero-card cero-artist-card">
+  {% if artist.image %}
+    <a class="cero-artist-card__image" href="{% url 'artists:artist_detail' artist.slug %}">
+      <img src="{{ artist.image.url }}" alt="{{ artist.name }}">
+    </a>
+  {% else %}
+    <a class="cero-artist-card__image cero-artist-card__image--placeholder" href="{% url 'artists:artist_detail' artist.slug %}" aria-label="{{ artist.name }}">
+      <span>{{ artist.name|slice:":1" }}</span>
+    </a>
+  {% endif %}
+
+  <div class="cero-artist-card__body">
+    <p class="cero-card__label">Artist</p>
+    <h3>
+      <a href="{% url 'artists:artist_detail' artist.slug %}">{{ artist.name }}</a>
+    </h3>
+
+    {% if artist.short_bio %}
+      <p class="cero-card__copy">{{ artist.short_bio }}</p>
+    {% endif %}
+  </div>
+</article>

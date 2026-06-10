@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+{% block meta_description %}{{ site_settings.tagline|default:"A cinematic creative venue for live nights, studio sessions, private gatherings, and artist community." }}{% endblock %}
+{% block og_title %}{{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+{% block og_description %}{{ site_settings.tagline|default:"A cinematic creative venue for live nights, studio sessions, private gatherings, and artist community." }}{% endblock %}
+{% block og_type %}website{% endblock %}
+{% block og_image %}{% static 'images/og-default.jpg' %}{% endblock %}
+
+{% block content %}
+<div class="cero-home">
+  {% include "includes/sections/home_hero.html" %}
+  {% include "includes/sections/home_use_modes.html" %}
+  {% include "includes/sections/home_events.html" %}
+  {% include "includes/sections/home_space.html" %}
+  {% include "includes/sections/home_studio.html" %}
+  {% include "includes/sections/home_artists.html" %}
+  {% include "includes/sections/home_gallery.html" %}
+  {% include "includes/sections/home_booking_cta.html" %}
+</div>
+{% endblock %}

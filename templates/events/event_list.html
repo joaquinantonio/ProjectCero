@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Events · {{ site_settings.site_name|default:"CeroPJ" }}{% endblock %}
+{% block meta_description %}Upcoming events, live nights, community gatherings, and creative programmes at {{ site_settings.site_name|default:"CeroPJ" }}.{% endblock %}
+
+{% block content %}
+<div class="cero-events-page">
+  <section class="cero-listing-hero cero-events-hero">
+    <div class="container cero-listing-hero__grid">
+      <div>
+        <p class="cero-kicker">Events</p>
+        <h1>Live nights, creative gatherings, and community moments.</h1>
+        <p>
+          See what is coming up at the venue. Browse upcoming events, explore categories, or revisit recent past nights.
+        </p>
+      </div>
+
+      <aside class="cero-listing-hero__panel">
+        <p class="cero-card__label">CeroPJ events</p>
+        <h2>Find your next night.</h2>
+        <p>Music, showcases, open sessions, workshops, private programmes, and community-led creative events.</p>
+        <div class="cero-actions">
+          <a class="btn btn-primary" href="{% url 'events:calendar' %}">Open Calendar</a>
+          <a class="btn btn-secondary" href="{% url 'bookings:request' %}?type=venue">Host an Event</a>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="cero-section cero-section--tight">
+    <div class="container">
+      <form method="get" class="cero-event-search">
+        <div class="cero-event-search__grid">
+          <div>
+            <label for="event-search">Search events</label>
+            <input
+              id="event-search"
+              type="text"
+              name="q"
+              value="{{ search_query }}"
+              placeholder="Search by title, description, or location"
+            >
+          </div>
+
+          <div>
+            <label for="event-category">Category</label>
+            <select id="event-category" name="category">
+              <option value="">All categories</option>
+              {% for category in categories %}
+                <option value="{{ category.slug }}"
+                  {% if selected_category and selected_category.slug == category.slug %}selected{% endif %}>
+                  {{ category.name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="cero-event-search__actions">
+            <button class="btn btn-primary" type="submit">Search</button>
+            <a class="btn btn-secondary" href="{% url 'events:event_list' %}">Reset</a>
+          </div>
+        </div>
+      </form>
+
+      <div class="cero-category-strip" aria-label="Event categories">
+        <a class="cero-category-pill {% if not selected_category %}is-active{% endif %}"
+           href="{% url 'events:event_list' %}">
+          All
+        </a>
+
+        {% for category in categories %}
+          <a class="cero-category-pill {% if selected_category and selected_category.slug == category.slug %}is-active{% endif %}"
+             href="{% url 'events:event_list' %}?category={{ category.slug }}">
+            {{ category.name }}
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <section class="cero-section cero-section--tight">
+    <div class="container">
+      <div class="cero-section-header cero-section-header--split">
+        <div>
+          <p class="cero-kicker">Coming up</p>
+          <h2>Upcoming events</h2>
+        </div>
+        <p>Fresh listings from the event database, presented as a curated venue programme.</p>
+      </div>
+
+      <div class="cero-event-listing-grid">
+        {% for event in upcoming_events %}
+          {% include "includes/cards/listing_event_card.html" with event=event %}
+        {% empty %}
+          <article class="cero-card cero-listing-empty">
+            <p class="cero-card__label">No events found</p>
+            <h3>No upcoming events match this search.</h3>
+            <p>Try a different keyword, choose another category, or reset the filters.</p>
+            <a class="btn btn-secondary" href="{% url 'events:event_list' %}">Reset filters</a>
+          </article>
+        {% endfor %}
+      </div>
+
+      {% include "includes/pagination.html" with page_obj=upcoming_events %}
+    </div>
+  </section>
+
+  <section class="cero-section cero-section--tight cero-events-archive">
+    <div class="container">
+      <div class="cero-section-header cero-section-header--split">
+        <div>
+          <p class="cero-kicker">Archive</p>
+          <h2>Recent past events</h2>
+        </div>
+        <p>Past events help show the life of the space and give future visitors a sense of the CeroPJ community.</p>
+      </div>
+
+      <div class="cero-past-event-grid">
+        {% for event in past_events %}
+          {% include "includes/cards/listing_event_card.html" with event=event is_past=True %}
+        {% empty %}
+          <article class="cero-card cero-listing-empty">
+            <p class="cero-card__label">No archive yet</p>
+            <h3>Past events will appear here.</h3>
+            <p>Past published events will appear automatically once available.</p>
+          </article>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

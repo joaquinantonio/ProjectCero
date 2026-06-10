@@ -1,0 +1,31 @@
+/* Phase 9: final responsive QA helpers */
+
+@media (max-width: 480px) {
+  .cero-section-header--split {
+    gap: 1rem;
+  }
+
+  .cero-actions {
+    width: 100%;
+  }
+
+  .cero-actions .btn {
+    justify-content: center;
+  }
+
+  .cero-card__label,
+  .cero-kicker {
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

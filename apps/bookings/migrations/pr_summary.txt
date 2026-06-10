@@ -1,0 +1,15 @@
+Refactor booking schedule architecture
+
+This refactor separates public booking requests from internal calendar bookings.
+
+Changes include:
+- Added BookingResource as the physical CeroPJ venue resource
+- Added Booking as the internal calendar-blocking schedule model
+- Kept BookingRequest as customer request/intake workflow
+- Removed private_event from active request and booking types
+- Migrated legacy private_event requests into venue requests
+- Migrated old scheduled BookingRequests into Booking records
+- Updated availability logic to read from Booking instead of BookingRequest
+- Updated admin calendar to link to Booking records
+- Added schedule indexes and end-after-start database constraint
+- Kept legacy BookingRequest schedule fields temporarily for safe cleanup later
