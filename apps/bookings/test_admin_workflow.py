@@ -1,8 +1,10 @@
 from datetime import date, datetime, time, timedelta
 
 from .services import (
+    assign_default_booking_resource,
     bulk_update_booking_statuses,
     mark_request_as_booking_created,
+    prepare_booking_for_save,
     sync_request_status_after_booking_save,
     update_booking_status,
 )
@@ -20,6 +22,72 @@ from .models import Booking, BookingRequest, BookingResource
 
 
 class BookingAdminWorkflowTests(TestCase):
+    def test_assign_default_booking_resource_sets_resource_when_missing(self):
+        booking = Booking(
+            booking_type=Booking.BookingType.STUDIO,
+            title="Booking Without Resource",
+            scheduled_start_at=self.make_dt(13, 0),
+            scheduled_end_at=self.make_dt(14, 0),
+            status=Booking.Status.TENTATIVE,
+        )
+
+        changed = assign_default_booking_resource(booking)
+
+        self.assertTrue(changed)
+        self.assertEqual(booking.resource, self.resource)
+
+    def test_assign_default_booking_resource_is_noop_when_resource_exists(self):
+        booking = Booking(
+            resource=self.resource,
+            booking_type=Booking.BookingType.STUDIO,
+            title="Booking With Resource",
+            scheduled_start_at=self.make_dt(13, 0),
+            scheduled_end_at=self.make_dt(14, 0),
+            status=Booking.Status.TENTATIVE,
+        )
+
+        changed = assign_default_booking_resource(booking)
+
+        self.assertFalse(changed)
+        self.assertEqual(booking.resource, self.resource)
+
+    def test_prepare_booking_for_save_assigns_default_resource(self):
+        booking = Booking(
+            booking_type=Booking.BookingType.STUDIO,
+            title="Prepared Booking",
+            scheduled_start_at=self.make_dt(13, 0),
+            scheduled_end_at=self.make_dt(14, 0),
+            status=Booking.Status.TENTATIVE,
+        )
+
+        changed = prepare_booking_for_save(booking)
+
+        self.assertTrue(changed)
+        self.assertEqual(booking.resource, self.resource)
+
+    def test_booking_admin_save_assigns_default_resource_when_missing(self):
+        booking = Booking(
+            booking_type=Booking.BookingType.STUDIO,
+            title="Studio Booking Without Resource",
+            scheduled_start_at=self.make_dt(13, 0),
+            scheduled_end_at=self.make_dt(14, 0),
+            status=Booking.Status.TENTATIVE,
+        )
+
+        booking_admin = BookingAdmin(Booking, AdminSite())
+        request = self.build_admin_request()
+
+        booking_admin.save_model(
+            request=request,
+            obj=booking,
+            form=None,
+            change=False,
+        )
+
+        booking.refresh_from_db()
+
+        self.assertEqual(booking.resource, self.resource)
+        
     def test_update_booking_status_updates_valid_booking(self):
         booking = self.create_booking(
             start_hour=13,
@@ -63,7 +131,7 @@ class BookingAdminWorkflowTests(TestCase):
         self.assertEqual(len(result.errors), 1)
         self.assertIn(overlapping_booking.reference_code, result.errors[0])
         self.assertEqual(overlapping_booking.status, Booking.Status.CANCELLED)
-        
+
     def setUp(self):
         self.resource, _ = BookingResource.objects.get_or_create(
             slug="ceropj-venue",

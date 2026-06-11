@@ -22,7 +22,7 @@ from .calendar_workflow import (
     get_default_booking_resource,
 )
 from .models import Booking, BookingRequest
-from .services import sync_request_status_after_booking_save
+from .services import prepare_booking_for_save, sync_request_status_after_booking_save
 
 
 @admin.register(Booking)
@@ -172,10 +172,7 @@ class BookingAdmin(
         return initial
 
     def save_model(self, request, obj, form, change):
-        if not obj.resource_id:
-            default_resource = get_default_booking_resource()
-            if default_resource:
-                obj.resource = default_resource
+        prepare_booking_for_save(obj)
 
         super().save_model(request, obj, form, change)
 

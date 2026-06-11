@@ -76,6 +76,23 @@ def sync_request_status_after_booking_save(booking):
 
     return mark_request_as_booking_created(booking.request)
 
+def assign_default_booking_resource(booking):
+    if not booking or booking.resource_id:
+        return False
+
+    from .calendar_workflow import get_default_booking_resource
+
+    default_resource = get_default_booking_resource()
+    if not default_resource:
+        return False
+
+    booking.resource = default_resource
+    return True
+
+
+def prepare_booking_for_save(booking):
+    return assign_default_booking_resource(booking)
+
 @dataclass
 class BookingStatusUpdateResult:
     updated: int = 0
