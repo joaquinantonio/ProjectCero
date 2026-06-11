@@ -22,6 +22,7 @@ from .calendar_workflow import (
     get_default_booking_resource,
 )
 from .models import Booking, BookingRequest
+from .services import sync_request_status_after_booking_save
 
 
 @admin.register(Booking)
@@ -178,9 +179,7 @@ class BookingAdmin(
 
         super().save_model(request, obj, form, change)
 
-        if obj.request_id and obj.request.status != BookingRequest.Status.CONVERTED:
-            obj.request.status = BookingRequest.Status.CONVERTED
-            obj.request.save(update_fields=["status", "updated_at"])
+        sync_request_status_after_booking_save(obj)
 
     @admin.display(ordering="booking_type", description="Type")
     def booking_type_badge(self, obj):

@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.core.mail import send_mail
 
-from .models import BookingRequest
+from .models import Booking, BookingRequest
 
 
 def format_time(value):
@@ -54,6 +54,24 @@ def get_booking_summary_lines(booking_request):
 
     return "\n".join(lines)
 
+def mark_request_as_booking_created(booking_request):
+    if not booking_request:
+        return False
+
+    if booking_request.status == BookingRequest.Status.CONVERTED:
+        return False
+
+    booking_request.status = BookingRequest.Status.CONVERTED
+    booking_request.save(update_fields=["status", "updated_at"])
+
+    return True
+
+
+def sync_request_status_after_booking_save(booking):
+    if not booking or not booking.request_id:
+        return False
+
+    return mark_request_as_booking_created(booking.request)
 
 def send_booking_notification(booking_request):
     if not settings.BOOKING_NOTIFICATION_EMAIL:

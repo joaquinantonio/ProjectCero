@@ -1,3 +1,8 @@
+from .services import (
+    mark_request_as_booking_created,
+    sync_request_status_after_booking_save,
+)
+from datetime import date, time, timedelta
 from datetime import date, datetime, time
 
 from django.contrib.admin.sites import AdminSite
@@ -178,3 +183,86 @@ class BookingAdminWorkflowTests(TestCase):
         )
 
         self.assertEqual(blocks, [])
+
+    def test_mark_request_as_booking_created_updates_request_status(self):
+        booking_request = self.create_booking_request(
+            status=BookingRequest.Status.NEW,
+        )
+
+        changed = mark_request_as_booking_created(booking_request)
+
+        booking_request.refresh_from_db()
+
+        self.assertTrue(changed)
+        self.assertEqual(
+            booking_request.status,
+            BookingRequest.Status.CONVERTED,
+        )
+
+    def test_mark_request_as_booking_created_is_noop_when_already_converted(self):
+        booking_request = self.create_booking_request(
+            status=BookingRequest.Status.CONVERTED,
+        )
+
+        changed = mark_request_as_booking_created(booking_request)
+
+        booking_request.refresh_from_db()
+
+        self.assertFalse(changed)
+        self.assertEqual(
+            booking_request.status,
+            BookingRequest.Status.CONVERTED,
+        )
+
+    def test_sync_request_status_after_booking_save_updates_linked_request(self):
+        booking_request = self.create_booking_request(
+            status=BookingRequest.Status.NEW,
+        )
+        booking = self.create_workflow_booking(request=booking_request)
+
+        changed = sync_request_status_after_booking_save(booking)
+
+        booking_request.refresh_from_db()
+
+        self.assertTrue(changed)
+        self.assertEqual(
+            booking_request.status,
+            BookingRequest.Status.CONVERTED,
+        )
+
+    def test_sync_request_status_after_booking_save_ignores_unlinked_booking(self):
+        booking = self.create_workflow_booking(request=None)
+
+        changed = sync_request_status_after_booking_save(booking)
+
+        self.assertFalse(changed)
+
+    def create_booking_request(self, **overrides):
+        data = {
+            "request_type": BookingRequest.RequestType.STUDIO,
+            "name": "Test Customer",
+            "email": "customer@example.com",
+            "phone": "0123456789",
+            "preferred_date": timezone.localdate() + timedelta(days=1),
+            "preferred_start_time": time(14, 0),
+            "preferred_end_time": time(16, 0),
+            "guest_count": 2,
+            "message": "I would like to book the studio.",
+            "status": BookingRequest.Status.NEW,
+        }
+        data.update(overrides)
+        return BookingRequest.objects.create(**data)
+
+    def create_workflow_booking(self, **overrides):
+        start_at = timezone.now() + timedelta(days=2)
+        end_at = start_at + timedelta(hours=2)
+
+        data = {
+            "resource": self.resource,
+            "booking_type": Booking.BookingType.VENUE,
+            "scheduled_start_at": start_at,
+            "scheduled_end_at": end_at,
+            "status": Booking.Status.TENTATIVE,
+        }
+        data.update(overrides)
+        return Booking.objects.create(**data)
