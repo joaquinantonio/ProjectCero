@@ -243,15 +243,15 @@ class BookingAdmin(
             args=[booking_request.pk],
         )
 
-        preferred_time = "-"
+        preferred_time_range = "-"
 
         if booking_request.preferred_start_time and booking_request.preferred_end_time:
-            preferred_time = (
+            preferred_time_range = (
                 f"{booking_request.preferred_start_time:%I:%M %p} – "
                 f"{booking_request.preferred_end_time:%I:%M %p}"
             )
         elif booking_request.preferred_start_time:
-            preferred_time = f"{booking_request.preferred_start_time:%I:%M %p}"
+            preferred_time_range = f"{booking_request.preferred_start_time:%I:%M %p}"
 
         rows = (
             ("Reference", booking_request.reference_code),
@@ -260,7 +260,7 @@ class BookingAdmin(
             ("Email", booking_request.email),
             ("Phone", booking_request.phone or "-"),
             ("Preferred date", booking_request.preferred_date or "-"),
-            ("Preferred time", preferred_time),
+            ("Preferred time range", preferred_time_range),
             ("Guest count", booking_request.guest_count or "-"),
         )
 

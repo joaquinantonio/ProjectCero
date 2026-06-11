@@ -69,6 +69,41 @@ class BookingRequest(ReferenceCodeMixin, TimeStampedModel):
     def __str__(self):
         return self.reference_code or f"{self.name} - {self.request_type}"
 
+    @property
+    def effective_preferred_start_time(self):
+        return self.preferred_start_time
+
+    @property
+    def preferred_time_range_display(self):
+        start_time = self.effective_preferred_start_time
+        end_time = self.preferred_end_time
+
+        if start_time and end_time:
+            return f"{start_time:%I:%M %p} – {end_time:%I:%M %p}"
+
+        if start_time:
+            return f"From {start_time:%I:%M %p}"
+
+        if end_time:
+            return f"Until {end_time:%I:%M %p}"
+
+        return ""
+
+    def clean(self):
+        super().clean()
+
+        errors = {}
+
+        if self.preferred_start_time and self.preferred_end_time:
+            if self.preferred_end_time <= self.preferred_start_time:
+                errors["preferred_end_time"] = (
+                    "Preferred end time must be after preferred start time."
+                )
+
+        if errors:
+            raise ValidationError(errors)
+
+
 
 class BookingResource(SluggedModelMixin, TimeStampedModel):
     """
