@@ -111,17 +111,3 @@ class ArtistEnquiry(ReferenceCodeMixin, TimeStampedModel):
     def __str__(self):
         return f"{self.reference_code} - {self.name} ({self.related_artist.name})"
 
-
-    def save(self, *args, **kwargs):
-        if not self.reference_code:
-            while True:
-                code = f"ARTQ-{uuid4().hex[:8].upper()}"
-                if not ArtistEnquiry.objects.filter(reference_code=code).exists():
-                    self.reference_code = code
-                    break
-
-            update_fields = kwargs.get("update_fields")
-            if update_fields is not None:
-                kwargs["update_fields"] = set(update_fields) | {"reference_code"}
-
-        super().save(*args, **kwargs)
