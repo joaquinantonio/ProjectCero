@@ -1,9 +1,11 @@
+from datetime import date, datetime, time, timedelta
+
 from .services import (
+    bulk_update_booking_statuses,
     mark_request_as_booking_created,
     sync_request_status_after_booking_save,
+    update_booking_status,
 )
-from datetime import date, time, timedelta
-from datetime import date, datetime, time
 
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth import get_user_model
@@ -18,6 +20,50 @@ from .models import Booking, BookingRequest, BookingResource
 
 
 class BookingAdminWorkflowTests(TestCase):
+    def test_update_booking_status_updates_valid_booking(self):
+        booking = self.create_booking(
+            start_hour=13,
+            end_hour=14,
+            status=Booking.Status.CANCELLED,
+            title="Cancelled Booking",
+        )
+
+        update_booking_status(booking, Booking.Status.CONFIRMED)
+
+        booking.refresh_from_db()
+
+        self.assertEqual(booking.status, Booking.Status.CONFIRMED)
+
+    def test_bulk_update_booking_statuses_reports_validation_errors(self):
+        self.create_booking(
+            start_hour=13,
+            end_hour=14,
+            status=Booking.Status.CONFIRMED,
+            title="Existing Confirmed Booking",
+        )
+
+        overlapping_booking = self.create_booking(
+            start_hour=13,
+            start_minute=30,
+            end_hour=14,
+            end_minute=30,
+            status=Booking.Status.CANCELLED,
+            title="Cancelled Overlapping Booking",
+        )
+
+        result = bulk_update_booking_statuses(
+            Booking.objects.filter(pk=overlapping_booking.pk),
+            Booking.Status.CONFIRMED,
+        )
+
+        overlapping_booking.refresh_from_db()
+
+        self.assertEqual(result.updated, 0)
+        self.assertEqual(result.skipped, 1)
+        self.assertEqual(len(result.errors), 1)
+        self.assertIn(overlapping_booking.reference_code, result.errors[0])
+        self.assertEqual(overlapping_booking.status, Booking.Status.CANCELLED)
+        
     def setUp(self):
         self.resource, _ = BookingResource.objects.get_or_create(
             slug="ceropj-venue",

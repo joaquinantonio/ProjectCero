@@ -1,4 +1,7 @@
+from dataclasses import dataclass, field
+
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 
 from .models import Booking, BookingRequest
@@ -72,6 +75,52 @@ def sync_request_status_after_booking_save(booking):
         return False
 
     return mark_request_as_booking_created(booking.request)
+
+@dataclass
+class BookingStatusUpdateResult:
+    updated: int = 0
+    skipped: int = 0
+    errors: list[str] = field(default_factory=list)
+
+
+def get_validation_error_message(exc):
+    if hasattr(exc, "messages") and exc.messages:
+        return exc.messages[0]
+
+    return str(exc)
+
+
+def update_booking_status(booking, target_status):
+    original_status = booking.status
+    booking.status = target_status
+
+    try:
+        if target_status in Booking.BLOCKING_STATUSES:
+            booking.full_clean()
+
+        booking.save(update_fields=["status", "updated_at"])
+
+    except ValidationError:
+        booking.status = original_status
+        raise
+
+    return booking
+
+
+def bulk_update_booking_statuses(bookings, target_status):
+    result = BookingStatusUpdateResult()
+
+    for booking in bookings:
+        try:
+            update_booking_status(booking, target_status)
+            result.updated += 1
+
+        except ValidationError as exc:
+            result.skipped += 1
+            error_text = get_validation_error_message(exc)
+            result.errors.append(f"{booking.reference_code}: {error_text}")
+
+    return result
 
 def send_booking_notification(booking_request):
     if not settings.BOOKING_NOTIFICATION_EMAIL:
