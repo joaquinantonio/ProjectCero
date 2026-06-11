@@ -1,14 +1,13 @@
-from uuid import uuid4
-
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator, MinValueValidator
 from django.db import models
 
-from apps.core.models import TimeStampedModel
+from apps.core.models import ReferenceCodeMixin, TimeStampedModel
 
 
-class Order(TimeStampedModel):
+class Order(ReferenceCodeMixin, TimeStampedModel):
+    reference_code_prefix = "ORD"
     class Status(models.TextChoices):
         DRAFT = "draft", "Draft"
         PENDING_PAYMENT = "pending_payment", "Pending Payment"
@@ -99,17 +98,6 @@ class Order(TimeStampedModel):
             ),
         ]
 
-    def generate_reference_code(self):
-        while True:
-            reference_code = f"ORD-{uuid4().hex[:8].upper()}"
-
-            exists = Order.objects.filter(
-                reference_code=reference_code
-            ).exclude(pk=self.pk).exists()
-
-            if not exists:
-                return reference_code
-
     def recalculate_totals(self, save=True):
         subtotal = sum(item.total_amount for item in self.items.all())
         total = subtotal - self.discount_amount + self.tax_amount
@@ -119,16 +107,6 @@ class Order(TimeStampedModel):
 
         if save:
             self.save(update_fields=["subtotal_amount", "total_amount", "updated_at"])
-
-    def save(self, *args, **kwargs):
-        if not self.reference_code:
-            self.reference_code = self.generate_reference_code()
-
-            update_fields = kwargs.get("update_fields")
-            if update_fields is not None:
-                kwargs["update_fields"] = set(update_fields) | {"reference_code"}
-
-        super().save(*args, **kwargs)
 
     @property
     def is_inventory_committed(self):

@@ -1,15 +1,15 @@
 from datetime import timedelta
-from uuid import uuid4
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
 
-from apps.core.models import SluggedModelMixin, TimeStampedModel
+from apps.core.models import ReferenceCodeMixin, SluggedModelMixin, TimeStampedModel
 
 
-class BookingRequest(TimeStampedModel):
+class BookingRequest(ReferenceCodeMixin, TimeStampedModel):
+    reference_code_prefix = "BK"
     class RequestType(models.TextChoices):
         GENERAL = "general", "General"
         STUDIO = "studio", "Studio"
@@ -66,27 +66,6 @@ class BookingRequest(TimeStampedModel):
             models.Index(fields=["reference_code"]),
         ]
 
-    def generate_reference_code(self):
-        while True:
-            reference_code = f"BK-{uuid4().hex[:8].upper()}"
-
-            exists = BookingRequest.objects.filter(
-                reference_code=reference_code
-            ).exclude(pk=self.pk).exists()
-
-            if not exists:
-                return reference_code
-
-    def save(self, *args, **kwargs):
-        if not self.reference_code:
-            self.reference_code = self.generate_reference_code()
-
-            update_fields = kwargs.get("update_fields")
-            if update_fields is not None:
-                kwargs["update_fields"] = set(update_fields) | {"reference_code"}
-
-        super().save(*args, **kwargs)
-
     def __str__(self):
         return self.reference_code or f"{self.name} - {self.request_type}"
 
@@ -119,7 +98,8 @@ class BookingResource(SluggedModelMixin, TimeStampedModel):
         return self.name
 
 
-class Booking(TimeStampedModel):
+class Booking(ReferenceCodeMixin, TimeStampedModel):
+    reference_code_prefix = "BKG"
     BUSINESS_START_HOUR = 11
     BUSINESS_DURATION_HOURS = 13
 
@@ -267,26 +247,6 @@ class Booking(TimeStampedModel):
                 }
             )
 
-    def generate_reference_code(self):
-        while True:
-            reference_code = f"BKG-{uuid4().hex[:8].upper()}"
-
-            exists = Booking.objects.filter(
-                reference_code=reference_code
-            ).exclude(pk=self.pk).exists()
-
-            if not exists:
-                return reference_code
-
-    def save(self, *args, **kwargs):
-        if not self.reference_code:
-            self.reference_code = self.generate_reference_code()
-
-            update_fields = kwargs.get("update_fields")
-            if update_fields is not None:
-                kwargs["update_fields"] = set(update_fields) | {"reference_code"}
-
-        super().save(*args, **kwargs)
 
     @property
     def display_title(self):

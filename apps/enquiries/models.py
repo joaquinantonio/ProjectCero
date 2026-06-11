@@ -1,11 +1,10 @@
-from uuid import uuid4
-
 from django.db import models
 
-from apps.core.models import TimeStampedModel
+from apps.core.models import ReferenceCodeMixin, TimeStampedModel
 
 
-class EnquirySubmission(TimeStampedModel):
+class EnquirySubmission(ReferenceCodeMixin, TimeStampedModel):
+    reference_code_prefix = "ENQ"
     class EnquiryType(models.TextChoices):
         GENERAL = "general", "General"
         MERCH = "merch", "Merch"
@@ -70,22 +69,10 @@ class EnquirySubmission(TimeStampedModel):
     def __str__(self):
         return f"{self.reference_code} - {self.name}"
 
-    def save(self, *args, **kwargs):
-        if not self.reference_code:
-            while True:
-                code = f"ENQ-{uuid4().hex[:8].upper()}"
-                if not EnquirySubmission.objects.filter(reference_code=code).exists():
-                    self.reference_code = code
-                    break
-
-            update_fields = kwargs.get("update_fields")
-            if update_fields is not None:
-                kwargs["update_fields"] = set(update_fields) | {"reference_code"}
-
-        super().save(*args, **kwargs)
 
 
-class ArtistEnquiry(TimeStampedModel):
+class ArtistEnquiry(ReferenceCodeMixin, TimeStampedModel):
+    reference_code_prefix = "ARTQ"
     """Contact form for enquiring about artists."""
 
     class Status(models.TextChoices):
