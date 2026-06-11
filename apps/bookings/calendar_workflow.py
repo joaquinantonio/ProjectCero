@@ -13,12 +13,6 @@ DEFAULT_BOOKING_DURATIONS = {
 
 
 def get_default_booking_resource():
-    """
-    Return the default physical resource for calendar-blocking bookings.
-
-    For current ProjectCero operations there is normally one physical resource:
-    the CeroPJ venue/space. Studio and venue are represented by booking_type.
-    """
     return (
         BookingResource.objects.filter(is_active=True)
         .order_by("display_order", "name", "id")
@@ -30,61 +24,45 @@ def get_default_booking_resource():
 def request_type_to_booking_type(request_type):
     if request_type == BookingRequest.RequestType.STUDIO:
         return Booking.BookingType.STUDIO
-
     if request_type == BookingRequest.RequestType.VENUE:
         return Booking.BookingType.VENUE
-
     return None
 
 
 def build_request_start_at(booking_request):
-    if not booking_request.preferred_date or not booking_request.preferred_start_time:
+    start_time = booking_request.preferred_start_time
+    if not booking_request.preferred_date or not start_time:
         return None
 
-    naive_start = datetime.combine(
-        booking_request.preferred_date,
-        booking_request.preferred_start_time,
-    )
-
+    naive_start = datetime.combine(booking_request.preferred_date, start_time)
     current_timezone = timezone.get_current_timezone()
-
     if timezone.is_naive(naive_start):
         return timezone.make_aware(naive_start, current_timezone)
-
     return naive_start
 
-def build_request_end_at(booking_request):
-    if not booking_request.preferred_date or not booking_request.preferred_end_time:
-        return None
 
-    naive_end = datetime.combine(
-        booking_request.preferred_date,
-        booking_request.preferred_end_time,
+def build_request_end_at(booking_request, start_at):
+    if booking_request.preferred_end_time:
+        naive_end = datetime.combine(
+            booking_request.preferred_date,
+            booking_request.preferred_end_time,
+        )
+        current_timezone = timezone.get_current_timezone()
+        if timezone.is_naive(naive_end):
+            return timezone.make_aware(naive_end, current_timezone)
+        return naive_end
+
+    duration = DEFAULT_BOOKING_DURATIONS.get(
+        booking_request.request_type,
+        timedelta(hours=2),
     )
-
-    current_timezone = timezone.get_current_timezone()
-
-    if timezone.is_naive(naive_end):
-        return timezone.make_aware(naive_end, current_timezone)
-
-    return naive_end
+    return start_at + duration
 
 
 def get_booking_initial_from_request(booking_request):
-    """
-    Build safe initial values for the Booking add form from a public request.
-    Admins can still adjust exact date/time before saving.
-    """
     booking_type = request_type_to_booking_type(booking_request.request_type)
     start_at = build_request_start_at(booking_request)
-    end_at = build_request_end_at(booking_request)
-
-    if start_at and not end_at:
-        duration = DEFAULT_BOOKING_DURATIONS.get(
-            booking_request.request_type,
-            timedelta(hours=2),
-        )
-        end_at = start_at + duration
+    end_at = build_request_end_at(booking_request, start_at) if start_at else None
     default_resource = get_default_booking_resource()
 
     initial = {
@@ -93,31 +71,15 @@ def get_booking_initial_from_request(booking_request):
         "title": f"{booking_request.name} ({booking_request.get_request_type_display()})",
         "status": Booking.Status.CONFIRMED,
     }
-
     if default_resource:
         initial["resource"] = default_resource.pk
-
     if start_at:
         initial["scheduled_start_at"] = start_at
         initial["scheduled_end_at"] = end_at
-
     return {key: value for key, value in initial.items() if value is not None}
 
 
-def create_calendar_booking_from_request(
-    booking_request,
-    *,
-    status=Booking.Status.CONFIRMED,
-):
-    """
-    Create a calendar-blocking Booking from a BookingRequest.
-
-    Returns:
-        (booking, message)
-
-    A BookingRequest by itself is intake only and does not block calendars.
-    This helper turns an admin-confirmed request into a real Booking record.
-    """
+def create_calendar_booking_from_request(booking_request, *, status=Booking.Status.CONFIRMED):
     if booking_request.bookings.exists():
         return (
             booking_request.bookings.order_by("scheduled_start_at", "id").first(),
@@ -135,21 +97,19 @@ def create_calendar_booking_from_request(
             "Preferred date and preferred time are required before a calendar booking can be created.",
         )
 
+    end_at = build_request_end_at(booking_request, start_at)
+    if not end_at or end_at <= start_at:
+        return (
+            None,
+            "Preferred end time must be after preferred start time before a calendar booking can be created.",
+        )
+
     default_resource = get_default_booking_resource()
     if not default_resource:
         return (
             None,
             "No active booking resource exists. Create one Booking Resource first, for example 'CeroPJ Venue'.",
         )
-
-    end_at = build_request_end_at(booking_request)
-
-    if not end_at:
-        duration = DEFAULT_BOOKING_DURATIONS.get(
-            booking_request.request_type,
-            timedelta(hours=2),
-        )
-        end_at = start_at + duration
 
     booking = Booking(
         request=booking_request,
@@ -167,10 +127,4 @@ def create_calendar_booking_from_request(
         return None, f"Calendar booking was not created: {exc.messages[0] if exc.messages else exc}"
 
     booking.save()
-    return (
-        booking,
-        (
-            "Calendar booking created. "
-            "Review the generated start/end time and adjust the Booking record if needed."
-        ),
-    )
+    return booking, "Calendar booking created. Review the generated start/end time and adjust the Booking record if needed."

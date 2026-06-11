@@ -1,6 +1,8 @@
+from django.conf import settings
 from django.contrib import messages
 from django.db import transaction
 from django.db.models import F
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 
 from apps.events.models import Event, TicketType
@@ -25,8 +27,13 @@ def _save_payment_proof(order, form, payment_proof=None):
     proof.save()
     return proof
 
+def _require_public_orders_enabled():
+    if not getattr(settings, "PUBLIC_ORDERS_ENABLED", False):
+        raise Http404("Online orders are not available.")
+
 
 def create_merch_order_view(request, slug):
+    _require_public_orders_enabled()
     item = get_object_or_404(
         MerchItem,
         slug=slug,
@@ -103,6 +110,7 @@ def create_merch_order_view(request, slug):
 
 
 def create_ticket_order_view(request, ticket_type_id):
+    _require_public_orders_enabled()
     ticket_type = get_object_or_404(
         TicketType.objects.select_related("event"),
         pk=ticket_type_id,
@@ -172,6 +180,7 @@ def create_ticket_order_view(request, ticket_type_id):
 
 
 def order_success_view(request, reference_code):
+    _require_public_orders_enabled()
     order = get_object_or_404(
         Order.objects.prefetch_related("items"),
         reference_code=reference_code,
