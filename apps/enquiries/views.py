@@ -70,7 +70,7 @@ class GeneralEnquiryCreateView(BaseEnquiryCreateView):
     page_title = "General Enquiry"
     page_lead = "Use this form for general questions, collaborations, partnerships, updates, or custom requests."
     sidebar_title = "General enquiries"
-    sidebar_body = "For merch purchases, payment issues, studio bookings, or venue hire, use the dedicated flow so your request goes to the right place."
+    sidebar_body = "For merch purchases, studio questions, venue questions, or date-specific booking requests, use the dedicated flow so your request goes to the right place."
     button_label = "Send General Enquiry"
 
     def get_initial(self):
@@ -93,7 +93,7 @@ class MerchEnquiryCreateView(BaseEnquiryCreateView):
     page_title = "Enquire to Purchase"
     page_lead = (
         "Select the merch item and quantity you are interested in. "
-        "This is not an online checkout yet; our team will contact you to confirm "
+        "This is not an online purchase form yet; our team will contact you to confirm "
         "availability, payment, and collection or delivery details."
     )
     sidebar_title = "No online payment yet"
@@ -186,7 +186,7 @@ class StudioEnquiryCreateView(BaseEnquiryCreateView):
     )
     sidebar_title = "Studio enquiries"
     sidebar_body = (
-        "For confirmed date and time requests, use the booking request flow. "
+        "For specific date and time requests, use the booking request flow. "
         "For general studio questions, send your enquiry here."
     )
     button_label = "Send Studio Enquiry"
@@ -203,7 +203,7 @@ class VenueEnquiryCreateView(BaseEnquiryCreateView):
     )
     sidebar_title = "Venue enquiries"
     sidebar_body = (
-        "For confirmed date and time requests, use the booking request flow. "
+        "For specific date and time requests, use the booking request flow. "
         "For general venue questions, send your enquiry here."
     )
     button_label = "Send Venue Enquiry"
