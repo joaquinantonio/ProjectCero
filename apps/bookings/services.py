@@ -57,6 +57,7 @@ def get_booking_summary_lines(booking_request):
 
     return "\n".join(lines)
 
+
 def mark_request_as_booking_created(booking_request):
     if not booking_request:
         return False
@@ -76,6 +77,7 @@ def sync_request_status_after_booking_save(booking):
 
     return mark_request_as_booking_created(booking.request)
 
+
 def assign_default_booking_resource(booking):
     if not booking or booking.resource_id:
         return False
@@ -92,6 +94,7 @@ def assign_default_booking_resource(booking):
 
 def prepare_booking_for_save(booking):
     return assign_default_booking_resource(booking)
+
 
 @dataclass
 class BookingStatusUpdateResult:
@@ -138,6 +141,7 @@ def bulk_update_booking_statuses(bookings, target_status):
             result.errors.append(f"{booking.reference_code}: {error_text}")
 
     return result
+
 
 def send_booking_notification(booking_request):
     if not settings.BOOKING_NOTIFICATION_EMAIL:
