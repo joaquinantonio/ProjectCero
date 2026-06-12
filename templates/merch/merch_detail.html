@@ -104,18 +104,13 @@
             {% endif %}
           </ul>
 
-          <div class="cero-content-actions">
-            <a class="btn btn-primary" href="{% url 'merch:merch_enquire' item.slug %}">
-              Enquire to Purchase
-            </a>
-
-            <a class="btn btn-secondary" href="{% url 'enquiries:general' %}?item={{ item.slug }}">
-              Ask a General Question
-            </a>
-
-            <a class="btn btn-secondary" href="{% url 'merch:merch_list' %}">
-              Back to Merch
-            </a>
+          <div class="detail-actions">
+            {% if item.cta_url and item.cta_text %}
+              <a class="btn btn-primary" href="{{ item.cta_url }}">{{ item.cta_text }}</a>
+            {% else %}
+              <a class="btn btn-secondary" href="{% url 'pages:contact' %}">Enquire</a>
+            {% endif %}
+            <a class="btn btn-secondary" href="{% url 'merch:merch_list' %}">Back to Merch</a>
           </div>
         </section>
       </aside>
